@@ -5,13 +5,9 @@ set(CMAKE_CONFIGURATION_TYPES Release Debug)
 
 project(MatrixGame)
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif()
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-option(MATRIXGAME_BUILD_LAUNCHER "Build standalone launcher for game" FALSE)
+option(MATRIXGAME_BUILD_LAUNCHER "Build standalone launcher for game" TRUE)
 option(MATRIXGAME_CHEATS "Enable cheats" TRUE)
 
 find_package(DIRECTX9 REQUIRED)
@@ -28,8 +24,8 @@ list(APPEND COMPILE_DEFINITIONS MATRIXGAME_EXPORTS USE_PNGLIB $<$<CONFIG:Release
 
 if(MSVC)
     set(COMPILE_OPTIONS
-        $<$<CONFIG:Release>:/Zi /W3 /O2 /Ob2 /Oi /Ot /Oy /GF /EHsc /GS- /Gy->
-        $<$<CONFIG:Debug>:/Zi /W3 /Od /GF /Gm- /RTCc /RTC1>
+        $<$<CONFIG:Release>:/Zi /W3 /O2 /Ob2 /Oi /Ot /Oy /GF /EHsc /GS- /Gy- /MP>
+        $<$<CONFIG:Debug>:/Zi /W3 /Od /GF /Gm- /RTCc /RTC1 /MP>
     )
     set(LINK_OPTIONS
         /SUBSYSTEM:WINDOWS /DYNAMICBASE:NO /MACHINE:X86
