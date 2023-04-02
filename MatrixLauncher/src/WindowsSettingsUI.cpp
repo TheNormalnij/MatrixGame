@@ -33,7 +33,7 @@ void CWindowsSettingsUI::Close() {
 void CWindowsSettingsUI::ApplySettings() {
     // Fullscreen
     HWND hwndFullScreen = GetDlgItem(m_hWnd, IDC_FULLSCREEN);
-    LRESULT fullscreenStatus = SendMessage(hwndFullScreen, BM_GETCHECK, NULL, NULL);
+    LRESULT fullscreenStatus = SendMessage(hwndFullScreen, BM_GETCHECK, 0, 0);
     m_pSettings->SetFullScreen(fullscreenStatus > 0);
 
     // Screen size
