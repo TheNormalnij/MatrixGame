@@ -24,7 +24,7 @@ list(APPEND COMPILE_DEFINITIONS MATRIXGAME_EXPORTS USE_PNGLIB $<$<CONFIG:Release
 
 if(MSVC)
     set(COMPILE_OPTIONS
-        $<$<CONFIG:Release>:/Zi /W3 /O2 /Ob2 /Oi /Ot /Oy /GF /EHsc /GS- /Gy- /MP>
+        $<$<CONFIG:Release>:/Zi /W3 /O2 /EHsc /GS- /Gy- /MP>
         $<$<CONFIG:Debug>:/Zi /W3 /Od /GF /Gm- /RTCc /RTC1 /MP>
     )
     set(LINK_OPTIONS
