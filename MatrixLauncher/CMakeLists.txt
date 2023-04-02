@@ -37,6 +37,14 @@ target_compile_definitions(
         ${COMPILE_DEFINITIONS}
         -DUNICODE -D_UNICODE)
 
+if(NOT MSVC)
+    target_link_options(
+        MatrixGameLauncher
+        PUBLIC
+            -municode
+    )
+endif()
+
 target_link_libraries(
     MatrixGameLauncher
         MatrixGame
