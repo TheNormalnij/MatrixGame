@@ -84,23 +84,15 @@ if(MATRIXGAME_BUILD_LAUNCHER)
 
     install(
         TARGETS MatrixGameLauncher
-        CONFIGURATIONS Release
         RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
         LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
-    )
-
-    install(
-        TARGETS MatrixGameLauncher
-        CONFIGURATIONS Debug
-        RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug
-        LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug
     )
 
     if(MSVC)
         install(
             FILES $<TARGET_PDB_FILE:MatrixGameLauncher>
             CONFIGURATIONS Debug
-            DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug
+            DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
         )
     endif()
 
@@ -108,21 +100,13 @@ endif()
 
 install(
     TARGETS MatrixGame
-    CONFIGURATIONS Release
     RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
     LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
 )
-install(
-    TARGETS MatrixGame
-    CONFIGURATIONS Debug
-    RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug
-    LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug
-)
-
 if(MSVC)
     install(
         FILES $<TARGET_PDB_FILE:MatrixGame>
         CONFIGURATIONS Debug
-        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin/Debug
+        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
     )
 endif()
