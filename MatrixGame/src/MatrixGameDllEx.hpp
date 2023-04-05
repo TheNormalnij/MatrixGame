@@ -24,5 +24,5 @@ struct SMatrixSettings : public SRobotsSettings {
 extern "C" {
 MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t *name));
 MATRIXGAMEDLL_API int __cdecl RunStandalone(HINSTANCE hinst, wchar *map, SMatrixSettings *set,
-                                               SMatrixTextParams *textParams, SRobotGameState *rgs);
+                                            SMatrixTextParams *textParams, SRobotGameState *rgs);
 }

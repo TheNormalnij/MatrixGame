@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "Interface/CInterface.h"
 #include <string_view>
+#include "RangersInterface/RangersInterfaceInternal.h"
 
 // TODO more map info
 MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t *name)) {
@@ -36,6 +37,7 @@ MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t *name))
 
 MATRIXGAMEDLL_API int __cdecl RunStandalone(HINSTANCE hinst, wchar *map, SMatrixSettings *set,
                                                SMatrixTextParams *textParams, SRobotGameState *rgs) {
+    g_RangersInterface = RangersInterfaceInternal::getInstance()->getSMGDIntervace();
     CGame game{};
 
     uint32_t seed = (unsigned)time(NULL);
@@ -48,6 +50,8 @@ MATRIXGAMEDLL_API int __cdecl RunStandalone(HINSTANCE hinst, wchar *map, SMatrix
 
     game.SaveResult(rgs);
     game.SafeFree();
+
+    g_RangersInterface = nullptr;
 
     return g_ExitState;
 }
