@@ -159,6 +159,8 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
     DCP();
     g_MatrixMap->RobotPreload();
 
+    ApplyVideoParams(set, wnd != NULL);
+
     CStorage stor(g_CacheHeap);
     DCP();
 
@@ -310,8 +312,6 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
         // g_D3DD->Reset(&g_D3Dpp);
         g_RangersInterface->m_Begin();
     }
-
-    ApplyVideoParams(set, wnd != NULL);
 
     /*IDirect3DSurface9 * surf;
     g_D3DD->GetRenderTarget(0,&surf);
