@@ -24,10 +24,10 @@ RangersInterfaceInternal::RangersInterfaceInternal() {
                                             int alignx, int aligny, int wordwrap, int smex, int smy, Base::CRect *clipr,
                                             SMGDRangersInterfaceText *it) {
         pInstance->GetText()->CreateText(text, font, color, sizex, sizey, alignx, aligny, wordwrap, smex, smy, clipr,
-                                           it);
+                                         (SMGDRangersInterfaceTextImpl*)it);
     };
     m_sMGDRobotInterface.m_RangersTextClear = [](SMGDRangersInterfaceText *it) {
-        pInstance->GetText()->DestroyText(it);
+        pInstance->GetText()->DestroyText((SMGDRangersInterfaceTextImpl*)it);
     };
 
     m_sMGDRobotInterface.m_ProgressBar = [](float val) { pInstance->GetGame()->SetProgressBar(val); };
