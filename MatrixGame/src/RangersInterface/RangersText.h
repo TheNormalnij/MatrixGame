@@ -11,15 +11,19 @@ public:
     ~RangersText();
 
     void CreateText(std::wstring_view text, wchar_t *font, uint32_t color, int sizex, int sizey, int alignx, int aligny,
-                    int wordwrap, int smex, int smy, Base::CRect *clipr, SMGDRangersInterfaceTextImpl *it);
+                    int wordwrap, int smex, int smy, RECT *clipr, SMGDRangersInterfaceTextImpl *it);
 
     void DestroyText(SMGDRangersInterfaceTextImpl *it);
 
 private:
     LPD3DXFONT GetFont(wchar_t *fontName);
-    void DrawRangersText(std::wstring_view text, LPD3DXFONT font, RECT rect, DWORD format, D3DCOLOR color);
+    void DrawRangersText(std::wstring_view text, LPD3DXFONT font, RECT &rect, DWORD format, D3DCOLOR color);
     D3DCOLOR GetColorFromTag(std::wstring_view text, D3DCOLOR defaultColor);
+    int GetFontHeight(LPD3DXFONT pFont);
+    int GetTextHeight(std::wstring_view text, LPD3DXFONT pFont, RECT &rect);
+    void AppendTextWithoutTags(std::wstring_view text, std::wstring &resultString);
 
 private:
     LPD3DXFONT m_Font;
+    IDirect3DTexture9 *m_Texture;
 };

@@ -2,10 +2,11 @@
 #include "RangersText.h"
 #include <stdio.h>
 
-IDirect3DTexture9 *checker;
+const int MAX_TEXT_HEIGHT = 200;
 
 RangersText::RangersText() {
     m_Font = nullptr;
+    m_Texture = nullptr;
 }
 
 RangersText::~RangersText() {
@@ -15,7 +16,7 @@ RangersText::~RangersText() {
 }
 
 void RangersText::CreateText(std::wstring_view text, wchar_t *font, uint32_t color, int sizex, int sizey, int alignx,
-                             int aligny, int wordwrap, int smex, int smy, Base::CRect *clipr,
+                             int aligny, int wordwrap, int smex, int smy, RECT *clipr,
                              SMGDRangersInterfaceTextImpl *it) {
     int res = 0;
 
@@ -27,16 +28,12 @@ void RangersText::CreateText(std::wstring_view text, wchar_t *font, uint32_t col
     }
 
     if (sizey == 0) {
-        size_t linesCount = 1;
-        for (const wchar_t c : text) {
-            if (c == '\n') {
-                linesCount++;
-            }
-        }
-        sizey = linesCount * 30;
+        sizey = GetTextHeight(text, pFont, *clipr);
     }
 
-    res = g_D3DD->CreateTexture(sizex, sizey, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &checker, NULL);
+    // Prepare texture
+    res = g_D3DD->CreateTexture(sizex, sizey, 0, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &m_Texture,
+                                NULL);
     if (FAILED(res)) {
         it->Reset();
         return;
@@ -44,10 +41,10 @@ void RangersText::CreateText(std::wstring_view text, wchar_t *font, uint32_t col
 
     IDirect3DSurface9 *surface;
 
-    checker->GetSurfaceLevel(0, &surface);
+    m_Texture->GetSurfaceLevel(0, &surface);
 
     D3DLOCKED_RECT *rect = new D3DLOCKED_RECT();
-    checker->LockRect(0, rect, NULL, D3DUSAGE_WRITEONLY);
+    m_Texture->LockRect(0, rect, NULL, D3DUSAGE_WRITEONLY);
 
     LPD3DXRENDERTOSURFACE pSurfaceRender = nullptr;
 
@@ -85,19 +82,26 @@ void RangersText::CreateText(std::wstring_view text, wchar_t *font, uint32_t col
     if (wordwrap)
         format = format | DT_WORDBREAK;
 
-    RECT clipRect = *(RECT *)clipr;
+    if (sizey == 0)
+        format |= DT_CALCRECT;
+
+    RECT clipRect = *clipr;
     clipRect.left += smex;
     clipRect.right += smy;
 
     DrawRangersText(text, pFont, clipRect, format, color);
 
-    checker->UnlockRect(0);
+    m_Texture->UnlockRect(0);
     pSurfaceRender->EndScene(0);
 
     // Unload resource
 
     pSurfaceRender->Release();
     surface->Release();
+
+    if (sizey == 0) {
+        sizey = clipRect.bottom - clipRect.top;
+    }
 
     it->SetRectData(rect, sizex, sizey);
 }
@@ -107,9 +111,9 @@ void RangersText::DestroyText(SMGDRangersInterfaceTextImpl *it) {
     if (rect)
         delete rect;
 
-    if (checker) {
-        checker->Release();
-        checker = nullptr;
+    if (m_Texture) {
+        m_Texture->Release();
+        m_Texture = nullptr;
     }
 }
 
@@ -122,7 +126,41 @@ LPD3DXFONT RangersText::GetFont(wchar_t *fontName) {
     return m_Font;
 }
 
-void RangersText::DrawRangersText(std::wstring_view text, LPD3DXFONT pFont, RECT rect, DWORD format, D3DCOLOR color) {
+int RangersText::GetFontHeight(LPD3DXFONT pDXFont) {
+    D3DXFONT_DESC desc;
+    pDXFont->GetDesc(&desc);
+    return desc.Height;
+}
+
+int RangersText::GetTextHeight(std::wstring_view text, LPD3DXFONT pFont, RECT &rect) {
+    std::wstring textWithouTags;
+    AppendTextWithoutTags(text, textWithouTags);
+
+    DWORD format = DT_CALCRECT | DT_WORDBREAK;
+
+    RECT resRect = rect;
+
+    pFont->DrawTextW(NULL, textWithouTags.c_str(), textWithouTags.size(), &resRect, format, 0);
+
+    return resRect.bottom - resRect.top;
+}
+
+void RangersText::AppendTextWithoutTags(std::wstring_view text, std::wstring &resultString) {
+    bool insideTag = false;
+    for (const wchar_t c : text) {
+        if (c == L'<') {
+            insideTag = true;
+        }
+        else if (c == L'>') {
+            insideTag = false;
+        }
+        else if (!insideTag) {
+            resultString += c;
+        }
+    }
+}
+
+void RangersText::DrawRangersText(std::wstring_view text, LPD3DXFONT pFont, RECT &rect, DWORD format, D3DCOLOR color) {
     size_t drawFrom = 0;
     const size_t drawEnd = text.size();
     size_t drawTo;

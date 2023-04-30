@@ -23,7 +23,7 @@ RangersInterfaceInternal::RangersInterfaceInternal() {
     m_sMGDRobotInterface.m_RangersText = [](wchar_t *text, wchar_t *font, uint32_t color, int sizex, int sizey,
                                             int alignx, int aligny, int wordwrap, int smex, int smy, Base::CRect *clipr,
                                             SMGDRangersInterfaceText *it) {
-        pInstance->GetText()->CreateText(text, font, color, sizex, sizey, alignx, aligny, wordwrap, smex, smy, clipr,
+        pInstance->GetText()->CreateText(text, font, color, sizex, sizey, alignx, aligny, wordwrap, smex, smy, (RECT*)clipr,
                                          (SMGDRangersInterfaceTextImpl*)it);
     };
     m_sMGDRobotInterface.m_RangersTextClear = [](SMGDRangersInterfaceText *it) {
