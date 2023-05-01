@@ -67,7 +67,6 @@ game (top-level folder; name does not matter, it might be your build folder)
 │ └ robots.pkg (taken from the main game)
 └ MatrixGame.exe (your built executable)
 ```
-Then if game will start and work you'll meet [The Problem](https://github.com/vladislavrv/MatrixGame/issues/3), which does not have any solution for now. That's why this option is not canonical, and probably will never be.
 
 ## Contribution
 The whole project is a bunch of low-quality C++ code from late 90x. There is a huge space for an improvements, so feel free to just take any part and refactor it as you wish.<br>

@@ -21,6 +21,8 @@ private:
     D3DCOLOR GetColorFromTag(std::wstring_view text, D3DCOLOR defaultColor);
     int GetFontHeight(LPD3DXFONT pFont);
     int GetTextHeight(std::wstring_view text, LPD3DXFONT pFont, RECT &rect);
+    int GetTextWidth(const std::wstring_view wszText, const size_t length, const LPD3DXFONT pFont);
+    int GetFontSpaceSize(const LPD3DXFONT pFont);
     void AppendTextWithoutTags(std::wstring_view text, std::wstring &resultString);
 
 private:

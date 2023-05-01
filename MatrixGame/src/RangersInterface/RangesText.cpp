@@ -2,8 +2,6 @@
 #include "RangersText.h"
 #include <stdio.h>
 
-const int MAX_TEXT_HEIGHT = 200;
-
 RangersText::RangersText() {
     m_Font = nullptr;
     m_Texture = nullptr;
@@ -82,9 +80,6 @@ void RangersText::CreateText(std::wstring_view text, wchar_t *font, uint32_t col
     if (wordwrap)
         format = format | DT_WORDBREAK;
 
-    if (sizey == 0)
-        format |= DT_CALCRECT;
-
     RECT clipRect = *clipr;
     clipRect.left += smex;
     clipRect.right += smy;
@@ -98,10 +93,6 @@ void RangersText::CreateText(std::wstring_view text, wchar_t *font, uint32_t col
 
     pSurfaceRender->Release();
     surface->Release();
-
-    if (sizey == 0) {
-        sizey = clipRect.bottom - clipRect.top;
-    }
 
     it->SetRectData(rect, sizex, sizey);
 }
@@ -161,58 +152,229 @@ void RangersText::AppendTextWithoutTags(std::wstring_view text, std::wstring &re
 }
 
 void RangersText::DrawRangersText(std::wstring_view text, LPD3DXFONT pFont, RECT &rect, DWORD format, D3DCOLOR color) {
-    size_t drawFrom = 0;
-    const size_t drawEnd = text.size();
-    size_t drawTo;
 
+    struct STextSection {
+        const wchar_t *textStart;
+        int textCount;
+        int width;
+        D3DCOLOR color;
+    };
+
+    struct SLine {
+        std::list<STextSection> lineSections;
+        int width = 0;
+    };
+
+    std::list<SLine> lineList;
+
+    lineList.push_back(SLine());
+    SLine &currentLine = lineList.back();
+
+    const int lineHeight = GetFontHeight(pFont) + 3;
+    const int lineMaxWidth = rect.right - rect.left;
+    const int spaceSize = GetFontSpaceSize(pFont);
+
+    const bool wordWrap = true; 
+
+    // Break text into sections
+    int currentY = 0;
+    int lineWidth = 0;
     D3DCOLOR currentColor = color;
-
-    while (drawFrom < drawEnd) {
-        const size_t tagOpen = text.find(L"<", drawFrom);
-
-        bool needDraw = true;
-
-        if (tagOpen == std::wstring::npos) {
-            drawTo = drawEnd;
+    const wchar_t *wszSectionPos = text.data();
+    do {
+        unsigned int uiSeekPos = 0;
+        const wchar_t *wszSectionStart = wszSectionPos;
+        D3DCOLOR nextColor = currentColor;
+        bool startNewLine = false;
+        while (*wszSectionPos != '\0')  // find end of this section
+        {
+            if (*wszSectionPos == '<') {
+                nextColor = GetColorFromTag(wszSectionPos, color);
+                size_t nextPos = ((std::wstring_view)wszSectionPos).find(L'>', 7);
+                wszSectionPos += nextPos + 1;
+                break;
+            }
+            else if (*wszSectionPos == '\r') {
+                startNewLine = true;
+                wszSectionPos += 2;
+                break;
+            }
+            wszSectionPos++;
+            uiSeekPos++;
         }
-        else {
-            if (tagOpen == drawFrom) {
-                currentColor = GetColorFromTag(&text[drawFrom], color);
-                needDraw = false;
 
-                const size_t tagClose = text.find(L">", tagOpen);
-                if (tagClose != std::wstring::npos) {
-                    drawFrom = tagClose;
-                    drawTo = drawFrom;
-                }
-                else {
-                    drawTo = drawFrom - 1;
-                }
+        if (uiSeekPos > 0) {
+            const int width = GetTextWidth(wszSectionStart, uiSeekPos, pFont);
+
+            if (lineWidth + width <= lineMaxWidth) {
+                lineList.back().lineSections.push_back(STextSection());
+                STextSection &section = lineList.back().lineSections.back();
+                section.textStart = wszSectionStart;
+                section.textCount = uiSeekPos;
+                section.color = currentColor;
+
+                section.width = width;
+
+                lineWidth += width;
             }
             else {
-                drawTo = tagOpen;
+                const wchar_t* lineStart = wszSectionStart;
+                const wchar_t* wordStart = lineStart;
+                int lineWidthAtStart = lineWidth;
+                const size_t addSize = 0;
+                size_t sectionWidth = 0;
+
+                size_t pos = 0;
+                while (pos < uiSeekPos) {
+                    size_t wordSize = std::wstring_view(wordStart).find(L' ', 0);
+                    wordSize = wordSize == -1 ? uiSeekPos - pos : wordSize;
+
+                    const int maxWordSize = uiSeekPos - pos;
+                    if (wordSize > maxWordSize)
+                        wordSize = maxWordSize;
+
+                    const int wordWidth = GetTextWidth(wordStart, wordSize, pFont);
+                    if (lineWidth == 0) {
+                        // Continue this line, cause this is empty
+                        lineWidth = wordWidth;
+                        sectionWidth = lineWidth;
+                        pos += wordSize + 1;
+                        wordStart += wordSize + 1;
+                    }
+                    else if (lineWidth + wordWidth > lineMaxWidth) {
+                        // Start new line
+                        lineList.back().lineSections.push_back(STextSection());
+                        STextSection &section = lineList.back().lineSections.back();
+                        section.textStart = lineStart;
+                        section.textCount = wordStart - lineStart;
+                        section.color = currentColor;
+                        section.width = sectionWidth;
+
+                        lineList.back().width = lineWidth;
+                        lineList.push_back(SLine());
+
+                        currentY += lineHeight;
+                        lineWidth = 0;
+                        sectionWidth = 0;
+                        lineWidthAtStart = 0;
+
+                        //pos += endI + 1;
+                        //wordStart += endI + 1;
+                        lineStart = wordStart;
+                    }
+                    else {
+                        // Continue this line
+                        sectionWidth = GetTextWidth(lineStart, wordStart - lineStart + wordSize, pFont);
+                        lineWidth = lineWidthAtStart + sectionWidth;
+                        pos += wordSize + 1;
+                        wordStart += wordSize + 1;
+                    }
+                }
+
+                lineList.back().lineSections.push_back(STextSection());
+                STextSection &section = lineList.back().lineSections.back();
+                section.textStart = lineStart;
+                section.textCount = wszSectionStart - lineStart + uiSeekPos;
+                section.color = currentColor;
+    
+                if (lineStart[section.textCount - 1] == L' ') {
+                    section.width = sectionWidth + spaceSize;
+                }
+                else {
+                    section.width = sectionWidth;
+                }
             }
         }
 
-        if (needDraw) {
-            pFont->DrawTextW(NULL, &text[drawFrom], drawTo - drawFrom, &rect, format, currentColor);
+        if (startNewLine) {
+            lineList.back().width = lineWidth;
+            lineList.push_back(SLine());
+
+            currentY += lineHeight;
+            lineWidth = 0;
         }
 
-        if (tagOpen == std::wstring::npos) {
-            drawFrom = drawTo + 1;
-        }
-        else {
-            //const size_t tagClose = text.find(L">", tagOpen);
-            //if (tagClose == std::wstring::npos) {
-            //    drawFrom = drawTo + 1;
-            //}
-            //else {
-            //    drawFrom = tagClose + 1;
-            //}
-
-            drawFrom = drawTo + 1;
-        }
+        currentColor = nextColor;
     }
+    while (*wszSectionPos != '\0');
+
+    lineList.back().width = lineWidth;
+    const int textHeight = currentY + lineHeight;
+
+    int iTop;
+    if (format & DT_VCENTER)
+        iTop = rect.top + ((rect.bottom - rect.top) - textHeight) / 2;
+    else if (format & DT_BOTTOM)
+        iTop = rect.bottom - textHeight;
+    else
+        iTop = rect.top;
+
+    // Draw all the color sections
+    for (const SLine line : lineList) {
+        int iLeft;
+        if (format & DT_RIGHT)
+            iLeft = rect.right - line.width;
+        else if (format & DT_CENTER)
+            iLeft = rect.left + ((rect.right - rect.left) - line.width) / 2;
+        else
+            iLeft = rect.left;
+
+        for (const STextSection &section : line.lineSections) {
+
+            RECT sectionRect{iLeft, iTop, iLeft, iTop + lineHeight};
+
+            pFont->DrawTextW(NULL, section.textStart, section.textCount, &sectionRect, DT_NOCLIP,
+                             section.color);
+
+            iLeft += section.width;
+        }
+
+        iTop += lineHeight;
+    }
+}
+
+int RangersText::GetTextWidth(const std::wstring_view wszText, const size_t textLength, const LPD3DXFONT pDXFont) {
+    if (wszText[0] == L'\0')
+        return 0;
+
+    if (pDXFont) {
+        // DT_CALCRECT may not take space characters at the end of a line into consideration for the rect size.
+        // Count the amount of space characters at the end
+        size_t spaceCount = 0;
+
+        for (int i = textLength - 1; i >= 0; --i) {
+            const wchar_t c = wszText[i];
+
+            if (c == L' ')
+                ++spaceCount;
+            else
+                break;
+        }
+
+        // Compute the size of a single space and use that to get the width of the ignored space characters
+        size_t trailingSpacePixels = 0;
+
+        if (spaceCount > 0) {
+            trailingSpacePixels = GetFontSpaceSize(pDXFont) * spaceCount;
+        }
+
+        RECT rect = {};
+
+        if ((textLength - spaceCount) > 0) {
+            pDXFont->DrawTextW(nullptr, wszText.data(), textLength - spaceCount, &rect, DT_CALCRECT | DT_SINGLELINE,
+                               D3DCOLOR_XRGB(0, 0, 0));
+        }
+
+        return rect.right - rect.left + trailingSpacePixels;
+    }
+
+    return 0;
+}
+
+int RangersText::GetFontSpaceSize(const LPD3DXFONT pFont) {
+    SIZE size = {};
+    GetTextExtentPoint32W(pFont->GetDC(), L" ", 1, &size);
+    return size.cx;
 }
 
 D3DCOLOR RangersText::GetColorFromTag(std::wstring_view text, D3DCOLOR defaultColor) {
