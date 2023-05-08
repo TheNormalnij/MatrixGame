@@ -18,8 +18,8 @@ struct SLangInfo {
 
 const SLangInfo sLangInfo[] = {
     {L"Default", nullptr}, // ./data/robots.pkg
-    {L"Russian", L"ru"},   // ./data/ru/robots.pkg
-    {L"English", L"en"}    // ./data/en/robots.pkg
+    {L"Russian", L"Rus"},   // ./data/Rus/robots.pkg
+    {L"English", L"Eng"}    // ./data/Eng/robots.pkg
 };
 
 void CWindowsSettingsUI::Run(HWND parent) {
