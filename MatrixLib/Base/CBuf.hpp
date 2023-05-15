@@ -3,13 +3,14 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#ifndef CBUF_HEADER
-#define CBUF_HEADER
-// #pragma once
+#pragma once
 
 #include "CMain.hpp"
 #include "Mem.hpp"
 #include "Tracer.hpp"
+#include "CException.hpp"
+#include "CHeap.hpp"
+#include <windows.h>
 
 namespace Base {
 
@@ -70,6 +71,11 @@ public:
         if ((zn < 0) || (zn > m_Len))
             ERROR_E;
         m_Pointer = zn;
+    }
+
+    template <class D>
+    D *GetCurrent(void) {
+        return (D *)m_Buf + m_Pointer;
     }
 
     bool Bool(void) {
@@ -400,4 +406,3 @@ public:
 
 }  // namespace Base
 
-#endif

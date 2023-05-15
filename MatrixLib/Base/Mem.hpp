@@ -7,11 +7,11 @@
 
 #include "BaseDef.hpp"
 
-inline void memcopy_back_dword(void *tgt, const void *src,
-                                      DWORD size)  // same as blk_copy, but copying by sizeof(uint) bytes
+// same as blk_copy, but copying by sizeof(uint) bytes
+inline void memcopy_back_dword(void *tgt, const void *src, dword size)
 {
-    DWORD *uitgt = ((DWORD *)tgt) + size - 1;
-    const DWORD *uisrc = ((const DWORD *)src) + size - 1;
+    dword *uitgt = ((dword *)tgt) + size - 1;
+    const dword *uisrc = ((const dword *)src) + size - 1;
     while (size) {
         *uitgt-- = *uisrc--;
         size--;

@@ -1,10 +1,20 @@
+// MatrixGame - SR2 Planetary battles engine
+// Copyright (C) 2012, Elemental Games, Katauri Interactive, CHK-Games
+// Licensed under GPLv2 or any later version
+// Refer to the LICENSE file included
 
 #include "RangersInterfaceInternal.h"
+#include "RangersResourcesData.h"
 
 // TODO avoid singleton 
 static RangersInterfaceInternal *pInstance = nullptr;
 
 RangersInterfaceInternal::RangersInterfaceInternal() {
+    CRangersResourcesData dataCache = CRangersResourcesData{L"cfg\\CacheData.dat"};
+
+    std::map<std::wstring, std::wstring> sounds;
+    dataCache.GetSounds(sounds);
+
     // Unused
     m_sMGDRobotInterface.m_Sound = [](wchar_t *path) {};
 

@@ -1,5 +1,16 @@
+// MatrixGame - SR2 Planetary battles engine
+// Copyright (C) 2012, Elemental Games, Katauri Interactive, CHK-Games
+// Licensed under GPLv2 or any later version
+// Refer to the LICENSE file included
 
 #include "RangersSound.h"
+
+RangersSound::RangersSound() {
+
+}
+
+RangersSound::~RangersSound() {
+}
 
 uint32_t RangersSound::SoundCreate(wchar_t *path, int group, int loop) {
     return 0;

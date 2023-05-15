@@ -41,9 +41,13 @@ set(BASE_SOURCES
     Base/CFile.cpp
     Base/CHeap.cpp
     Base/CMain.cpp
+    Base/Compression.cpp
     Base/CRC32.cpp
     Base/CReminder.cpp
     Base/CStorage.cpp
+    Base/CStorageRecord.cpp
+    Base/CStorageRecordItem.cpp
+    Base/Encryption.cpp
     # Base/Mem.cpp
     Base/Pack.cpp
     Base/Registry.cpp
@@ -55,14 +59,19 @@ set(BASE_HEADERS
     Base/BaseDef.hpp
     Base/CBlockPar.hpp
     Base/CBuf.hpp
+    Base/CDataBuf.hpp
     Base/CDWORDMap.hpp
     Base/CException.hpp
     Base/CFile.hpp
     Base/CHeap.hpp
     Base/CMain.hpp
+    Base/Compression.hpp
     Base/CRC32.hpp
     Base/CReminder.hpp
     Base/CStorage.hpp
+    Base/CStorageRecord.hpp
+    Base/CStorageRecordItem.hpp
+    Base/Encryption.hpp
     Base/Mem.hpp
     Base/Pack.hpp
     Base/Registry.hpp
