@@ -10,14 +10,27 @@
 static RangersInterfaceInternal *pInstance = nullptr;
 
 RangersInterfaceInternal::RangersInterfaceInternal() {
+    LinkInterface();
+}
+
+void RangersInterfaceInternal::LoadResources(std::wstring_view resourceLang) {
+    // Internal interface
+    CFile::AddPackFile(L"DATA\\Sound.pkg", NULL);
+
+    std::wstring soundLocaled = std::wstring(L"DATA\\voices") + resourceLang.data() + L".pkg";
+    CFile::AddPackFile(soundLocaled.c_str(), NULL);
+
+    CFile::OpenPackFiles();
+
     CRangersResourcesData dataCache = CRangersResourcesData{L"cfg\\CacheData.dat"};
     dataCache.Load();
 
-    dataCache.GetSounds(m_soundInterface.GetSoundPathes());
+    std::map<std::wstring, std::wstring> gameSounds;
+    dataCache.GetSounds(gameSounds);
 
-    m_soundInterface.Init();
+    m_soundInterface.Init(gameSounds);
 
-    LinkInterface();
+    CFile::ReleasePackFiles();
 }
 
 void RangersInterfaceInternal::LinkInterface() {

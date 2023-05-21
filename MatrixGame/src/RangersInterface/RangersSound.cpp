@@ -4,13 +4,11 @@
 // Refer to the LICENSE file included
 
 #include "RangersSound.h"
-#include "CBuf.hpp"
 
 #define INVALID_SOUND_ID -1
 const size_t MAX_SOUNDS_COUNT = 16;
 
 //   TODO
-// * Add preloading/caching
 // * Fix sound pan
 // * Fix sound loop
 // * Make it safe
@@ -51,7 +49,7 @@ RangersSound::~RangersSound() {
     }
 }
 
-void RangersSound::Init() {
+void RangersSound::Init(std::map<std::wstring, std::wstring> &sounds) {
     // Initialize COM
     #pragma warning(push)
     #pragma warning(disable : 6031)
@@ -64,12 +62,27 @@ void RangersSound::Init() {
     m_pXAudio2->StartEngine();
 
     m_pXAudio2->CreateMasteringVoice(&m_pMasterVoice);
+
+    for (const auto pair : sounds) {
+        Base::CBuf *buf = new Base::CBuf(NULL);
+        buf->LoadFromFile(pair.second);
+
+        m_soundsWavData[pair.first] = buf;
+    }
 }
 
 void RangersSound::Deinit() {
-    m_pXAudio2->StopEngine();
-    m_pXAudio2->Release();
-    m_pXAudio2 = nullptr;
+    if (m_pXAudio2) {
+        m_pXAudio2->StopEngine();
+        m_pXAudio2->Release();
+        m_pXAudio2 = nullptr;
+    }
+
+    for (const auto pair : m_soundsWavData) {
+        delete pair.second;
+    }
+
+    m_soundsWavData.clear();
 }
 
 uint32_t RangersSound::GetFreeSoundSlot() const {
@@ -81,9 +94,8 @@ uint32_t RangersSound::GetFreeSoundSlot() const {
     return INVALID_SOUND_ID;
 }
 
-void RangersSound::LoadWavSoundBuffer(std::wstring_view path, XAUDIO2_BUFFER &bufferData) {
-    Base::CBuf *buf = new Base::CBuf(NULL);
-    buf->LoadFromFile(path.data());
+void RangersSound::InitWavSoundBuffer(std::wstring_view key, XAUDIO2_BUFFER &bufferData) {
+    Base::CBuf *buf = m_soundsWavData[key.data()];
 
     BYTE *pDataStart = buf->Buff<BYTE>() + 36;
     while (pDataStart[0] != 'd' || pDataStart[1] != 'a' || pDataStart[2] != 't' || pDataStart[3] != 'a') {
@@ -115,7 +127,7 @@ uint32_t RangersSound::SoundCreate(wchar_t *soundName, int group, int loop) {
     soundName += 6;
 
     XAUDIO2_BUFFER bufferData = {0};
-    LoadWavSoundBuffer(m_soundPathes[soundName], bufferData);
+    InitWavSoundBuffer(soundName, bufferData);
 
     bufferData.LoopCount = loop;
 
@@ -143,10 +155,6 @@ uint32_t RangersSound::SoundCreate(wchar_t *soundName, int group, int loop) {
 
 void RangersSound::SoundDestroy(uint32_t id) {
     if (id != INVALID_SOUND_ID && m_sounds[id]) {
-        XAUDIO2_VOICE_STATE state;
-        m_sounds[id]->GetState(&state);
-        delete (Base::CBuf*) state.pCurrentBufferContext;
-
         m_sounds[id]->DestroyVoice();
         m_sounds[id] = nullptr;
     }

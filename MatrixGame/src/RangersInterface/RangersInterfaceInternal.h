@@ -22,6 +22,7 @@ public:
     RangersText *GetText() { return &m_textInterface; };
     RangersGame *GetGame() { return &m_rangersGameInterface; };
 
+    void LoadResources(std::wstring_view resourceLang);
 private:
     void LinkInterface();
 

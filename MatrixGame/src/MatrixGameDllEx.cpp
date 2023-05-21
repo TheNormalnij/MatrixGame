@@ -38,6 +38,8 @@ MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t *name))
 MATRIXGAMEDLL_API int __cdecl RunStandalone(HINSTANCE hinst, wchar *map, SMatrixSettings *set,
                                                SMatrixTextParams *textParams, SRobotGameState *rgs) {
     g_RangersInterface = RangersInterfaceInternal::getInstance()->getSMGDIntervace();
+    RangersInterfaceInternal::getInstance()->LoadResources(set->m_Lang);
+
     CGame game{};
 
     uint32_t seed = (unsigned)time(NULL);
