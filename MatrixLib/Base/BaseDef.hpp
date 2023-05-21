@@ -15,6 +15,16 @@
 #define BASE_API
 #endif
 
+//////////////////////////
+using wchar = wchar_t;
+using dword = unsigned long;
+//////////////////////////
+
+#define IS_UNICODE() true
+
+#pragma warning (disable : 4201)
+#pragma warning (disable : 4238)
+
 namespace Base {
 
 // lint -e1401
@@ -79,6 +89,8 @@ public:
 
 // lint +e1401
 }  // namespace Base
+
+using namespace Base; // TODO: this namespace is not needed, remove it
 
 typedef wchar_t wchar;
 typedef unsigned char byte;

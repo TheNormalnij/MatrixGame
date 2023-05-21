@@ -42,11 +42,11 @@ int ZL03_UnCompress(CBuf &out, BYTE *in, int inlen) {
 
 void ZL03_Compression(CBuf &out, BYTE *in, int inlen) {
     out.Clear();
-    out.Byte('Z');
-    out.Byte('L');
-    out.Byte('0');
-    out.Byte('3');
-    out.Dword(0);  // will be updated. blocks count
+    out.Add((uint8_t)'Z');
+    out.Add((uint8_t)'L');
+    out.Add((uint8_t)'0');
+    out.Add((uint8_t)'3');
+    out.Add((uint16_t)0);  // will be updated. blocks count
 
     int cnt = 0;
 

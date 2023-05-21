@@ -8,6 +8,9 @@
 #include "MatrixFormGame.hpp"
 #include "MatrixGameDllEx.hpp"
 
+#include "CHeap.hpp"
+#include "CBlockPar.hpp"
+
 class CMatrixMapLogic;
 class CIFaceList;
 class CRenderPipeline;
@@ -30,8 +33,8 @@ extern CHistory *g_ConfigHistory;
 
 class CGame {
 public:
-    CGame(){};
-    ~CGame(){};
+    CGame() = default;
+    ~CGame() = default;
 
     void Init(HINSTANCE hInstance, HWND wnd, wchar *map = NULL, uint32_t seed = 0, SMatrixSettings *set = nullptr,
               SMatrixTextParams *textParams = nullptr);

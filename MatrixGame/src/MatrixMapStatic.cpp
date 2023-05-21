@@ -3,8 +3,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "stdafx.h"
-
 #include "MatrixMap.hpp"
 #include "MatrixMapStatic.hpp"
 #include "MatrixObject.hpp"
@@ -14,6 +12,8 @@
 #include "MatrixSkinManager.hpp"
 #include "MatrixFlyer.hpp"
 #include "MatrixObjectCannon.hpp"
+
+#include "Mem.hpp"
 
 bool FreeObjResources(uintptr_t user) {
     DTRACE();

@@ -5,16 +5,28 @@
 
 #include <fstream>
 
-#include "3g.pch"
-
 #include "Texture.hpp"
 #include "3g.hpp"
 #include "Helper.hpp"
 #include "../../MatrixGame/src/MatrixSampleStateManager.hpp"
 
+#include "CBlockPar.hpp"
+#include "CHeap.hpp"
+#include "CBuf.hpp"
+#include "CException.hpp"
+#include "CReminder.hpp"
+
 #include <stdio.h>
 
 #include <utils.hpp>
+
+#ifdef __GNUC__
+    #include "dxerr9.h"
+    #define DXGetErrorStringW DXGetErrorString9W
+    #define DXGetErrorDescriptionW DXGetErrorDescription9W
+#else
+    #include "dxerr.h"
+#endif // __GNUC__
 
 HINSTANCE g_HInst = 0;
 IDirect3D9 *g_D3D = NULL;
@@ -101,7 +113,8 @@ void D3DResource::Dump(D3DResType t) {
 }
 #endif
 
-std::wstring CExceptionD3D::Info() {
+std::wstring CExceptionD3D::Info() const
+{
     return CException::Info() +
            utils::format(
                L"Text: {%ls} %s",
@@ -124,28 +137,28 @@ void L3GInitAsEXE(HINSTANCE hinst, CBlockPar& bpcfg, const wchar* sysname, const
     g_Wnd = NULL;
     g_WndExtern = false;
 
-    int cntpar = bpcfg.Par(L"FullScreen").GetCountPar(L",");
+    int cntpar = bpcfg.ParGet(L"FullScreen").GetCountPar(L",");
 
-    ParamParser str(bpcfg.Par(L"Resolution"));
+    ParamParser str(bpcfg.ParGet(L"Resolution"));
     if (str.GetCountPar(L",") < 2)
         ERROR_E;
-    g_ScreenX = str.GetIntPar(0, L",");
+    g_ScreenX = str.GetStrPar(0, L",").GetInt();
     if (g_ScreenX <= 0)
         g_ScreenX = 1;
-    g_ScreenY = str.GetIntPar(1, L",");
+    g_ScreenY = str.GetStrPar(1, L",").GetInt();
     if (g_ScreenY <= 0)
         g_ScreenY = 1;
 
     if (cntpar < 1)
         SETFLAG(g_Flags, GFLAG_FULLSCREEN);
     else
-        INITFLAG(g_Flags, GFLAG_FULLSCREEN, bpcfg.Par(L"FullScreen").GetIntPar(0, L",") == 1);
+        INITFLAG(g_Flags, GFLAG_FULLSCREEN, bpcfg.ParGet(L"FullScreen").GetStrPar(0, L",").GetInt() == 1);
 
     int bpp;
     if (cntpar < 2)
         bpp = 32;
     else {
-        bpp = bpcfg.Par(L"FullScreen").GetIntPar(1, L",");
+        bpp = bpcfg.ParGet(L"FullScreen").GetStrPar(1, L",").GetInt();
         if (bpp != 16 && bpp != 32)
             bpp = 32;
     }
@@ -155,7 +168,7 @@ void L3GInitAsEXE(HINSTANCE hinst, CBlockPar& bpcfg, const wchar* sysname, const
     if (cntpar < 3)
         refresh = 0;
     else
-        refresh = bpcfg.Par(L"FullScreen").GetIntPar(2, L",");
+        refresh = bpcfg.ParGet(L"FullScreen").GetStrPar(2, L",").GetInt();
 
     g_WndClassName = HNew(g_CacheHeap) std::wstring(sysname);
     *g_WndClassName += L"_wc";

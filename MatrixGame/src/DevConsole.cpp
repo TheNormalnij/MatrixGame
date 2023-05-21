@@ -3,11 +3,11 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "stdafx.h"
-
 #include "MatrixMap.hpp"
 #include "DevConsole.hpp"
 #include "MatrixSoundManager.hpp"
+
+#include "CFile.hpp"
 
 #include <utils.hpp>
 
@@ -36,7 +36,7 @@ static void hLog(const std::wstring& cmd, const std::wstring& params) {
         CSound::SaveSoundLog();
     }
     else if (params == L"e") {
-        CBuf b(g_CacheHeap);
+        CBuf b;
         b.StrNZ("Effects:\n");
 
         for (int i = 0; i < EFFECT_TYPE_COUNT; ++i) {
@@ -57,12 +57,12 @@ static void hLog(const std::wstring& cmd, const std::wstring& params) {
 }
 
 static void hBuildCFG(const std::wstring& cmd, const std::wstring& params) {
-    CBlockPar bpi(1, g_CacheHeap);
+    CBlockPar bpi;
     bpi.LoadFromTextFile(IF_PATH);
 
     CStorage stor(g_CacheHeap);
 
-    CBlockPar data(1, g_CacheHeap);
+    CBlockPar data;
     data.CopyFrom(*g_MatrixData);
     data.BlockDelete(PAR_REPLACE);
 
@@ -110,7 +110,7 @@ static void hCalcVis(const std::wstring& cmd, const std::wstring& params) {
 static void hCompress(const std::wstring& cmd, const std::wstring& params) {
     std::wstring name;
     if (CFile::FileExist(name, params.c_str())) {
-        CBuf fil(g_CacheHeap);
+        CBuf fil;
         CStorage out(g_CacheHeap);
         fil.LoadFromFile(params);
 

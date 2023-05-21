@@ -5,11 +5,10 @@
 
 #include <new>
 
-#include "Base.pch"
-
 #include "CStorage.hpp"
 #include "Encryption.hpp"
 #include "Compression.hpp"
+#include "CRC32.hpp"
 
 namespace Base {
 
@@ -77,29 +76,29 @@ DWORD CStorage::CalcUniqID(void) {
 }
 
 void CStorage::Save(const wchar *fname, bool compression) {
-    CBuf buf(m_Heap);
+    CBuf buf;
     Save(buf, compression);
     buf.SaveInFile(fname);
 }
 
 bool CStorage::Load(const wchar *fname) {
-    CBuf buf(m_Heap);
+    CBuf buf;
     buf.LoadFromFile(fname);
     return Load(buf);
 }
 
 void CStorage::Save(CBuf &buf, bool compression) {
     buf.Clear();
-    buf.Dword(0x47525453);
-    buf.Dword(compression ? 1 : 0);  // version
-    buf.Dword(m_RecordsCnt);         // records count
+    buf.Add<uint32_t>(0x47525453);
+    buf.Add<uint32_t>(compression ? 1 : 0);  // version
+    buf.Add<uint32_t>(m_RecordsCnt);         // records count
 
     for (int i = 0; i < m_RecordsCnt; ++i) {
         m_Records[i].Save(buf, false);
     }
 
     if (compression) {
-        CBuf buf2(buf.m_Heap);
+        CBuf buf2;
         ZL03_Compression(buf2, buf.Buff<BYTE>() + 8, buf.Len() - 8);
         buf.SetLenNoShrink(8);
         buf.Expand(buf2.Len());
@@ -110,15 +109,15 @@ void CStorage::Save(CBuf &buf, bool compression) {
 
 bool CStorage::Load(CBuf &buf_in) {
     buf_in.Pointer(0);
-    DWORD tag = buf_in.Dword();
+    DWORD tag = buf_in.Get<DWORD>();
     if (tag != 0x47525453)
         return false;
-    DWORD ver = buf_in.Dword();
+    DWORD ver = buf_in.Get<DWORD>();
 
     if (ver > 1)
         return false;
 
-    CBuf buf2(buf_in.m_Heap);
+    CBuf buf2;
     CBuf *buf = &buf_in;
 
     if (ver == 1) {
@@ -140,7 +139,7 @@ bool CStorage::LoadRecords(CBuf &buf) {
         m_Records = NULL;
     }
 
-    m_RecordsCnt = buf.Dword();
+    m_RecordsCnt = buf.Get<DWORD>();
     if (m_RecordsCnt == 0)
         return true;
 
@@ -148,7 +147,7 @@ bool CStorage::LoadRecords(CBuf &buf) {
     m_Records = (CStorageRecord *)HAlloc(sizeof(CStorageRecord) * m_RecordsCnt, m_Heap);
 
     
-    if (*(buf.GetCurrent<uint8_t>()) < 0x30) {
+    if (*(buf.GetCurrent<byte>()) < 0x30) {
         for (int i = 0; i < m_RecordsCnt; ++i) {
             new (&m_Records[i]) CStorageRecord(m_Heap);
             if (!m_Records[i].LoadCacheFormat(buf)) {

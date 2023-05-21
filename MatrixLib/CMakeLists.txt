@@ -2,8 +2,6 @@ add_library(MatrixLib STATIC)
 
 set(3G_SOURCES
     3G/3g.cpp
-    # 3G/BigIB.cpp
-    # 3G/BigVB.cpp
     3G/Cache.cpp
     3G/CBillboard.cpp
     3G/DeviceState.cpp
@@ -16,7 +14,6 @@ set(3G_SOURCES
     3G/VectorObject.cpp
 )
 set(3G_HEADERS
-    3G/3g.pch
     3G/3g.hpp
     3G/BigIB.hpp
     3G/BigVB.hpp
@@ -36,7 +33,6 @@ set(3G_HEADERS
 set(BASE_SOURCES
     Base/CBlockPar.cpp
     Base/CBuf.cpp
-    Base/CDWORDMap.cpp
     Base/CException.cpp
     Base/CFile.cpp
     Base/CHeap.cpp
@@ -48,19 +44,15 @@ set(BASE_SOURCES
     Base/CStorageRecord.cpp
     Base/CStorageRecordItem.cpp
     Base/Encryption.cpp
-    # Base/Mem.cpp
     Base/Pack.cpp
     Base/Registry.cpp
     Base/Tracer.cpp
 )
 set(BASE_HEADERS
-    Base/Base.pch
-    Base/Base.hpp
     Base/BaseDef.hpp
     Base/CBlockPar.hpp
     Base/CBuf.hpp
     Base/CDataBuf.hpp
-    Base/CDWORDMap.hpp
     Base/CException.hpp
     Base/CFile.hpp
     Base/CHeap.hpp
@@ -83,9 +75,6 @@ set(BITMAP_SOURCES
     Bitmap/FilePNG.cpp
 )
 set(BITMAP_HEADERS
-    Bitmap/Bitmap.pch
-    Bitmap/Bitmap.hpp
-    Bitmap/BitmapDef.hpp
     Bitmap/CBitmap.hpp
     Bitmap/FilePNG.hpp
 )

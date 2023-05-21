@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "Base.hpp"
 #include "CStorageRecord.hpp"
 
 namespace Base {

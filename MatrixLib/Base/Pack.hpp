@@ -6,14 +6,13 @@
 #ifndef PACK_INCLUDE
 #define PACK_INCLUDE
 
-#include <string>
-
-#include "Base.pch"
-
 #include "CException.hpp"
 #include "CMain.hpp"
 #include "CHeap.hpp"
 #include "CBuf.hpp"
+
+#include <string>
+#include <vector>
 
 namespace Base {
 
@@ -318,15 +317,13 @@ public:
     }
 };
 
-typedef CPackFile *PCPackFile;
-
 class CPackCollection : public CMain {
 public:
     CHeap *m_Heap;
-    CBuf m_PackFiles;
+    std::vector<CPackFile*> m_PackFiles;
 
 public:
-    CPackCollection(CHeap *heap) : m_Heap(heap), m_PackFiles(heap) {}
+    CPackCollection(CHeap *heap) : m_Heap(heap) {}
     ~CPackCollection() { Clear(); };
 
     //******** Процедуры работы со списком пакетных файлом ********//
@@ -338,7 +335,7 @@ public:
     bool ClosePacketFiles(void);
     bool OpenPacketFilesEx(void);
     bool ClosePacketFilesEx(void);
-    CPackFile *GetPacketFile(int i) { return m_PackFiles.Buff<PCPackFile>()[i]; };
+    CPackFile *GetPacketFile(int i) { return m_PackFiles[i]; };
     //******** Процедуры для работы файлами ***********//
     bool FileExists(const std::string& name);
     bool PathExists(const std::string& path);

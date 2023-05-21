@@ -6,8 +6,9 @@
 #pragma once
 
 #include "../MatrixGameDll.hpp"
-#include "stdafx.h"
 #include "RangersInterfaceTextImpl.h"
+#include <string_view>
+#include "d3dx9.h"
 
 class RangersText {
 public:

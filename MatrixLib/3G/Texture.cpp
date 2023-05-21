@@ -3,9 +3,10 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "3g.pch"
-
 #include "Texture.hpp"
+
+#include "CFile.hpp"
+#include "CStorage.hpp"
 
 CBaseTexture *CBaseTexture::m_TexturesFirst;
 CBaseTexture *CBaseTexture::m_TexturesLast;
@@ -64,7 +65,7 @@ LPDIRECT3DTEXTURE9 CBaseTexture::LoadTextureFromFile(bool to16, D3DPOOL pool) {
 
 autoload:
 
-    CBuf buf(g_CacheHeap);
+    CBuf buf;
     if (FLAG(m_Flags, TF_COMPRESSED)) {
         LoadFromFile(buf, CacheExtsTex);
 
@@ -73,7 +74,7 @@ autoload:
 
         CDataBuf *b = ccc.GetBuf(L"0", L"0", ST_BYTE);
         buf.Clear();
-        buf.BufAdd(b->GetFirst<BYTE>(0), b->GetArrayLength(0));
+        buf.Add(b->GetFirst<BYTE>(0), b->GetArrayLength(0));
     }
     else {
         LoadFromFile(buf, CacheExtsTex);
@@ -114,7 +115,7 @@ void CBaseTexture::ParseFlags(const ParamParser& name) {
         }
 
         if (proceed) {
-            CBlockPar texi(1, g_CacheHeap);
+            CBlockPar texi;
             texi.LoadFromTextFile(tstr);
 
             tstr = texi.ParGetNE(L"AlphaTest");
@@ -304,7 +305,7 @@ void CTexture::LoadFromBitmap(CBitmap &bm) {
 #endif
 
     Unload();
-    CBuf buf(g_CacheHeap);
+    CBuf buf;
     bm.SaveInDDSUncompressed(buf);
     FAILED_DX(D3DXCreateTextureFromFileInMemoryEx(
             g_D3DD, buf.Get(), buf.Len(), 0, 0, FLAG(m_Flags, TF_NOMIPMAP) ? 1 : 0, 0, D3DFMT_UNKNOWN, D3DPOOL_DEFAULT,
@@ -699,7 +700,7 @@ void CTextureManaged::LoadFromBitmap(const CBitmap &bm, D3DFORMAT fmt, int level
         m_TexFrom->Release();
 #endif
 
-    CBuf buf(g_CacheHeap);
+    CBuf buf;
 
     bm.SaveInDDSUncompressed(buf);
     // bm.SaveInBMP(buf);

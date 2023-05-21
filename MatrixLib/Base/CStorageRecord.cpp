@@ -44,7 +44,7 @@ CDataBuf *CStorageRecord::GetBuf(const wchar *column, EStorageType st) {
 
 void CStorageRecord::Save(CBuf &buf, bool compression) {
     buf.WStr(m_Name);
-    buf.Dword(m_ItemsCount);
+    buf.Add((DWORD)m_ItemsCount);
     for (int i = 0; i < m_ItemsCount; ++i) {
         m_Items[i].Save(buf, compression);
     }
@@ -69,7 +69,7 @@ bool CStorageRecord::Load(CBuf &buf) {
     }
 
     m_Name = buf.WStr();
-    m_ItemsCount = buf.Dword();
+    m_ItemsCount = buf.Get<DWORD>();
     if (m_ItemsCount == 0)
         return true;
 
@@ -99,9 +99,9 @@ bool CStorageRecord::LoadCacheFormat(CBuf &buf) {
         HFree(m_Items, m_Heap);
         m_Items = NULL;
     }
-    byte unk = buf.Byte();
+    byte unk = buf.Get<byte>();
     m_Name = buf.WStr();
-    m_ItemsCount = buf.Dword();
+    m_ItemsCount = buf.Get<DWORD>();
     if (m_ItemsCount == 0)
         return true;
 

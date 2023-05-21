@@ -3,8 +3,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "stdafx.h"
-
 #include <string>
 
 #include "MatrixFormGame.hpp"
@@ -1042,7 +1040,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
     }
 
     if (scan == KEY_ENTER && down) {
-        if (g_MatrixMap->m_DialogModeName && (g_MatrixMap->m_DialogModeHints.Len() > 4 ||
+        if (g_MatrixMap->m_DialogModeName && (g_MatrixMap->m_DialogModeHints.size() > 1 ||
                                               wcscmp(g_MatrixMap->m_DialogModeName, TEMPLATE_DIALOG_MENU) != 0)) {
             g_IFaceList->PressHintButton(HINT_OK);
             return;
@@ -1051,7 +1049,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
 
     if (scan == KEY_E && down) {
         if (g_MatrixMap->m_DialogModeName && wcscmp(g_MatrixMap->m_DialogModeName, TEMPLATE_DIALOG_MENU) == 0) {
-            if (g_MatrixMap->m_DialogModeHints.Len() > 4) {}
+            if (g_MatrixMap->m_DialogModeHints.size() > 1) {}
             else {
                 ExitRequestHandler();
                 return;
@@ -1060,7 +1058,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
     }
     if (scan == KEY_S && down) {
         if (g_MatrixMap->m_DialogModeName && wcscmp(g_MatrixMap->m_DialogModeName, TEMPLATE_DIALOG_MENU) == 0) {
-            if (g_MatrixMap->m_DialogModeHints.Len() > 4) {}
+            if (g_MatrixMap->m_DialogModeHints.size() > 1) {}
             else {
                 SurrenderRequestHandler();
                 return;
@@ -1069,7 +1067,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
     }
     if (scan == KEY_R && down) {
         if (g_MatrixMap->m_DialogModeName && wcscmp(g_MatrixMap->m_DialogModeName, TEMPLATE_DIALOG_MENU) == 0) {
-            if (g_MatrixMap->m_DialogModeHints.Len() > 4) {}
+            if (g_MatrixMap->m_DialogModeHints.size() > 1) {}
             else {
                 ResetRequestHandler();
                 return;
@@ -1086,7 +1084,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
         }
 
         if (g_MatrixMap->m_DialogModeName && wcscmp(g_MatrixMap->m_DialogModeName, TEMPLATE_DIALOG_MENU) == 0) {
-            if (g_MatrixMap->m_DialogModeHints.Len() > 4) {
+            if (g_MatrixMap->m_DialogModeHints.size() > 1) {
                 ConfirmCancelHandler();
             }
             else {

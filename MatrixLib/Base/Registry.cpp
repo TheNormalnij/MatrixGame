@@ -3,9 +3,9 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "Base.pch"
-
 #include <cwchar>
+
+#include "Registry.hpp"
 
 #include "CException.hpp"
 #include "CBuf.hpp"

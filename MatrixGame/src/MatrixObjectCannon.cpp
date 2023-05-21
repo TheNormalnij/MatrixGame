@@ -3,8 +3,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "stdafx.h"
-
 #include <algorithm>
 
 #include "MatrixMap.hpp"
@@ -356,7 +354,7 @@ void CMatrixCannon::RNeed(DWORD need) {
 
                 // if(m_Unit[i].m_Graph->VO()->EdgeExist()) {
                 if (!m_Unit[i].u1.s1.m_ShadowStencil)
-                    m_Unit[i].u1.s1.m_ShadowStencil = HNew(g_MatrixHeap) CVOShadowStencil(g_MatrixHeap);
+                    m_Unit[i].u1.s1.m_ShadowStencil = HNew(g_MatrixHeap) CVOShadowStencil();
 
                 //					if(!(m_Unit[i].m_Graph->VO()->EdgeExist())) m_Unit[i].m_Graph->VO()->EdgeBuild();
 

@@ -3,11 +3,10 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "stdafx.h"
-
 #include "MatrixGameDll.hpp"
-#include "MatrixGame.h"
 #include "MatrixFormGame.hpp"
+#include "MatrixGame.h"
+#include "3g.hpp"
 
 #include <time.h>
 #include <windows.h>

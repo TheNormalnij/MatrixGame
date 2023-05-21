@@ -8,7 +8,8 @@
 #include <new>
 #include <fstream>
 
-#include "stdafx.h"
+#include "CStorage.hpp"
+#include "CFile.hpp"
 
 #include "MatrixGame.h"
 #include "MatrixMap.hpp"
@@ -21,6 +22,7 @@
 #include "Interface/MatrixHint.hpp"
 #include "Interface/CHistory.h"
 #include "MatrixSampleStateManager.hpp"
+#include "MatrixMultiSelection.hpp"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +77,7 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
 
     g_MatrixHeap = HNew(NULL) CHeap;
 
-    CFile::AddPackFile(L"DATA\\robots.pkg", NULL);
+    CFile::AddPackFile(L"DATA\\robots.pkg");
     CFile::OpenPackFiles();
 
     CLoadProgress lp;
@@ -96,7 +98,7 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
         stor_cfg_present = true;
     }
 
-    g_MatrixData = HNew(g_MatrixHeap) CBlockPar(1, g_MatrixHeap);
+    g_MatrixData = HNew(g_MatrixHeap) CBlockPar{};
     if (stor_cfg_present) {
         stor_cfg.RestoreBlockPar(L"da", *g_MatrixData);
         // stor_cfg.RestoreBlockPar(L"if", *g_MatrixData);
@@ -176,7 +178,7 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
         }
     }
     else {
-        mapname = g_MatrixData->BlockGet(L"Config")->Par(L"Map");
+        mapname = g_MatrixData->BlockGet(L"Config")->ParGet(L"Map");
     }
 
     stor.Load(mapname.c_str());
@@ -202,7 +204,7 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
     g_LoadProgress->InitCurLP(701);
 
     DCP();
-    CBlockPar bpi(1, g_CacheHeap);
+    CBlockPar bpi;
     if (stor_cfg_present)
     {
         stor_cfg.RestoreBlockPar(L"if", bpi);

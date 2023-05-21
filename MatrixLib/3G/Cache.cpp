@@ -5,9 +5,10 @@
 
 #include <fstream>
 
-#include "3g.pch"
+#include "3g.hpp"
 
 #include "Cache.hpp"
+#include "CFile.hpp"
 #include "VectorObject.hpp"
 
 #include <utils.hpp>
@@ -210,7 +211,7 @@ void CacheReplaceFileNameAndExt(std::wstring &outname, const wchar *mname, const
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-CCacheData::CCacheData() : CMain(), m_Name{} {
+CCacheData::CCacheData() : Base::CMain(), m_Name{} {
     DTRACE();
 
     m_Prev = NULL;
@@ -245,7 +246,7 @@ void CCacheData::LoadFromFile(CBuf &buf, const wchar *exts) {
         ERROR_S(utils::format(L"File not found: %ls   Exts: %ls", tname.c_str(), exts));
     }
 
-    buf.LoadFromFile(tstr.c_str());
+    buf.LoadFromFile(tstr);
 
     /*	ASSERT(m_Name.Len()>0);
 

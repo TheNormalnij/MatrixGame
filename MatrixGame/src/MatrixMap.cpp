@@ -6,8 +6,6 @@
 #include <new>
 #include <algorithm>
 
-#include "stdafx.h"
-
 #include <windows.h>
 #include "MatrixMap.hpp"
 #include "MatrixMapStatic.hpp"
@@ -30,8 +28,11 @@
 #include "Logic/MatrixTactics.h"
 #include "MatrixGameDll.hpp"
 #include "MatrixSampleStateManager.hpp"
+#include "MatrixMultiSelection.hpp"
 
 #include "Effects/MatrixEffectLandscapeSpot.hpp"
+
+#include "CFile.hpp"
 
 #define RENDER_PROJ_SHADOWS_IN_STENCIL_PASS
 
@@ -42,9 +43,9 @@
 
 CMatrixMap::CMatrixMap()
   : CMain(), m_Console(), m_Camera(), m_CurFrame(0), m_IntersectFlagTracer(0), m_IntersectFlagFindObjects(0),
-    m_AllObjects(g_MatrixHeap, 1024), m_RN(g_MatrixHeap), m_EffectsFirst(NULL), m_EffectsLast(NULL),
+    m_RN(g_MatrixHeap), m_EffectsFirst(NULL), m_EffectsLast(NULL),
     m_EffectsNextTakt(NULL), m_Flags(0), m_WaterName{}, m_SkyAngle(0), m_SkyDeltaAngle(0),
-    m_PrevTimeCheckStatus(-1500), m_Time(0), m_BeforeWinCount(0), m_PauseHint(NULL), m_DialogModeHints(g_MatrixHeap),
+    m_PrevTimeCheckStatus(-1500), m_Time(0), m_BeforeWinCount(0), m_PauseHint(NULL),
     m_DialogModeName(NULL), m_BeforeWinLooseDialogCount(0) {
     DTRACE();
 
@@ -74,7 +75,6 @@ CMatrixMap::CMatrixMap()
     D3DXVec3Normalize(&m_LightMain, &m_LightMain);
 
     m_Water = NULL;
-    m_VisWater = NULL;
     m_VisibleGroupsCount = 0;
 
     m_IdsCnt = 0;
@@ -133,9 +133,9 @@ CMatrixMap::CMatrixMap()
             if (dif) {
                 auto t2 = dif->ParGetNE(t1);
                 if (!t2.empty()) {
-                    m_Difficulty.k_damage_enemy_to_player = 1.0f + float(t2.GetDoublePar(0, L",") / 100.0);
-                    m_Difficulty.k_time_before_maintenance = 1.0f + float(t2.GetDoublePar(1, L",") / 100.0);
-                    m_Difficulty.k_friendly_fire = 1.0f + float(t2.GetDoublePar(2, L",") / 100.0);
+                    m_Difficulty.k_damage_enemy_to_player = 1.0f + float(t2.GetStrPar(0, L",").GetDouble() / 100.0);
+                    m_Difficulty.k_time_before_maintenance = 1.0f + float(t2.GetStrPar(1, L",").GetDouble() / 100.0);
+                    m_Difficulty.k_friendly_fire = 1.0f + float(t2.GetStrPar(2, L",").GetDouble() / 100.0);
                     if (m_Difficulty.k_damage_enemy_to_player < 0.01f)
                         m_Difficulty.k_damage_enemy_to_player = 0.01f;
                     if (m_Difficulty.k_time_before_maintenance < 0.01f)
@@ -816,8 +816,9 @@ bool CMatrixMap::UnitPickWorld(const D3DXVECTOR3 &orig, const D3DXVECTOR3 &dir, 
 void CMatrixMap::StaticClear(void) {
     DTRACE();
 
-    for (; m_AllObjects.Len() > 0;) {
-        StaticDelete(*m_AllObjects.Buff<CMatrixMapStatic *>());
+    while (!m_AllObjects.empty())
+    {
+        StaticDelete(m_AllObjects.front());
     }
 
     CMatrixMapObject::ClearTextures();
@@ -840,9 +841,9 @@ void CMatrixMap::StaticDelete(CMatrixMapStatic *ms) {
 
     CMatrixMapStatic::RemoveFromSorted(ms);
 
-    CMatrixMapStatic **sb = m_AllObjects.Buff<CMatrixMapStatic *>();
-    CMatrixMapStatic **se = m_AllObjects.BuffEnd<CMatrixMapStatic *>();
-    CMatrixMapStatic **ses = se - 1;
+    auto sb = m_AllObjects.begin();
+    auto se = m_AllObjects.end();
+    auto ses = se - 1;
 
     if (ms->InLT()) {
         ms->DelLT();
@@ -863,7 +864,7 @@ void CMatrixMap::StaticDelete(CMatrixMapStatic *ms) {
             ++sb;
         }
     }
-    m_AllObjects.SetLenNoShrink(m_AllObjects.Len() - sizeof(CMatrixMapStatic *));
+    m_AllObjects.erase(m_AllObjects.end() - 1);
 
     //#ifdef _DEBUG
     //    std::wstring c(L"Del obj ");
@@ -920,9 +921,7 @@ void CMatrixMap::StaticDelete(CMatrixMapStatic *ms) {
 ////    SLOG("objlog.txt", c.Get());
 ////#endif
 //
-//    m_AllObjects.Expand(sizeof(CMatrixMapStatic *));
-//    CMatrixMapStatic ** e = m_AllObjects.BuffEnd<CMatrixMapStatic *>();
-//    *(e-1) = ms;
+//    m_AllObjects.push_back(ms);
 //
 //
 //	if(add_to_logic && type!=OBJECT_TYPE_MAPOBJECT)
@@ -999,10 +998,10 @@ void CMatrixMap::LoadSide(CBlockPar &bp) {
     for (int i = 0; i < cnt; i++) {
         int id = bp.ParGetName(i).GetInt();
         const auto name = bp.ParGet(i);
-        DWORD color = (DWORD(name.GetIntPar(1, L",") & 255) << 16) | (DWORD(name.GetIntPar(2, L",") & 255) << 8) |
-                      DWORD(name.GetIntPar(3, L",") & 255);
-        DWORD colorMM = (DWORD(name.GetIntPar(5, L",") & 255) << 16) | (DWORD(name.GetIntPar(6, L",") & 255) << 8) |
-                        DWORD(name.GetIntPar(7, L",") & 255);
+        DWORD color = (DWORD(name.GetStrPar(1, L",").GetInt() & 255) << 16) | (DWORD(name.GetStrPar(2, L",").GetInt() & 255) << 8) |
+                      DWORD(name.GetStrPar(3, L",").GetInt() & 255);
+        DWORD colorMM = (DWORD(name.GetStrPar(5, L",").GetInt() & 255) << 16) | (DWORD(name.GetStrPar(6, L",").GetInt() & 255) << 8) |
+                        DWORD(name.GetStrPar(7, L",").GetInt() & 255);
 
         if (id == 0) {
             m_NeutralSideColor = color;
@@ -1035,10 +1034,8 @@ void CMatrixMap::WaterClear() {
         HDelete(CMatrixWater, m_Water, g_MatrixHeap);
         m_Water = NULL;
     }
-    if (m_VisWater) {
-        HDelete(CBuf, m_VisWater, g_MatrixHeap);
-        m_VisWater = NULL;
-    }
+    m_VisWater.clear();
+
     SInshorewave::MarkAllBuffersNoNeed();
 }
 
@@ -1051,12 +1048,8 @@ void CMatrixMap::WaterInit() {
     else {
         m_Water->Clear();
     }
-    if (!m_VisWater) {
-        m_VisWater = HNew(g_MatrixHeap) CBuf(g_MatrixHeap);
-    }
-    else {
-        m_VisWater->Clear();
-    }
+
+    m_VisWater.clear();
     m_Water->Init();
 }
 
@@ -1711,16 +1704,11 @@ void CMatrixMap::DrawWater(void) {
     for (curpass = 0; curpass < g_Render->m_WaterPassSolid; ++curpass) {
         g_Render->m_WaterSolid(m_Water->m_WaterTex1, m_Water->m_WaterTex2, curpass);
 
-        D3DXVECTOR2 *bp = m_VisWater->Buff<D3DXVECTOR2>();
-        D3DXVECTOR2 *ep = m_VisWater->BuffEnd<D3DXVECTOR2>();
-
-        while (bp < ep) {
-            // m_VisWater->BufGet(&p,sizeof(D3DXVECTOR2));
-            m._41 = bp->x;
-            m._42 = bp->y;
+        for (const auto& item : m_VisWater)
+        {
+            m._41 = item.x;
+            m._42 = item.y;
             m_Water->Draw(m);
-
-            ++bp;
         }
     }
 
@@ -2397,7 +2385,7 @@ void CMatrixMap::Draw(void) {
 
     if (m_DialogModeName) {
         if (wcscmp(m_DialogModeName, TEMPLATE_DIALOG_MENU) == 0) {
-            m_DialogModeHints.Buff<CMatrixHint *>()[0]->DrawNow();
+            m_DialogModeHints[0]->DrawNow();
         }
     }
 
@@ -3030,15 +3018,15 @@ void CMatrixMap::AddEffectSpawner(float x, float y, float z, int ttl, const std:
         return;
     parcnt -= 3;
 
-    int minper = par.GetIntPar(1, L",");
-    int maxper = par.GetIntPar(2, L",");
+    int minper = par.GetStrPar(1, L",").GetInt();
+    int maxper = par.GetStrPar(2, L",").GetInt();
 
     int idx = 3;
 
     m_EffectSpawners = (CEffectSpawner *)HAllocEx(m_EffectSpawners, sizeof(CEffectSpawner) * (m_EffectSpawnersCnt + 1),
                                                   g_MatrixHeap);
 
-    EEffectSpawnerType type = (EEffectSpawnerType)par.GetIntPar(0, L",");
+    EEffectSpawnerType type = (EEffectSpawnerType)par.GetStrPar(0, L",").GetInt();
 
     bool light_need_action = false;
 
@@ -3046,11 +3034,11 @@ void CMatrixMap::AddEffectSpawner(float x, float y, float z, int ttl, const std:
         case EST_SMOKE: {
             smoke.m_Type = EFFECT_SMOKE;
 
-            smoke.m_ttl = (float)par.GetDoublePar(idx++, L",");
-            smoke.m_puffttl = (float)par.GetDoublePar(idx++, L",");
-            smoke.m_spawntime = (float)par.GetDoublePar(idx++, L",");
-            smoke.m_intense = par.GetTrueFalsePar(idx++, L",");
-            smoke.m_speed = (float)par.GetDoublePar(idx++, L",");
+            smoke.m_ttl = (float)par.GetStrPar(idx++, L",").GetDouble();
+            smoke.m_puffttl = (float)par.GetStrPar(idx++, L",").GetDouble();
+            smoke.m_spawntime = (float)par.GetStrPar(idx++, L",").GetDouble();
+            smoke.m_intense = par.GetStrPar(idx++, L",").GetBool();
+            smoke.m_speed = (float)par.GetStrPar(idx++, L",").GetDouble();
             smoke.m_color = par.GetStrPar(idx++, L",").GetHexUnsigned();
 
             break;
@@ -3060,12 +3048,12 @@ void CMatrixMap::AddEffectSpawner(float x, float y, float z, int ttl, const std:
 
             fire.m_Type = EFFECT_FIRE;
 
-            fire.m_ttl = (float)par.GetDoublePar(idx++, L",");
-            fire.m_puffttl = (float)par.GetDoublePar(idx++, L",");
-            fire.m_spawntime = (float)par.GetDoublePar(idx++, L",");
-            fire.m_intense = par.GetTrueFalsePar(idx++, L",");
-            fire.m_speed = (float)par.GetDoublePar(idx++, L",");
-            fire.m_dispfactor = (float)par.GetDoublePar(idx++, L",");
+            fire.m_ttl = (float)par.GetStrPar(idx++, L",").GetDouble();
+            fire.m_puffttl = (float)par.GetStrPar(idx++, L",").GetDouble();
+            fire.m_spawntime = (float)par.GetStrPar(idx++, L",").GetDouble();
+            fire.m_intense = par.GetStrPar(idx++, L",").GetBool();
+            fire.m_speed = (float)par.GetStrPar(idx++, L",").GetDouble();
+            fire.m_dispfactor = (float)par.GetStrPar(idx++, L",").GetDouble();
 
             break;
         }
@@ -3074,12 +3062,12 @@ void CMatrixMap::AddEffectSpawner(float x, float y, float z, int ttl, const std:
 
             sound.m_Type = EFFECT_UNDEFINED;
 
-            sound.m_vol0 = (float)par.GetDoublePar(idx++, L",");
-            sound.m_vol1 = (float)par.GetDoublePar(idx++, L",");
-            sound.m_pan0 = (float)par.GetDoublePar(idx++, L",");
-            sound.m_pan1 = (float)par.GetDoublePar(idx++, L",");
-            sound.m_attn = (float)par.GetDoublePar(idx++, L",");
-            // sound.m_looped = par.GetTrueFalsePar(idx++,L",");
+            sound.m_vol0 = (float)par.GetStrPar(idx++, L",").GetDouble();
+            sound.m_vol1 = (float)par.GetStrPar(idx++, L",").GetDouble();
+            sound.m_pan0 = (float)par.GetStrPar(idx++, L",").GetDouble();
+            sound.m_pan1 = (float)par.GetStrPar(idx++, L",").GetDouble();
+            sound.m_attn = (float)par.GetStrPar(idx++, L",").GetDouble();
+            // sound.m_looped = par.GetStrPar(idx++,L",").GetBool();
 
             std::wstring nam(par.GetStrPar(idx++, L","));
             if (nam.length() > (sizeof(sound.m_name) / sizeof(sound.m_name[0]))) {
@@ -3098,11 +3086,12 @@ void CMatrixMap::AddEffectSpawner(float x, float y, float z, int ttl, const std:
 
             *lightening.m_Tag = par.GetStrPar(idx++, L",");
 
-            lightening.m_ttl = (float)par.GetDoublePar(idx++, L",");
+            lightening.m_ttl = (float)par.GetStrPar(idx++, L",").GetDouble();
             lightening.m_Color = par.GetStrPar(idx++, L",").GetHexUnsigned();
-            lightening.m_Width = -(float)par.GetDoublePar(
-                    idx++, L",");  // set negative width. it means that m_Tag used instead of m_Pair;
-            lightening.m_Dispers = (float)par.GetDoublePar(idx++, L",");
+
+            // set negative width. it means that m_Tag used instead of m_Pair;
+            lightening.m_Width = -(float)par.GetStrPar(idx++, L",").GetDouble();
+            lightening.m_Dispers = (float)par.GetStrPar(idx++, L",").GetDouble();
 
             // seek tag
             int bla = m_EffectSpawnersCnt - 1;
@@ -3153,18 +3142,18 @@ void CMatrixMap::LeaveDialogMode(void) {
         return;
 
     if (0 == wcscmp(m_DialogModeName, TEMPLATE_DIALOG_MENU)) {
-        m_DialogModeHints.Buff<CMatrixHint *>()[0]->SoundOut();
+        m_DialogModeHints[0]->SoundOut();
     }
 
     RESETFLAG(m_Flags, MMFLAG_DIALOG_MODE);
     Pause(false);
-    DWORD *a = m_DialogModeHints.Buff<DWORD>();
-    DWORD *b = m_DialogModeHints.BuffEnd<DWORD>();
-    for (; a < b; ++a) {
-        ((CMatrixHint *)(*a))->Release();
+
+    for (auto item : m_DialogModeHints)
+    {
+        item->Release();
     }
 
-    m_DialogModeHints.Clear();
+    m_DialogModeHints.clear();
     g_IFaceList->HideHintButtons();
     m_DialogModeName = NULL;
 }
@@ -3215,8 +3204,8 @@ static void OkResetHandler(void) {
     // SETFLAG(g_Flags, GFLAG_EXITLOOP);
 }
 void ConfirmCancelHandler(void) {
-    CMatrixHint *h = (CMatrixHint *)g_MatrixMap->m_DialogModeHints.Buff<DWORD>()[1];
-    g_MatrixMap->m_DialogModeHints.SetLenNoShrink(g_MatrixMap->m_DialogModeHints.Len() - sizeof(DWORD));
+    CMatrixHint *h = (CMatrixHint *)g_MatrixMap->m_DialogModeHints[1];
+    g_MatrixMap->m_DialogModeHints.erase(g_MatrixMap->m_DialogModeHints.end() - 1);
     h->Release();
 
     g_IFaceList->EnableMainMenuButton(HINT_CANCEL_MENU);
@@ -3236,8 +3225,6 @@ static void CreateConfirmation(const wchar *hint, DialogButtonHandler handler) {
     g_IFaceList->DisableMainMenuButton(HINT_RESET);
     g_IFaceList->DisableMainMenuButton(HINT_EXIT);
 
-    g_MatrixMap->m_DialogModeHints.Pointer(g_MatrixMap->m_DialogModeHints.Len());
-
     CMatrixHint *h = CMatrixHint::Build(std::wstring(hint), hint);
     int ww = (g_ScreenX - h->m_Width) / 2;
     int hh = (g_ScreenY - h->m_Height) / 2 - Float2Int(float(g_ScreenY) * 0.09f);
@@ -3254,7 +3241,7 @@ static void CreateConfirmation(const wchar *hint, DialogButtonHandler handler) {
         g_IFaceList->CreateHintButton(x, y, HINT_CANCEL, ConfirmCancelHandler);
     }
 
-    g_MatrixMap->m_DialogModeHints.Dword((DWORD)h);
+    g_MatrixMap->m_DialogModeHints.push_back(h);
 }
 
 void ExitRequestHandler(void) {
@@ -3302,8 +3289,6 @@ void CMatrixMap::EnterDialogMode(const wchar *hint_i) {
     if (0 != wcscmp(hint_i, TEMPLATE_DIALOG_BEGIN)) {
         g_MatrixMap->GetPlayerSide()->PLDropAllActions();
     }
-
-    m_DialogModeHints.Pointer(m_DialogModeHints.Len());
 
     CBlockPar *bp = g_MatrixData->BlockGet(PAR_TEMPLATES);
 
@@ -3402,7 +3387,7 @@ void CMatrixMap::EnterDialogMode(const wchar *hint_i) {
             }
 
             ww += h->m_Width + 20;
-            m_DialogModeHints.Dword((DWORD)h);
+            m_DialogModeHints.push_back(h);
         }
     }
 }
@@ -3432,12 +3417,12 @@ void CMatrixMap::ShowPortrets(void) {
     int n = 0;
     SETFLAG(g_MatrixMap->m_Flags, MMFLAG_SHOWPORTRETS);
 
-    CMatrixMapStatic **sb = m_AllObjects.Buff<CMatrixMapStatic *>();
-    CMatrixMapStatic **se = m_AllObjects.BuffEnd<CMatrixMapStatic *>();
-    for (; sb < se; ++sb) {
-        if ((*sb)->GetObjectType() == OBJECT_TYPE_MAPOBJECT && ((CMatrixMapObject *)(*sb))->m_BehFlag == BEHF_PORTRET) {
-            ((CMatrixMapObject *)(*sb))->m_PrevStateRobotsInRadius = ++n;
-            ((CMatrixMapObject *)(*sb))->RChange(MR_Graph);
+    for (auto item : m_AllObjects)
+    {
+        if (item->GetObjectType() == OBJECT_TYPE_MAPOBJECT && ((CMatrixMapObject*)item)->m_BehFlag == BEHF_PORTRET)
+        {
+            ((CMatrixMapObject*)item)->m_PrevStateRobotsInRadius = ++n;
+            ((CMatrixMapObject*)item)->RChange(MR_Graph);
         }
     }
 }

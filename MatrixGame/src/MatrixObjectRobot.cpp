@@ -6,8 +6,6 @@
 #include <new>
 #include <algorithm>
 
-#include "stdafx.h"
-
 #include "MatrixObject.hpp"
 #include "MatrixObjectBuilding.hpp"
 #include "MatrixObjectRobot.hpp"
@@ -19,6 +17,8 @@
 
 #include "Effects/MatrixEffectElevatorField.hpp"
 #include "Effects/MatrixEffectSmokeAndFire.hpp"
+
+#include "CFile.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -654,7 +654,7 @@ void CMatrixRobot::RNeed(dword need) {
                 // if(m_Unit[i].m_Graph->VO()->EdgeExist()) {
 
                 if (!m_Unit[i].u1.s1.m_ShadowStencil)
-                    m_Unit[i].u1.s1.m_ShadowStencil = HNew(g_MatrixHeap) CVOShadowStencil(g_MatrixHeap);
+                    m_Unit[i].u1.s1.m_ShadowStencil = HNew(g_MatrixHeap) CVOShadowStencil();
 
                 //					if(!(m_Unit[i].m_Graph->VO()->EdgeExist())) m_Unit[i].m_Graph->VO()->EdgeBuild();
 

@@ -3,8 +3,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "stdafx.h"
-
 #include "MatrixMultiSelection.hpp"
 #include "MatrixMap.hpp"
 #include "MatrixRobot.hpp"
@@ -22,7 +20,7 @@ int CMultiSelection::m_Time;
 
 #define MS_Z 0
 
-CMultiSelection::CMultiSelection(const Base::CPoint &pos) : m_LT(pos), m_RB(pos), m_Flags(0), m_SelItems(g_MatrixHeap) {
+CMultiSelection::CMultiSelection(const Base::CPoint &pos) : m_LT(pos), m_RB(pos), m_Flags(0) {
     // m_Tex = (CTextureManaged *)g_Cache->Get(cc_TextureManaged, TEXTURE_PATH_SELBACK);
     // m_Tex->MipmapOff();
     // m_Tex->Preload();
@@ -250,8 +248,8 @@ void CMultiSelection::Update(const Base::CPoint &pos, DWORD mask, SELECT_ENUM ca
                 SETFLAG(m_Flags, MS_FLAG_BUILDINGS);
             }
 
-            if ((m_SelItems.Len() / sizeof(DWORD)) < 9) {
-                m_SelItems.Dword((DWORD)o);
+            if (m_SelItems.size() < 9) {
+                m_SelItems.push_back(o);
                 if (o->IsRobot()) {
                     if (!o->AsRobot()->IsSelected()) {
                         o->AsRobot()->SelectByGroup();
@@ -273,41 +271,36 @@ void CMultiSelection::End(bool add_to_selection) {
     CRect r(m_LT.x, m_LT.y, m_RB.x, m_RB.y);
     r.Normalize();
 
-    if (m_SelItems.Len() > 0 && add_to_selection) {
+    if (!m_SelItems.empty() && add_to_selection) {
         CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
 
-        CMatrixMapStatic **items = m_SelItems.Buff<CMatrixMapStatic *>();
-        CMatrixMapStatic **iteme = m_SelItems.BuffEnd<CMatrixMapStatic *>();
-
-        for (; items < iteme; ++items) {
-            ps->GetCurSelGroup()->AddObject(*items, -4);
+        for (auto item : m_SelItems)
+        {
+            ps->GetCurSelGroup()->AddObject(item, -4);
         }
     }
 
     RemoveSelItems();
 }
 
-bool CMultiSelection::FindItem(const CMatrixMapStatic *o) {
-    CMatrixMapStatic **items = m_SelItems.Buff<CMatrixMapStatic *>();
-    CMatrixMapStatic **iteme = m_SelItems.BuffEnd<CMatrixMapStatic *>();
-
-    for (; items < iteme; ++items) {
-        if (o == (*items)) {
+bool CMultiSelection::FindItem(const CMatrixMapStatic *o)
+{
+    for (auto item : m_SelItems)
+    {
+        if (o == item)
+        {
             return true;
         }
     }
+
     return false;
 }
 
-void CMultiSelection::Remove(const CMatrixMapStatic *o) {
-    CMatrixMapStatic **items = m_SelItems.Buff<CMatrixMapStatic *>();
-    CMatrixMapStatic **iteme = m_SelItems.BuffEnd<CMatrixMapStatic *>();
-
-    for (; items < iteme; ++items) {
-        if (o == (*items)) {
-            *items = *(iteme - 1);
-            m_SelItems.SetLenNoShrink(m_SelItems.Len() - sizeof(DWORD));
-            return;
-        }
+void CMultiSelection::Remove(const CMatrixMapStatic *o)
+{
+    auto item = std::ranges::find(m_SelItems, o);
+    if (item != m_SelItems.end())
+    {
+        m_SelItems.erase(item);
     }
 }

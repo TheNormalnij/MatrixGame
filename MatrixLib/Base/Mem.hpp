@@ -5,13 +5,13 @@
 
 #pragma once
 
-#include "BaseDef.hpp"
+#include <cstdint>
 
-// same as blk_copy, but copying by sizeof(uint) bytes
-inline void memcopy_back_dword(void *tgt, const void *src, dword size)
+inline void memcopy_back_dword(void *tgt, const void *src,
+                                      uint32_t size)  // same as blk_copy, but copying by sizeof(uint) bytes
 {
-    dword *uitgt = ((dword *)tgt) + size - 1;
-    const dword *uisrc = ((const dword *)src) + size - 1;
+    uint32_t *uitgt = ((uint32_t *)tgt) + size - 1;
+    const uint32_t *uisrc = ((const uint32_t *)src) + size - 1;
     while (size) {
         *uitgt-- = *uisrc--;
         size--;

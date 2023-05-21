@@ -5,7 +5,11 @@
 
 #pragma once
 
-#include "Base.hpp"
+#include "CMain.hpp"
+#include "CHeap.hpp"
+#include "CBuf.hpp"
+#include "Tracer.hpp"
+#include "BaseDef.hpp"
 
 class CMatrixCrotch;
 class CMatrixRoadNetwork;

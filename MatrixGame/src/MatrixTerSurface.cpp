@@ -5,11 +5,12 @@
 
 #include <new>
 
-#include "stdafx.h"
-
 #include "MatrixTerSurface.hpp"
 #include "MatrixMap.hpp"
 #include "MatrixRenderPipeline.hpp"
+
+#include "CFile.hpp"
+#include "Mem.hpp"
 
 CBigIB *CTerSurface::m_BigIB;
 CBigVB<CTerSurface::STerSurfVertex> *CTerSurface::m_BigVB;

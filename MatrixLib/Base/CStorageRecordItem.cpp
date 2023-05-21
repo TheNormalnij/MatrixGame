@@ -34,17 +34,17 @@ namespace Base {
         buf.WStr(m_Name);
 
         if (compression) {
-            buf.Dword(m_Type | ST_COMPRESSED);
-            CBuf cb(buf.m_Heap);
+            buf.Add((DWORD)(m_Type | ST_COMPRESSED));
+            CBuf cb;
             ZL03_Compression(cb, (BYTE *)m_Buf->Get(), m_Buf->Len());
 
-            buf.Dword(cb.Len());
-            buf.BufAdd(cb.Get(), cb.Len());
+            buf.Add((DWORD)cb.Len());
+            buf.Add(cb.Get(), cb.Len());
         }
         else {
-            buf.Dword(m_Type);
-            buf.Dword(m_Buf->Len());
-            buf.BufAdd(m_Buf->Get(), m_Buf->Len());
+            buf.Add((DWORD)m_Type);
+            buf.Add((DWORD)m_Buf->Len());
+            buf.Add(m_Buf->Get(), m_Buf->Len());
         }
     }
 
@@ -52,8 +52,8 @@ namespace Base {
         ASSERT(m_Buf);
 
         m_Name = buf.WStr();
-        m_Type = (EStorageType)buf.Dword();
-        DWORD sz = buf.Dword();
+        m_Type = (EStorageType)buf.Get<DWORD>();
+        DWORD sz = buf.Get<DWORD>();
 
         if (m_Type & ST_COMPRESSED) {
             m_Type = (EStorageType)(m_Type & ST_COMPRESSED);
@@ -63,7 +63,7 @@ namespace Base {
         else {
             m_Buf->Clear();
             m_Buf->Expand(sz);
-            buf.BufGet(m_Buf->Get(), sz);
+            buf.Get(m_Buf->Get(), sz);
         }
 
         return true;
@@ -72,10 +72,10 @@ namespace Base {
     bool CStorageRecordItem::LoadCacheFormat(CBuf &buf) {
         ASSERT(m_Buf);
 
-        uint8_t unk = buf.Byte();
+        uint8_t unk = buf.Get<byte>();
         m_Name = buf.WStr();
-        m_Type = (EStorageType)buf.Dword();
-        DWORD sz = buf.Dword();
+        m_Type = (EStorageType)buf.Get<DWORD>();
+        DWORD sz = buf.Get<DWORD>();
 
         if (m_Type & ST_COMPRESSED) {
             m_Type = (EStorageType)(m_Type & ST_COMPRESSED);
@@ -85,7 +85,7 @@ namespace Base {
         else {
             m_Buf->Clear();
             m_Buf->Expand(sz);
-            buf.BufGet(m_Buf->Get(), sz);
+            buf.Get(m_Buf->Get(), sz);
         }
 
         return true;

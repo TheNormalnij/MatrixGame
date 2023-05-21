@@ -11,347 +11,166 @@
 #include "CException.hpp"
 #include "CHeap.hpp"
 #include <windows.h>
+#include <vector>
+#include <cstdint>
+#include <cstring> // for memset
 
 namespace Base {
 
-class BASE_API CBuf : public CMain {
+class BASE_API CBuf
+{
+private:
+    size_t m_Pointer = 0;  // Указатель
+    std::vector<uint8_t> m_Buf;
 public:
-    CHeap *m_Heap;
-    int m_Len;      // Кол-во данных
-    int m_Max;      // Размер буфера
-    int m_Add;      // На сколько увеличивается буфер
-    int m_Pointer;  // Указатель
-    BYTE *m_Buf;    // Буфер
-public:
-    CBuf(CHeap *heap = NULL, int add = 32);
-    ~CBuf();
+    CBuf() = default;
+    ~CBuf() = default;
 
     void Clear(void);
-    void ClearFull(void);  // А также освобождает память
 
-    void SetGranula(int sz) { m_Add = sz; }
-
-    void *Get(void) const { return m_Buf; }
+    void *Get(void) const { return const_cast<uint8_t*>(m_Buf.data()); }
     template <class D>
     D *Buff(void) {
-        return (D *)m_Buf;
+        return (D*)m_Buf.data();
     }
     template <class D>
     D *BuffEnd(void) {
-        return (D *)(m_Buf + m_Len);
+        return (D *)(m_Buf.data() + m_Buf.size());
     }
-    int Len(void) const { return m_Len; }
-    void Len(int zn);
-    void SetLenNoShrink(int len) {
-        ASSERT(len <= m_Max);
-        m_Len = len;
-    }
-
-    inline void TestGet(int len) {
-        if ((m_Pointer + len) > m_Len)
-            ERROR_E;
-    }
-    void TestAdd(int len) {
-        if ((m_Pointer + len) > m_Max) {
-            m_Max = m_Pointer + len + m_Add;
-            m_Buf = (BYTE *)HAllocEx(m_Buf, m_Max, m_Heap);
-        }
-        m_Len += len;
-    }  // Can change m_Len
-    void Expand(int sz) {
-        m_Len += sz;
-        if (m_Len > m_Max) {
-            m_Max = m_Len + m_Add;
-            m_Buf = (BYTE *)HAllocEx(m_Buf, m_Max, m_Heap);
-        }
+    size_t Len(void) const { return m_Buf.size(); }
+    void Len(size_t zn);
+    void SetLenNoShrink(size_t len)
+    {
+        ASSERT(len <= m_Buf.size());
+        m_Buf.resize(len);
     }
 
-    int Pointer(void) const { return m_Pointer; }
-    void Pointer(int zn) {
-        if ((zn < 0) || (zn > m_Len))
+    void Expand(size_t sz)
+    {
+        m_Buf.resize(m_Buf.size() + sz);
+    }
+
+    size_t Pointer(void) const { return m_Pointer; }
+    void Pointer(size_t zn) {
+        if (zn > m_Buf.size())
             ERROR_E;
         m_Pointer = zn;
     }
 
     template <class D>
     D *GetCurrent(void) {
-        return (D *)m_Buf + m_Pointer;
+        return (D *)m_Buf.data() + m_Pointer;
     }
 
-    bool Bool(void) {
-        TestGet(sizeof(bool));
-        m_Pointer += sizeof(bool);
-        return *(bool *)(m_Buf + m_Pointer - sizeof(bool));
-    }
-    byte Byte(void) {
-        TestGet(sizeof(byte));
-        m_Pointer += sizeof(byte);
-        return *(byte *)(m_Buf + m_Pointer - sizeof(byte));
-    }
-    char Char(void) {
-        TestGet(sizeof(char));
-        m_Pointer += sizeof(char);
-        return *(char *)(m_Buf + m_Pointer - sizeof(char));
-    }
-    word Word(void) {
-        TestGet(sizeof(word));
-        m_Pointer += sizeof(word);
-        return *(word *)(m_Buf + m_Pointer - sizeof(word));
-    }
-    short Short(void) {
-        TestGet(sizeof(short));
-        m_Pointer += sizeof(short);
-        return *(short *)(m_Buf + m_Pointer - sizeof(short));
-    }
-    dword Dword(void) {
-        TestGet(sizeof(dword));
-        m_Pointer += sizeof(dword);
-        return *(dword *)(m_Buf + m_Pointer - sizeof(dword));
-    }
-    long Long(void) {
-        TestGet(sizeof(long));
-        m_Pointer += sizeof(long);
-        return *(long *)(m_Buf + m_Pointer - sizeof(long));
-    }
-    int Int(void) {
-        TestGet(sizeof(int));
-        m_Pointer += sizeof(int);
-        return *(int *)(m_Buf + m_Pointer - sizeof(int));
-    }
-    int64 Int64(void) {
-        TestGet(sizeof(int64));
-        m_Pointer += sizeof(int64);
-        return *(int64 *)(m_Buf + m_Pointer - sizeof(int64));
-    }
-    float Float(void) {
-        TestGet(sizeof(float));
-        m_Pointer += sizeof(float);
-        return *(float *)(m_Buf + m_Pointer - sizeof(float));
-    }
-    double Double(void) {
-        TestGet(sizeof(double));
-        m_Pointer += sizeof(double);
-        return *(double *)(m_Buf + m_Pointer - sizeof(double));
-    }
+    ///////////////////////////////////////////////////////////////
 
     template <class D>
-    D Any(void) {
-        DTRACE();
+    D Get(void)
+    {
         TestGet(sizeof(D));
         m_Pointer += sizeof(D);
-        return *(D *)(m_Buf + m_Pointer - sizeof(D));
-    }
-    template <class D>
-    const D &AnyStruct(void) {
-        DTRACE();
-        TestGet(sizeof(D));
-        m_Pointer += sizeof(D);
-        return *(D *)(m_Buf + m_Pointer - sizeof(D));
+        return *(D *)(m_Buf.data() + m_Pointer - sizeof(D));
     }
 
-    void Bool(bool zn) {
-        TestAdd(sizeof(bool));
-        *(bool *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(bool);
-    }
-    void Byte(byte zn) {
-        TestAdd(sizeof(byte));
-        *(byte *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(byte);
-    }
-    void Char(char zn) {
-        TestAdd(sizeof(char));
-        *(char *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(char);
-    }
-    void Word(word zn) {
-        TestAdd(sizeof(word));
-        *(word *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(word);
-    }
-    void Short(short zn) {
-        TestAdd(sizeof(short));
-        *(short *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(short);
-    }
-    void Dword(dword zn) {
-        TestAdd(sizeof(dword));
-        *(dword *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(dword);
-    }
-    void Long(long zn) {
-        TestAdd(sizeof(long));
-        *(long *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(long);
-    }
-    void Int(int zn) {
-        TestAdd(sizeof(int));
-        *(int *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(int);
-    }
-    void Int64(int64 zn) {
-        TestAdd(sizeof(int64));
-        *(int64 *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(int64);
-    }
-    void Float(float zn) {
-        TestAdd(sizeof(float));
-        *(float *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(float);
-    }
-    void Double(double zn) {
-        TestAdd(sizeof(double));
-        *(double *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(double);
-    }
-
-    template <class D>
-    void Any(D zn) {
-        TestAdd(sizeof(D));
-        *(D *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(D);
-    }
-    template <class D>
-    void AnyStruct(const D &zn) {
-        TestAdd(sizeof(D));
-        *(D *)(m_Buf + m_Pointer) = zn;
-        m_Pointer += sizeof(D);
-    }
-
-    void BufAdd(const void *buf, int len) {
-        if (len <= 0)
-            return;
-        TestAdd(len);
-        CopyMemory(m_Buf + m_Pointer, buf, len);
-        m_Pointer += len;
-    }
-    void BufGet(void *buf, int len) {
-        if (len <= 0)
+    void Get(void *buf, size_t len)
+    {
+        if (len == 0)
             return;
         TestGet(len);
-        memcpy(buf, m_Buf + m_Pointer, len);
+        memcpy(buf, m_Buf.data() + m_Pointer, len);
         m_Pointer += len;
     }
 
-    void ByteLoop(byte zn, int cnt) {
-        if (cnt <= 0)
-            return;
-        TestAdd(cnt);
-        memset(m_Buf + m_Pointer, zn, cnt);
-        m_Pointer += cnt;
-    }
-    void WordLoop(word zn, int cnt) {
-        if (cnt <= 0)
-            return;
-        TestAdd(cnt * 2);
-        for (int i = 0; i < cnt; i++, m_Pointer += 2)
-            *(word *)(m_Buf + m_Pointer) = zn;
+    ///////////////////////////////////////////////////////////////
+
+    template <class D>
+    void Add(D zn) {
+        TestAdd(sizeof(D));
+        *(D*)(m_Buf.data() + m_Pointer) = zn;
+        m_Pointer += sizeof(D);
     }
 
-    int StrLen(void);
+    void Add(const void *buf, size_t len) {
+        if (len == 0)
+            return;
+        TestAdd(len);
+        memcpy(m_Buf.data() + m_Pointer, buf, len);
+        m_Pointer += len;
+    }
+
+    ///////////////////////////////////////////////////////////////
+
+    void ByteLoop(uint8_t zn, size_t cnt) {
+        if (cnt == 0)
+            return;
+        TestAdd(cnt);
+        memset(m_Buf.data() + m_Pointer, zn, cnt);
+        m_Pointer += cnt;
+    }
+    void WordLoop(uint16_t zn, size_t cnt) {
+        if (cnt == 0)
+            return;
+        TestAdd(cnt * 2);
+        for (size_t i = 0; i < cnt; i++, m_Pointer += 2)
+            *(uint16_t *)(m_Buf.data() + m_Pointer) = zn;
+    }
+
     std::string Str(void) {
-        int len = StrLen();
-        char *abuf = (char *)(m_Buf + m_Pointer);
+        size_t len = StrLen();
+        char *abuf = (char *)(m_Buf.data() + m_Pointer);
         m_Pointer += len + 1;
-        if (m_Pointer > m_Len)
-            m_Pointer = m_Len;
+        if (m_Pointer > m_Buf.size())
+            m_Pointer = m_Buf.size();
         if (len > 0)
             return std::string(abuf, len);
         else
             return std::string();
     }
     void Str(const std::string& str) {
-        int len = str.length();
-        if (len > 0)
-            BufAdd(str.c_str(), len + 1);
+        if (!str.empty())
+            Add(str.c_str(), str.length() + 1);
         else
-            Byte(0);
+            Add<uint8_t>(0);
     }
-    void Str(const char *str, int len) {
-        if (len > 0)
-            BufAdd(str, len);
-        Byte(0);
-    }
-    void Str(const char *str) {
-        int len = (int)strlen(str);
-        if (len > 0)
-            BufAdd(str, len + 1);
-        else
-            Byte(0);
-    }
-    void StrNZ(const std::string& str) {
-        int len = str.length();
-        if (len > 0)
-            BufAdd(str.c_str(), len);
-    }
-    void StrNZ(const char *str, int len) {
-        if (len > 0)
-            BufAdd(str, len);
-    }
-    void StrNZ(const char *str) {
-        int len = (int)strlen(str);
-        if (len > 0)
-            BufAdd(str, len);
+    void StrNZ(const std::string& str)
+    {
+        if (!str.empty())
+            Add(str.c_str(), str.length());
     }
 
-    int WStrLen(void);
     std::wstring WStr(void) {
-        int len = WStrLen();
-        wchar *abuf = (wchar *)(m_Buf + m_Pointer);
+        size_t len = WStrLen();
+        wchar *abuf = (wchar *)(m_Buf.data() + m_Pointer);
         m_Pointer += ((len + 1) << 1);
-        if (m_Pointer > m_Len)
-            m_Pointer = m_Len;
+        if (m_Pointer > m_Buf.size())
+            m_Pointer = m_Buf.size();
         if (len > 0)
             return std::wstring(abuf, len);
         else
             return {};
     }
     void WStr(const std::wstring &str) {
-        int len = str.length();
-        if (len > 0)
-            BufAdd(str.c_str(), (len + 1) << 1);
+        if (!str.empty())
+            Add(str.c_str(), (str.length() + 1) * 2);
         else
-            Word(0);
-    }
-    void WStr(const wchar *str, int len) {
-        if (len > 0)
-            BufAdd(str, len << 1);
-        Word(0);
-    }
-    void WStr(const wchar *str) {
-        int len = std::wcslen(str);
-        if (len > 0)
-            BufAdd(str, (len + 1) << 1);
-        else
-            Word(0);
+            Add<uint16_t>(0);
     }
     void WStrNZ(const std::wstring &str) {
-        int len = str.length();
-        if (len > 0)
-            BufAdd(str.c_str(), len << 1);
-    }
-    void WStrNZ(const wchar *str, int len) {
-        if (len > 0)
-            BufAdd(str, len << 1);
-    }
-    void WStrNZ(const wchar *str) {
-        int len = std::wcslen(str);
-        if (len > 0)
-            BufAdd(str, len << 1);
+        if (!str.empty())
+            Add(str.c_str(), str.length() * 2);
     }
 
-    int StrTextLen(void);
     std::string StrText(void) {
         char ch;
-        int len = StrTextLen();
-        char *abuf = (char *)(m_Buf + m_Pointer);
+        size_t len = StrTextLen();
+        char *abuf = (char *)(m_Buf.data() + m_Pointer);
         m_Pointer += len;
-        if (m_Pointer < m_Len) {
-            ch = *(char *)(m_Buf + m_Pointer);
+        if (m_Pointer < m_Buf.size()) {
+            ch = *(char *)(m_Buf.data() + m_Pointer);
             if (ch == 0 || ch == 0x0d || ch == 0x0a)
                 m_Pointer++;
-            if (m_Pointer < m_Len) {
-                ch = *(char *)(m_Buf + m_Pointer);
+            if (m_Pointer < m_Buf.size()) {
+                ch = *(char *)(m_Buf.data() + m_Pointer);
                 if (ch == 0 || ch == 0x0d || ch == 0x0a)
                     m_Pointer++;
             }
@@ -361,25 +180,23 @@ public:
         else
             return std::string();
     }
-    void StrText(const std::string& str) {
-        int len = str.length();
-        if (len > 0)
-            BufAdd(str.c_str(), len);
-        Word(0x0a0d);
+    void StrText(const std::string& str)
+    {
+        StrNZ(str);
+        Add<uint16_t>(0x0a0d);
     }
 
-    int WStrTextLen(void);
     std::wstring WStrText(void) {
         wchar ch;
-        int len = WStrTextLen();
-        wchar *abuf = (wchar *)(m_Buf + m_Pointer);
+        size_t len = WStrTextLen();
+        wchar *abuf = (wchar *)(m_Buf.data() + m_Pointer);
         m_Pointer += len << 1;
-        if (m_Pointer + 1 < m_Len) {
-            ch = *(wchar *)(m_Buf + m_Pointer);
+        if (m_Pointer + 1 < m_Buf.size()) {
+            ch = *(wchar *)(m_Buf.data() + m_Pointer);
             if (ch == 0 || ch == 0x0d || ch == 0x0a)
                 m_Pointer += 2;
-            if (m_Pointer + 1 < m_Len) {
-                ch = *(wchar *)(m_Buf + m_Pointer);
+            if (m_Pointer + 1 < m_Buf.size()) {
+                ch = *(wchar *)(m_Buf.data() + m_Pointer);
                 if (ch == 0 || ch == 0x0d || ch == 0x0a)
                     m_Pointer += 2;
             }
@@ -389,20 +206,35 @@ public:
         else
             return {};
     }
-    void WStrText(std::wstring &str) {
-        int len = str.length();
-        if (len > 0)
-            BufAdd(str.c_str(), len << 1);
-        Dword(0x000a000d);
+    void WStrText(const std::wstring& str)
+    {
+        WStrNZ(str);
+        Add<uint32_t>(0x000a000d);
     }
 
-    void LoadFromFile(const wchar *filename, int len);
-    void LoadFromFile(const wchar *filename) { LoadFromFile(filename, std::wcslen(filename)); }
-    void LoadFromFile(const std::wstring &filename) { LoadFromFile(filename.c_str(), filename.length()); }
-    void SaveInFile(const wchar *filename, int len) const;
-    void SaveInFile(const wchar *filename) const { SaveInFile(filename, std::wcslen(filename)); }
-    void SaveInFile(const std::wstring &filename) const { SaveInFile(filename.c_str(), filename.length()); }
+    void LoadFromFile(const std::wstring &filename);
+    void SaveInFile(const std::wstring &filename) const;
+
+private:
+    size_t StrLen(void);
+    size_t WStrLen(void);
+    size_t StrTextLen(void);
+    size_t WStrTextLen(void);
+
+    inline void TestGet(size_t len)
+    {
+        if (m_Pointer + len > m_Buf.size())
+        {
+            ERROR_E;
+        }
+    }
+    void TestAdd(size_t len)
+    {
+        if (m_Pointer + len > m_Buf.size())
+        {
+            m_Buf.resize(m_Buf.size() + len);
+        }
+    }
 };
 
 }  // namespace Base
-

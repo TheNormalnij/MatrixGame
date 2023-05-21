@@ -3,11 +3,11 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "stdafx.h"
-
 #include "MatrixSkinManager.hpp"
 #include "MatrixMap.hpp"
 #include "MatrixObject.hpp"
+
+#include "CFile.hpp"
 
 PPSMatrixSkin CSkinManager::m_Skins[GSP_COUNT];
 int CSkinManager::m_SkinsCount[GSP_COUNT];
