@@ -64,7 +64,7 @@ void RangersSound::Init(std::map<std::wstring, std::wstring> &sounds) {
     m_pXAudio2->CreateMasteringVoice(&m_pMasterVoice);
 
     for (const auto &pair : sounds) {
-        Base::CBuf *buf = new Base::CBuf(NULL);
+        Base::CBuf *buf = new Base::CBuf();
         buf->LoadFromFile(pair.second);
 
         m_soundsWavData[pair.first] = buf;

@@ -5,6 +5,7 @@
 
 #include "RangersInterfaceInternal.h"
 #include "RangersResourcesData.h"
+#include "CFile.hpp"
 
 // TODO avoid singleton 
 static RangersInterfaceInternal *pInstance = nullptr;
@@ -15,10 +16,10 @@ RangersInterfaceInternal::RangersInterfaceInternal() {
 
 void RangersInterfaceInternal::LoadResources(std::wstring_view resourceLang) {
     // Internal interface
-    CFile::AddPackFile(L"DATA\\Sound.pkg", NULL);
+    CFile::AddPackFile(L"DATA\\Sound.pkg");
 
     std::wstring soundLocaled = std::wstring(L"DATA\\voices") + resourceLang.data() + L".pkg";
-    CFile::AddPackFile(soundLocaled.c_str(), NULL);
+    CFile::AddPackFile(soundLocaled.c_str());
 
     CFile::OpenPackFiles();
 

@@ -6,7 +6,7 @@
 #pragma once
 
 #include "../MatrixGameDll.hpp"
-#include "stdafx.h"
+#include "d3dx9.h"
 
 class SMGDRangersInterfaceTextImpl : protected SMGDRangersInterfaceText {
 public:

@@ -10,6 +10,7 @@
 
 #include <BaseDef.hpp>
 #include <windows.h>
+#include <cstdint>
 
 enum ESupportError {
     SUPE_OK = 0,
@@ -72,17 +73,18 @@ struct SMGDRobotInterface {
 struct SMGDRangersInterface {
     void(__stdcall *m_Sound)(wchar *path);
 
-    dword(__stdcall *m_SoundCreate)(wchar *path, int group, int loop);
-    void(__stdcall *m_SoundDestroy)(dword id);
-    void(__stdcall *m_SoundPlay)(dword id);
-    int(__stdcall *m_SoundIsPlay)(dword id);
-    void(__stdcall *m_SoundVolume)(dword id, float vol);
-    void(__stdcall *m_SoundPan)(dword id, float pan);
-    float(__stdcall *m_SoundGetVolume)(dword id);
-    float(__stdcall *m_SoundGetPan)(dword id);
+    uint32_t(__stdcall *m_SoundCreate)(wchar *path, int group, int loop);
+    void(__stdcall *m_SoundDestroy)(uint32_t id);
+    void(__stdcall *m_SoundPlay)(uint32_t id);
+    int(__stdcall *m_SoundIsPlay)(uint32_t id);
+    void(__stdcall *m_SoundVolume)(uint32_t id, float vol);
+    void(__stdcall *m_SoundPan)(uint32_t id, float pan);
+    float(__stdcall *m_SoundGetVolume)(uint32_t id);
+    float(__stdcall *m_SoundGetPan)(uint32_t id);
 
-    void(__stdcall *m_RangersText)(wchar *text, wchar *font, DWORD color, int sizex, int sizey, int alignx, int aligny,
-                                   int wordwrap, int smex, int smy, Base::CRect *clipr, SMGDRangersInterfaceText *it);
+    void(__stdcall *m_RangersText)(wchar *text, wchar *font, uint32_t color, int sizex, int sizey, int alignx,
+                                   int aligny, int wordwrap, int smex, int smy, Base::CRect *clipr,
+                                   SMGDRangersInterfaceText *it);
     void(__stdcall *m_RangersTextClear)(SMGDRangersInterfaceText *it);
 
     void(__stdcall *m_ProgressBar)(float val);

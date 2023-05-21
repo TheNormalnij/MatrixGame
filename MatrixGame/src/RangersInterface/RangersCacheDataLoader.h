@@ -6,7 +6,8 @@
 #pragma once
 
 #include <string_view>
-#include "Base.pch"
+#include "CBlockPar.hpp"
+#include "CBuf.hpp"
 
 class CRangersCacheDataLoader {
 public:

@@ -5,6 +5,8 @@
 
 #include "RangersText.h"
 #include <stdio.h>
+#include <list>
+#include "3g.hpp"
 
 RangersText::RangersText() {
     m_Font = nullptr;

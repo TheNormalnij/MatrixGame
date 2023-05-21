@@ -15,8 +15,7 @@ enum class eBlockParKeyType : uint8_t {
 };
 
 void CRangersCacheDataLoader::Load(const std::wstring_view filePath, Base::CBlockPar &out) {
-    Base::CHeap heap;
-    Base::CBuf buf(&heap);
+    Base::CBuf buf = Base::CBuf();
     buf.LoadFromFile(filePath.data());
 
     Load(buf, out);
@@ -26,19 +25,19 @@ void CRangersCacheDataLoader::Load(Base::CBuf &buf_in, Base::CBlockPar &out) {
     buf_in.Pointer(0);
 
     // Ќужно еще делать проверку по этому значению
-    uint32_t crc32 = buf_in.Dword();
-    uint32_t fileKey = buf_in.Dword();
+    uint32_t crc32 = buf_in.Get<DWORD>();
+    uint32_t fileKey = buf_in.Get<DWORD>();
 
     // ќтклонение от начального значени€
     size_t skipBytes = 8;
     if (crc32 == 0xB589C17F && fileKey == 0xCCE115B0) {
         // CacheData.dat from game case
-        crc32 = buf_in.Dword();
-        fileKey = buf_in.Dword();
+        crc32 = buf_in.Get<DWORD>();
+        fileKey = buf_in.Get<DWORD>();
         skipBytes += 8;
     }
 
-    Base::CBuf clearBuf(buf_in.m_Heap);
+    Base::CBuf clearBuf = Base::CBuf();
 
     GetClearBuffer(buf_in.Buff<char>() + skipBytes, buf_in.Len() - skipBytes, clearBuf, fileKey);
 
@@ -46,7 +45,7 @@ void CRangersCacheDataLoader::Load(Base::CBuf &buf_in, Base::CBlockPar &out) {
 }
 
 void CRangersCacheDataLoader::GetClearBuffer(const char *in, size_t inSize, Base::CBuf &clearBuf, uint32_t fileKey) {
-    Base::CBuf decryptedBuf(clearBuf.m_Heap);
+    Base::CBuf decryptedBuf = Base::CBuf();
 
     size_t decryptedSize = inSize;
     decryptedBuf.Expand(decryptedSize);
@@ -61,9 +60,9 @@ void CRangersCacheDataLoader::GetClearBuffer(const char *in, size_t inSize, Base
 }
 
 void CRangersCacheDataLoader::LoadData(Base::CBuf &buf, Base::CBlockPar *out) {
-    const uint32_t valuesCount = buf.Dword();
+    const uint32_t valuesCount = buf.Get<DWORD>();
     for (uint32_t i = 0; i < valuesCount; i++) {
-        const eBlockParKeyType keyType = (eBlockParKeyType)buf.Byte();
+        const eBlockParKeyType keyType = (eBlockParKeyType)buf.Get<uint8_t>();
         const std::wstring key = buf.WStr();
         if (keyType == eBlockParKeyType::DATA_KEY) {
             std::wstring value = buf.WStr();

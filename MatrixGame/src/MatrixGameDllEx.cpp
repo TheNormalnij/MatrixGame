@@ -6,10 +6,10 @@
 
 
 #include "MatrixGameDllEx.hpp"
-#include "stdafx.h"
 #include "Interface/CInterface.h"
 #include <string_view>
 #include "RangersInterface/RangersInterfaceInternal.h"
+#include "Pack.hpp"
 
 // TODO more map info
 MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t *name)) {

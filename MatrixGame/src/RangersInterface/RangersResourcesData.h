@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include "stdafx.h"
 #include <string_view>
 #include <string>
 #include <map>
+#include "CBlockPar.hpp"
 
 class CRangersResourcesData {
 public:
