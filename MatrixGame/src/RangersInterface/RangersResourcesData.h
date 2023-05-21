@@ -20,5 +20,9 @@ public:
     void Unload();
 
 private:
+    void BlockParToMap(const CBlockPar *blockPar, std::map<std::wstring, std::wstring> &outputMap);
+
+private:
     const std::wstring_view m_filePath;
+    CBlockPar m_cacheBlockPar;
 };

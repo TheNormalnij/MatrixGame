@@ -6,32 +6,29 @@
 #include "RangersResourcesData.h"
 #include "RangersCacheDataLoader.h"
 
-const int32_t CACHE_ENC_KEY = 0xEA8F3F37;
-
 CRangersResourcesData::CRangersResourcesData(const std::wstring_view path) : m_filePath(path) {
 
 }
 
 void CRangersResourcesData::GetSounds(std::map<std::wstring, std::wstring> &outputMap) {
-    CRangersCacheDataLoader loader;
-    CBlockPar data;
-
-    loader.Load(L"cfg\\CacheData.dat", data);
-
-    const CBlockPar * sounds = data.BlockGet(L"Sound");
-
-    for (int i = 0; i < sounds->ParCount(); i++) {
-        std::wstring name = sounds->ParGetName(i);
-        std::wstring value = sounds->ParGet(i);
-        outputMap.insert({name, value});
-    }
+    const CBlockPar *sounds = m_cacheBlockPar.BlockGet(L"Sound");
+    BlockParToMap(sounds, outputMap);
 }
 
 void CRangersResourcesData::Load() {
-
+    CRangersCacheDataLoader loader;
+    loader.Load(L"cfg\\CacheData.dat", m_cacheBlockPar);
 }
 
-
 void CRangersResourcesData::Unload() {
+    m_cacheBlockPar.Clear();
+}
 
+// TODO use utils class
+void CRangersResourcesData::BlockParToMap(const CBlockPar *blockPar, std::map<std::wstring, std::wstring> &outputMap) {
+    for (int i = 0; i < blockPar->ParCount(); i++) {
+        std::wstring name = blockPar->ParGetName(i);
+        std::wstring value = blockPar->ParGet(i);
+        outputMap.insert({name, value});
+    }
 }

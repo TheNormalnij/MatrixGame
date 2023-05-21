@@ -23,6 +23,9 @@ public:
     RangersGame *GetGame() { return &m_rangersGameInterface; };
 
 private:
+    void LinkInterface();
+
+private:
     RangersSound m_soundInterface;
     RangersText m_textInterface;
     RangersGame m_rangersGameInterface;

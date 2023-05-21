@@ -75,6 +75,14 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
 
     g_MatrixHeap = HNew(NULL) CHeap;
 
+    if (wnd == NULL) {
+        // Internal interface
+        CFile::AddPackFile(L"DATA\\Sound.pkg", NULL);
+
+        std::wstring soundLocaled = std::wstring(L"DATA\\voices") + set->m_Lang + L".pkg";
+        CFile::AddPackFile(soundLocaled.c_str(), NULL);
+    }
+
     CFile::AddPackFile(L"DATA\\robots.pkg", NULL);
     CFile::OpenPackFiles();
 

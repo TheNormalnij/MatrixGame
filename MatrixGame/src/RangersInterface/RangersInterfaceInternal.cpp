@@ -11,10 +11,16 @@ static RangersInterfaceInternal *pInstance = nullptr;
 
 RangersInterfaceInternal::RangersInterfaceInternal() {
     CRangersResourcesData dataCache = CRangersResourcesData{L"cfg\\CacheData.dat"};
+    dataCache.Load();
 
-    std::map<std::wstring, std::wstring> sounds;
-    dataCache.GetSounds(sounds);
+    dataCache.GetSounds(m_soundInterface.GetSoundPathes());
 
+    m_soundInterface.Init();
+
+    LinkInterface();
+}
+
+void RangersInterfaceInternal::LinkInterface() {
     // Unused
     m_sMGDRobotInterface.m_Sound = [](wchar_t *path) {};
 
@@ -33,11 +39,11 @@ RangersInterfaceInternal::RangersInterfaceInternal() {
     m_sMGDRobotInterface.m_RangersText = [](wchar_t *text, wchar_t *font, uint32_t color, int sizex, int sizey,
                                             int alignx, int aligny, int wordwrap, int smex, int smy, Base::CRect *clipr,
                                             SMGDRangersInterfaceText *it) {
-        pInstance->GetText()->CreateText(text, font, color, sizex, sizey, alignx, aligny, wordwrap, smex, smy, (RECT*)clipr,
-                                         (SMGDRangersInterfaceTextImpl*)it);
+        pInstance->GetText()->CreateText(text, font, color, sizex, sizey, alignx, aligny, wordwrap, smex, smy,
+                                         (RECT *)clipr, (SMGDRangersInterfaceTextImpl *)it);
     };
     m_sMGDRobotInterface.m_RangersTextClear = [](SMGDRangersInterfaceText *it) {
-        pInstance->GetText()->DestroyText((SMGDRangersInterfaceTextImpl*)it);
+        pInstance->GetText()->DestroyText((SMGDRangersInterfaceTextImpl *)it);
     };
 
     m_sMGDRobotInterface.m_ProgressBar = [](float val) { pInstance->GetGame()->SetProgressBar(val); };
@@ -48,6 +54,7 @@ RangersInterfaceInternal::RangersInterfaceInternal() {
     m_sMGDRobotInterface.m_MusicVolumeGet = []() { return pInstance->GetGame()->GetMusicVolume(); };
     m_sMGDRobotInterface.m_MusicVolumeSet = [](float v) { pInstance->GetGame()->SetMusicVolume(v); };
 }
+
 
 RangersInterfaceInternal *RangersInterfaceInternal::getInstance() {
     if (!pInstance) {
