@@ -50,6 +50,7 @@ target_link_libraries(
     MatrixGameInternal
     PUBLIC
         winmm
+        xaudio2_8
         ${DIRECTX9_LIBRARIES}
         MatrixLib
         "$<$<C_COMPILER_ID:MSVC>:legacy_stdio_definitions>"
