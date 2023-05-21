@@ -63,7 +63,7 @@ void RangersSound::Init(std::map<std::wstring, std::wstring> &sounds) {
 
     m_pXAudio2->CreateMasteringVoice(&m_pMasterVoice);
 
-    for (const auto pair : sounds) {
+    for (const auto &pair : sounds) {
         Base::CBuf *buf = new Base::CBuf(NULL);
         buf->LoadFromFile(pair.second);
 
@@ -78,7 +78,7 @@ void RangersSound::Deinit() {
         m_pXAudio2 = nullptr;
     }
 
-    for (const auto pair : m_soundsWavData) {
+    for (const auto &pair : m_soundsWavData) {
         delete pair.second;
     }
 
