@@ -122,8 +122,8 @@ LPD3DXFONT RangersText::GetFont(wchar_t *fontName) {
 }
 
 int RangersText::GetFontHeight(LPD3DXFONT pDXFont) {
-    D3DXFONT_DESC desc;
-    pDXFont->GetDesc(&desc);
+    D3DXFONT_DESCW desc;
+    pDXFont->GetDescW(&desc);
     return desc.Height;
 }
 
@@ -314,7 +314,7 @@ void RangersText::DrawRangersText(std::wstring_view text, LPD3DXFONT pFont, RECT
         iTop = rect.top;
 
     // Draw all the color sections
-    for (const SLine line : lineList) {
+    for (const SLine &line : lineList) {
         int iLeft;
         if (format & DT_RIGHT)
             iLeft = rect.right - line.width;
