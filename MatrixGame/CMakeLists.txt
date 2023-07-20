@@ -67,6 +67,7 @@ add_matrix_directory(src/Effects)
 add_matrix_directory(src/Interface)
 add_matrix_directory(src/Logic)
 add_matrix_directory(src/RangersInterface)
+add_matrix_directory(src/NetGame)
 
 add_library(MatrixGame SHARED)
 # remove lib prefix from the DLL name (for GCC build)

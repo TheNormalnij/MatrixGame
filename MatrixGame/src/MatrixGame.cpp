@@ -647,7 +647,7 @@ void CGame::Deinit(void) {
     }
 }
 
-void CGame::RunGameLoop(CFormMatrixGame *formgame) {
+void CGame::RunGameLoop(CForm *formgame) {
     try {
         g_ExitState = 0;
         FormChange(formgame);

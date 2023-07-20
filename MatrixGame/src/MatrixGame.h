@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "MatrixFormGame.hpp"
+#include "Form.hpp"
 #include "MatrixGameDllEx.hpp"
 
 #include "CHeap.hpp"
@@ -40,7 +40,7 @@ public:
               SMatrixTextParams *textParams = nullptr);
     void Deinit();
     void SafeFree();
-    void RunGameLoop(CFormMatrixGame *formGame);
+    void RunGameLoop(CForm *formGame);
     void SaveResult(SRobotGameState *state);
 
 private:

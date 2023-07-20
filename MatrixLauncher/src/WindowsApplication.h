@@ -19,6 +19,7 @@ public:
     
     void StartLauncher() override;
     void StartLocalGame(wchar_t *wcBattleMap) override;
+    void StartNetworkGame(char *serverHost) override;
 
 private:
     CSettings m_settings;

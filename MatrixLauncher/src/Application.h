@@ -11,4 +11,5 @@ class CApplication {
 public:
     virtual void StartLocalGame(wchar_t *map) = 0;
     virtual void StartLauncher() = 0;
+    virtual void StartNetworkGame(char *serverHost) = 0;
 };

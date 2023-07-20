@@ -11,7 +11,7 @@
 #include <deque>
 #include <string>
 
-class CFormMatrixGame : public CForm {
+class CNetGameForm : public CForm {
 private:
     float m_LastWorldX, m_LastWorldY;
     int m_Action;
@@ -20,8 +20,8 @@ private:
     bool IsInputEqual(std::string str);
 
 public:
-    CFormMatrixGame(void);
-    ~CFormMatrixGame();
+    CNetGameForm(void);
+    ~CNetGameForm();
 
     virtual void Enter(void);
     virtual void Leave(void);

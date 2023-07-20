@@ -5,45 +5,45 @@
 
 #include <string>
 
-#include "MatrixFormGame.hpp"
-#include "MatrixMap.hpp"
-#include "MatrixRobot.hpp"
-#include "MatrixFlyer.hpp"
-#include "Effects/MatrixEffect.hpp"
-#include "Effects/MatrixEffectSelection.hpp"
-#include "Effects/MatrixEffectPointLight.hpp"
-#include "Effects/MatrixEffectPath.hpp"
-#include "Interface/CInterface.h"
-#include "MatrixMultiSelection.hpp"
-#include "MatrixMapStatic.hpp"
-#include "Interface/CIFaceMenu.h"
-#include "MatrixGameDll.hpp"
-#include "MatrixInstantDraw.hpp"
-#include "Interface/MatrixHint.hpp"
-#include "MatrixObjectCannon.hpp"
-#include "Interface/CCounter.h"
-#include "MatrixGamePathUtils.hpp"
+#include "NetGameForm.h"
+#include "../MatrixMap.hpp"
+#include "../MatrixRobot.hpp"
+#include "../MatrixFlyer.hpp"
+#include "../Effects/MatrixEffect.hpp"
+#include "../Effects/MatrixEffectSelection.hpp"
+#include "../Effects/MatrixEffectPointLight.hpp"
+#include "../Effects/MatrixEffectPath.hpp"
+#include "../Interface/CInterface.h"
+#include "../MatrixMultiSelection.hpp"
+#include "../MatrixMapStatic.hpp"
+#include "../Interface/CIFaceMenu.h"
+#include "../MatrixGameDll.hpp"
+#include "../MatrixInstantDraw.hpp"
+#include "../Interface/MatrixHint.hpp"
+#include "../MatrixObjectCannon.hpp"
+#include "../Interface/CCounter.h"
+#include "../MatrixGamePathUtils.hpp"
 
-#include <time.h>
-#include <sys/timeb.h>
-#include "stdio.h"
+//#include <time.h>
+//#include <sys/timeb.h>
+//#include "stdio.h"
+//
+//#include <utils.hpp>
 
-#include <utils.hpp>
-
-CFormMatrixGame::CFormMatrixGame() : CForm() {
+CNetGameForm::CNetGameForm() : CForm() {
     DTRACE();
-    m_Name = L"MatrixGame";
+    m_Name = L"MatrixNetGame";
 
     m_LastWorldX = 0;
     m_LastWorldY = 0;
     m_Action = 0;
 }
 
-CFormMatrixGame::~CFormMatrixGame() {
+CNetGameForm::~CNetGameForm() {
     DTRACE();
 }
 
-void CFormMatrixGame::Enter(void) {
+void CNetGameForm::Enter(void) {
     DTRACE();
     S3D_Default();
     D3DMATERIAL9 mtrl;
@@ -82,11 +82,11 @@ void CFormMatrixGame::Enter(void) {
     g_MatrixMap->m_Cursor.SetVisible(true);
 }
 
-void CFormMatrixGame::Leave(void) {
+void CNetGameForm::Leave(void) {
     DTRACE();
 }
 
-void CFormMatrixGame::Draw(void) {
+void CNetGameForm::Draw(void) {
     DTRACE();
 
     if (!FLAG(g_MatrixMap->m_Flags, MMFLAG_VIDEO_RESOURCES_READY))
@@ -94,58 +94,13 @@ void CFormMatrixGame::Draw(void) {
 
     CInstDraw::DrawFrameBegin();
 
-    if (FLAG(g_MatrixMap->m_Flags, MMFLAG_AUTOMATIC_MODE)) {
-        g_MatrixMap->m_DI.T(L"Automatic mode", L"");
-    }
-
-    if (FLAG(g_Config.m_DIFlags, DI_DRAWFPS))
-        g_MatrixMap->m_DI.T(L"FPS", utils::format(L"%d", g_DrawFPS).c_str());
-    if (FLAG(g_Config.m_DIFlags, DI_TMEM)) {
-        g_MatrixMap->m_DI.T(L"Free Texture Mem", utils::format(L"%d", g_AvailableTexMem).c_str());
-    }
-    if (FLAG(g_Config.m_DIFlags, DI_TARGETCOORD)) {
-        std::wstring txt;
-        txt += utils::format(L"%d", Float2Int(g_MatrixMap->m_Camera.GetXYStrategy().x * 10.0f));
-        txt.insert(txt.length() - 1, L".");
-        txt += L", ";
-        txt += utils::format(L"%d", Float2Int(g_MatrixMap->m_Camera.GetXYStrategy().y * 10.0f));
-        txt.insert(txt.length() - 1, L".");
-        // txt += L", ";
-        // txt += Float2Int((g_MatrixMap->m_Camera.GetTarget().z+g_MatrixMap->m_Camera.GetZRel()) * 10.0f);
-        // txt.Insert(txt.length()-1,L".",1);
-        g_MatrixMap->m_DI.T(L"Camera target", txt.c_str());
-    }
-    if (FLAG(g_Config.m_DIFlags, DI_FRUSTUMCENTER)) {
-        std::wstring txt;
-        txt += utils::format(L"%d", Float2Int(g_MatrixMap->m_Camera.GetFrustumCenter().x * 10.0f));
-        txt.insert(txt.length() - 1, L".");
-        txt += L", ";
-        txt += utils::format(L"%d", Float2Int(g_MatrixMap->m_Camera.GetFrustumCenter().y * 10.0f));
-        txt.insert(txt.length() - 1, L".");
-        txt += L", ";
-        txt += utils::format(L"%d", Float2Int(g_MatrixMap->m_Camera.GetFrustumCenter().z * 10.0f));
-        txt.insert(txt.length() - 1, L".");
-        g_MatrixMap->m_DI.T(L"Frustum Center", txt.c_str());
-
-        // txt =
-        // Float2Int(D3DXVec3Length(&(g_MatrixMap->m_Camera.GetFrustumCenter()-(g_MatrixMap->m_Camera.GetTarget()+D3DXVECTOR3(0,0,g_MatrixMap->m_Camera.GetZRel()))))
-        // * 10.0f); txt.Insert(txt.length()-1,L".",1); g_MatrixMap->m_DI.T(L"Cam dist",txt.Get());
-
-        // g_MatrixMap->m_DI.T(L"Z rel",std::wstring(g_MatrixMap->m_Camera.GetZRel()));
-    }
-
     g_MatrixMap->BeforeDraw();
 
     // ASSERT_DX(g_D3DD->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
     // D3DCOLOR_XRGB(255,0,0), 1.0f, 0 ));
 
     if (FLAG(g_Flags, GFLAG_STENCILAVAILABLE)) {
-#if defined _DEBUG || defined EXE_VERSION
-        ASSERT_DX(g_D3DD->Clear(0, NULL, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL | D3DCLEAR_TARGET,
-                                D3DCOLOR_XRGB(255, 0, 255), 1.0f, 0));
-#else
         ASSERT_DX(g_D3DD->Clear(0, NULL, D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, 0, 1.0f, 0));
-#endif
 
         if (CInterface::ClearRects_GetCount())
             ASSERT_DX(g_D3DD->Clear(CInterface::ClearRects_GetCount(), CInterface::ClearRects_Get(),
@@ -160,11 +115,6 @@ void CFormMatrixGame::Draw(void) {
     }
 
     ASSERT_DX(g_D3DD->BeginScene());
-#ifdef _DEBUG
-    if (!FLAG(g_Flags, GFLAG_EXTRAFREERES)) {
-        SETFLAG(g_Flags, GFLAG_RENDERINPROGRESS);
-    }
-#endif
 
     g_MatrixMap->Draw();
 
@@ -190,29 +140,11 @@ void CFormMatrixGame::Draw(void) {
     }
 
     Sleep(current_delay);
-    // if (FLAG(g_Flags, GFLAG_PRESENT_REQUIRED))
-    //{
-    //    ASSERT_DX(g_D3DD->Present(NULL,NULL,NULL,NULL));
-    //    RESETFLAG(g_Flags, GFLAG_PRESENT_REQUIRED);
-    //}
+
     ASSERT_DX(g_D3DD->Present(NULL, NULL, NULL, NULL));
-
-#ifdef _DEBUG
-    RESETFLAG(g_Flags, GFLAG_RENDERINPROGRESS);
-    RESETFLAG(g_Flags, GFLAG_EXTRAFREERES);
-#endif
-
-#ifdef MEM_SPY_ENABLE
-    CDText::T("ALLOC", (int)SMemHeader::fullsize);
-
-    std::string buff;
-    CDText::Get(buff);
-
-    SetWindowTextA(g_Wnd, buff.c_str());
-#endif
 }
 
-void CFormMatrixGame::Takt(int step) {
+void CNetGameForm::Takt(int step) {
     DTRACE();
 
     if (g_MatrixMap->CheckLostDevice())
@@ -288,12 +220,7 @@ void CFormMatrixGame::Takt(int step) {
         wcsftime(time_str, sizeof(time_str), L"%Y-%m-%d-%H-%M-%S", &tstruct);
 
         std::wstring filename =
-            utils::format(
-                L"%ls\\%ls-%ls-%03d.png",
-                screenshots_dir.c_str(),
-                FILE_NAME_SCREENSHOT,
-                time_str,
-                index);
+                utils::format(L"%ls\\%ls-%ls-%03d.png", screenshots_dir.c_str(), FILE_NAME_SCREENSHOT, time_str, index);
 
         DeleteFileW(filename.c_str());
 
@@ -414,34 +341,7 @@ void CFormMatrixGame::Takt(int step) {
     }
 }
 
-#if (defined _DEBUG) && !(defined _RELDEBUG)
-static SEffectHandler point(DEBUG_CALL_INFO);
-static CMatrixEffectPath *path = 0;
-static CMatrixEffectSelection *sel = 0;
-static CMatrixEffectRepair *repair = 0;
-
-void selcallback(CMatrixMapStatic *ms, DWORD param) {
-    if (ms->GetObjectType() == OBJECT_TYPE_MAPOBJECT)
-        g_MatrixMap->m_DI.T(utils::format(L"%d", (int)ms).c_str(), L"Mesh", 1000);
-    else if (ms->IsRobot())
-        g_MatrixMap->m_DI.T(utils::format(L"%d", (int)ms).c_str(), L"Robot", 1000);
-    else if (ms->IsCannon())
-        g_MatrixMap->m_DI.T(utils::format(L"%d", (int)ms).c_str(), L"Cannon", 1000);
-    else if (ms->IsBuilding())
-        g_MatrixMap->m_DI.T(utils::format(L"%d", (int)ms).c_str(), L"Building", 1000);
-    else if (ms->GetObjectType() == OBJECT_TYPE_FLYER)
-        g_MatrixMap->m_DI.T(utils::format(L"%d", (int)ms).c_str(), L"Flyer", 1000);
-    SideSelectionCallBack(ms, param);
-}
-#else
-
-void selcallback(CMatrixMapStatic *ms, DWORD param) {
-    SideSelectionCallBack(ms, param);
-}
-
-#endif
-
-void CFormMatrixGame::MouseMove(int x, int y) {
+void CNetGameForm::MouseMove(int x, int y) {
     DTRACE();
 
     CMatrixSideUnit *p_side = g_MatrixMap->GetPlayerSide();
@@ -475,47 +375,14 @@ void CFormMatrixGame::MouseMove(int x, int y) {
         cbs.mp = CPoint(x, y);
         cbs.calls = 0;
         CMultiSelection::m_GameSelection->Update(g_MatrixMap->m_Cursor.GetPos(), TRACE_ROBOT | TRACE_BUILDING,
-                                                 selcallback, (DWORD)&cbs);
+                                                 SideSelectionCallBack, (DWORD)&cbs);
     }
 
     // interface
     SETFLAG(g_IFaceList->m_IfListFlags, MINIMAP_ENABLE_DRAG);
-
-    // bool fRBut=(GetAsyncKeyState(VK_RBUTTON) & 0x8000)==0x8000;
-
-/*
-    { // cell information
-
-        float xx, yy;
-        g_MatrixMap->CalcPickVector(CPoint(x,y), vDir);
-        g_MatrixMap->UnitPickWorld(g_MatrixMap->GetFrustumCenter(),vDir,&xx,&yy);
-
-        xx /= GLOBAL_SCALE;
-        yy /= GLOBAL_SCALE;
-
-        CDText::T("CELL", (CStr((int)xx) + "," + CStr((int)yy)).Get());
-    }
-*/
-#if (defined _DEBUG) && !(defined _RELDEBUG)
-    if (point.effect) {
-        D3DXVECTOR3 pos = g_MatrixMap->m_TraceStopPos;
-        pos.z += 10.0f;
-        ((CMatrixEffectPointLight *)point.effect)->SetPos(pos);
-    }
-    if (sel) {
-        D3DXVECTOR3 pos = g_MatrixMap->m_TraceStopPos;
-        pos.z += 10.0f;
-        sel->SetPos(pos);
-    }
-    if (repair) {
-        D3DXVECTOR3 pos = g_MatrixMap->m_TraceStopPos;
-        pos.z += 10.0f;
-        repair->UpdateData(pos, D3DXVECTOR3(1, 0, 0));
-    }
-#endif
 }
 
-void CFormMatrixGame::MouseKey(ButtonStatus status, int key, int x, int y) {
+void CNetGameForm::MouseKey(ButtonStatus status, int key, int x, int y) {
     DTRACE();
 
     if (status == B_WHEEL) {
@@ -690,7 +557,8 @@ void CFormMatrixGame::MouseKey(ButtonStatus status, int key, int x, int y) {
                     cbs.calls = 0;
 
                     CMultiSelection::m_GameSelection->Update(g_MatrixMap->m_Cursor.GetPos(),
-                                                             TRACE_ROBOT | TRACE_BUILDING, selcallback, (DWORD)&cbs);
+                                                             TRACE_ROBOT | TRACE_BUILDING, SideSelectionCallBack,
+                                                             (DWORD)&cbs);
                 }
             }
             g_MatrixMap->GetPlayerSide()->OnLButtonDown(CPoint(x, y));
@@ -726,79 +594,15 @@ struct STextInfo {
     int time;
 };
 
-static STextInfo stuff[] = {{L"3D Robots game information....", L"", 3000},
-                            {L"Coding....", L"", 10000},
-                            {L" Alexander <ZakkeR> Zeberg", L"", 0},
-                            {L"", L"Engine lead coder", 0},
-                            {L"", L"MapEditor lead coder"},
-                            {L"", L"Optimizations"},
-                            {L" Alexey <Dab> Dubovoy", L"", 0},
-                            {L"", L"High-AI lead coder", 0},
-                            {L"", L"MapEditor base coder", 0},
-                            {L" Alexander <Sub0> Parshin", L"", 0},
-                            {L"", L"Low-AI lead coder", 0},
-                            {L"", L"UI lead coder", 0},
-
-                            {L"Artwork...", L"", 10000},
-                            {L" Eugene <Johan> Cherenkov", L"", 0},
-                            {L"", L"UI", 0},
-                            {L"", L"Some cool textures", 0},
-                            {L"", L"Sky", 0},
-
-                            {L" Nina <Nina> Vatulich", L"", 0},
-                            {L"", L"Terrain textures", 0},
-                            {L"", L"Effects textures", 0},
-
-                            {L"Modeling...", L"", 8000},
-                            {L" Nina <Nina> Vatulich", L"", 0},
-                            {L"", L"Lot of meshes", 0},
-
-                            {L" Alexander <Alexartist> Yazynin", L"", 0},
-                            {L"", L"Meshes", 0},
-                            {L"", L"Buildings", 0},
-
-                            {L" Ruslan <IronFist> Tchernyi", L"", 0},
-                            {L"", L"Advanced meshes", 0},
-
-                            {L" Sergey <Esk> Simonov", L"", 0},
-                            {L"", L"Robots", 0},
-                            {L"", L"Helicopters", 0},
-                            {L"", L"Some meshes", 0},
-
-                            {L"Map design...", L"", 7000},
-                            {L" Alexander <Alexartist> Yazynin", L"", 0},
-                            {L" Ruslan <IronFist> Tchernyi", L"", 0},
-                            {L" Nina <Nina> Vatulich", L"", 0},
-
-                            {L"Game balancing...", L"", 7000},
-                            {L" Alexander <Alexartist> Yazynin", L"", 0},
-                            {L"", L"Maps", 0},
-                            {L" Dmitry <Dm> Gusarov", L"", 0},
-                            {L"", L"Items", 0},
-                            {L" Nina <Nina> Vatulich", L"", 0},
-                            {L"", L"Maps", 0},
-
-                            {L"Game texts and sounds...", L"", 5000},
-                            {L" Ilia <Ilik> Plusnin", L"", 0},
-
-                            {L"Thats all folks :)", L"", 3000},
-                            {NULL, NULL}};
-
-bool CFormMatrixGame::IsInputEqual(std::string str)
-{
-    if (m_LastScans.size() < str.size())
-    {
+bool CNetGameForm::IsInputEqual(std::string str) {
+    if (m_LastScans.size() < str.size()) {
         return false;
     }
 
     auto istr = str.rbegin();
     auto iscan = m_LastScans.rbegin();
-    for (;
-         istr != str.rend();
-         istr++, iscan++)
-    {
-        if (*istr != Scan2Char(iscan->scan))
-        {
+    for (; istr != str.rend(); istr++, iscan++) {
+        if (*istr != Scan2Char(iscan->scan)) {
             return false;
         }
     }
@@ -806,7 +610,7 @@ bool CFormMatrixGame::IsInputEqual(std::string str)
     return true;
 }
 
-void CFormMatrixGame::Keyboard(bool down, int scan) {
+void CNetGameForm::Keyboard(bool down, int scan) {
     DTRACE();
 
     bool fCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) == 0x8000;
@@ -818,222 +622,10 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
     }
 
     if (down) {
-        if (m_LastScans.size() == MAX_SCANS)
-        {
+        if (m_LastScans.size() == MAX_SCANS) {
             m_LastScans.pop_front();
         }
         m_LastScans.emplace_back(g_MatrixMap->GetTime(), scan);
-#ifdef CHEATS_ON
-        if (IsInputEqual("DEVCON") ||
-            IsInputEqual("~"))
-        {
-            m_LastScans.clear();
-            g_MatrixMap->m_Console.SetActive(true);
-            return;
-        }
-        if (IsInputEqual("SHOWFPS"))
-        {
-            m_LastScans.clear();
-            INVERTFLAG(g_Config.m_DIFlags, DI_DRAWFPS);
-            return;
-        }
-        if (IsInputEqual("INFO ")) // note space at the end
-        {
-            m_LastScans.clear();
-            INVERTFLAG(g_Config.m_DIFlags,
-                       DI_TMEM | DI_TARGETCOORD | DI_VISOBJ | DI_ACTIVESOUNDS | DI_FRUSTUMCENTER);
-            return;
-        }
-        if (IsInputEqual("AUTO"))
-        {
-            m_LastScans.clear();
-            INVERTFLAG(g_MatrixMap->m_Flags, MMFLAG_AUTOMATIC_MODE);
-            return;
-        }
-        if (IsInputEqual("FLYCAM"))
-        {
-            m_LastScans.clear();
-            INVERTFLAG(g_MatrixMap->m_Flags, MMFLAG_FLYCAM);
-            return;
-        }
-        if (IsInputEqual("BABKI"))
-        {
-            m_LastScans.clear();
-             INVERTFLAG(g_Config.m_DIFlags, DI_SIDEINFO);
-            return;
-        }
-
-        if (IsInputEqual("CRAZYBOT"))
-        {
-            m_LastScans.clear();
-            g_MatrixMap->GetPlayerSide()->BuildCrazyBot();
-            return;
-        }
-
-        if (IsInputEqual("HURRY"))
-        {
-            m_LastScans.clear();
-            if (!g_MatrixMap->MaintenanceDisabled() && g_MatrixMap->BeforeMaintenanceTime() > 0) {
-                g_MatrixMap->SetMaintenanceTime(1);
-                return;
-            }
-        }
-
-        if (IsInputEqual("MEGABUST"))
-        {
-            m_LastScans.clear();
-
-            // CSound::Play(S_BENTER, SL_INTERFACE);
-            // CSound::Play(S_MAINTENANCE_ON, SL_INTERFACE);
-            // CSound::Play(S_ROBOT_BUILD_END, SL_ALL);
-            // CSound::Play(S_TERRON_KILLED, SL_ALL);
-            // CSound::Play(S_TURRET_BUILD_2, SL_ALL);
-
-            if (FLAG(g_MatrixMap->m_Flags, MMFLAG_MEGABUSTALREADY))
-            // if (0)
-            {
-                CMatrixMapStatic *s = CMatrixMapStatic::GetFirstLogic();
-                for (; s; s = s->GetNextLogic()) {
-                    if (s->GetSide() == PLAYER_SIDE) {
-                        if (s->IsRobot() && !s->AsRobot()->IsAutomaticMode()) {
-                            s->AsRobot()->MustDie();
-                        }
-                        // else if (s->IsCannon())
-                        //{
-                        //    s->AsCannon()->InitMaxHitpoint(s->AsCannon()->GetMaxHitPoint()*20);
-                        //} else if (s->IsBuilding())
-                        //{
-                        //    s->AsBuilding()->InitMaxHitpoint(s->AsBuilding()->GetMaxHitPoint()*20);
-                        //}
-                    }
-                }
-            }
-            else {
-                CMatrixMapStatic *s = CMatrixMapStatic::GetFirstLogic();
-                for (; s; s = s->GetNextLogic()) {
-                    if (s->GetSide() == PLAYER_SIDE) {
-                        if (s->IsRobot()) {
-                            s->AsRobot()->InitMaxHitpoint(s->AsRobot()->GetMaxHitPoint() *
-                                                          20);
-                        }
-                        else if (s->IsCannon()) {
-                            s->AsCannon()->InitMaxHitpoint(s->AsCannon()->GetMaxHitPoint() *
-                                                           20);
-                        }
-                        else if (s->IsBuilding()) {
-                            s->AsBuilding()->InitMaxHitpoint(
-                                    s->AsBuilding()->GetMaxHitPoint() * 20);
-                        }
-                    }
-                }
-                SETFLAG(g_MatrixMap->m_Flags, MMFLAG_MEGABUSTALREADY);
-            }
-            return;
-        }
-
-        if (IsInputEqual("STATS"))
-        {
-            m_LastScans.clear();
-
-            if (!g_MatrixMap->IsPaused()) {
-                SETFLAG(g_MatrixMap->m_Flags, MMFLAG_STAT_DIALOG_D);
-            }
-            return;
-        }
-
-        if (IsInputEqual("VIDEO"))
-        {
-            m_LastScans.clear();
-            g_MatrixMap->m_DI.T(L"_____________________________", L"", 10000);
-            g_MatrixMap->m_DI.T(L"Sim textures", utils::format(L"%u", g_D3DDCaps.MaxSimultaneousTextures).c_str(), 10000);
-            g_MatrixMap->m_DI.T(L"Stencil available", FLAG(g_Flags, GFLAG_STENCILAVAILABLE) ? L"Yes" : L"No", 10000);
-
-            // vidmode
-            D3DDISPLAYMODE d3ddm;
-            for (int i = 0; i < 2; ++i)
-            {
-                std::wstring modet = utils::format(L"Buffer %d mode", i);
-                std::wstring modev;
-                ASSERT_DX(g_D3DD->GetDisplayMode(0, &d3ddm));
-                if (d3ddm.Format == D3DFMT_X8R8G8B8) {
-                    modev = L"X8R8G8B8";
-                }
-                else if (d3ddm.Format == D3DFMT_A8R8G8B8) {
-                    modev = L"A8R8G8B8";
-                }
-                else if (d3ddm.Format == D3DFMT_R8G8B8) {
-                    modev = L"R8G8B8";
-                }
-                else if (d3ddm.Format == D3DFMT_R5G6B5) {
-                    modev = L"R5G6B5";
-                }
-                else {
-                    modev = utils::format(L"%d", d3ddm.Format);
-                }
-                g_MatrixMap->m_DI.T(modet.c_str(), modev.c_str(), 10000);
-            }
-
-            return;
-        }
-
-        if (IsInputEqual("IAMLOOSER"))
-        {
-            g_ExitState = 3;
-            g_MatrixMap->EnterDialogMode(TEMPLATE_DIALOG_WIN);
-            return;
-        }
-
-        if (IsInputEqual("BUBUBU ")) // note space at the end
-        {
-            m_LastScans.clear();
-
-            int delay = 0;
-            int ctime = 0;
-            int od = 0;
-            for (int i = 0; stuff[i].t1 != NULL; ++i) {
-                if (stuff[i].time) {
-                    od = delay;
-                    ctime = stuff[i].time;
-                    delay += stuff[i].time + 100;
-                }
-                g_MatrixMap->m_DI.T(stuff[i].t1, stuff[i].t2, ctime, od, true);
-            }
-            return;
-        }
-
-        if (IsInputEqual("RICHIERICH"))
-        {
-            m_LastScans.clear();
-
-            CMatrixSideUnit* s = g_MatrixMap->GetPlayerSide();
-            if (s)
-            {
-               s->AddResourceAmount(TITAN, 9000);
-               s->AddResourceAmount(ELECTRONICS, 9000);
-               s->AddResourceAmount(ENERGY, 9000);
-               s->AddResourceAmount(PLASMA, 9000);
-           }
-        }
-
-        if (IsInputEqual("KEEPALIVE"))
-        {
-            m_LastScans.clear();
-            INVERTFLAG(g_Flags, GFLAG_KEEPALIVE);
-            g_MatrixMap->m_DI.T(L"KEEPALIVE flag is set to ", FLAG(g_Flags, GFLAG_KEEPALIVE) ? L"true" : L"false", 1000);
-        }
-
-        if (IsInputEqual("NEED4SPEED"))
-        {
-            m_LastScans.clear();
-            INVERTFLAG(g_Flags, GFLAG_4SPEED);
-            g_MatrixMap->m_DI.T(L"4SPEED flag is set to ", FLAG(g_Flags, GFLAG_4SPEED) ? L"true" : L"false", 1000);
-        }
-
-        if (IsInputEqual("CRASH"))
-        {
-            abort();
-        }
-#endif
     }
 
     if (scan == KEY_ENTER && down) {
@@ -1097,21 +689,6 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             g_IFaceList->LiveRobot();
             return;
         }
-
-#ifdef _TRACE
-        if ((GetAsyncKeyState(VK_LSHIFT) & 0x8000) == 0x8000) {
-            g_ExitState = 2;
-            // SETFLAG(g_Flags, GFLAG_EXITLOOP);
-            g_MatrixMap->EnterDialogMode(TEMPLATE_DIALOG_LOOSE);
-            return;
-        }
-        if ((GetAsyncKeyState(VK_RSHIFT) & 0x8000) == 0x8000) {
-            g_ExitState = 3;
-            // SETFLAG(g_Flags, GFLAG_EXITLOOP);
-            g_MatrixMap->EnterDialogMode(TEMPLATE_DIALOG_WIN);
-            return;
-        }
-#endif
         g_MatrixMap->EnterDialogMode(TEMPLATE_DIALOG_MENU);
         return;
     }
@@ -1144,13 +721,13 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             CMatrixRobotAI *robot = ps->GetArcadedObject()->AsRobot();
 
             if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_BOOM]) & 0x8000) == 0x8000)) {
-                //"E" - Ð’Ð·Ð¾Ñ€Ð²Ð°Ñ‚ÑŒ.
+                //"E" - Âçîðâàòü.
                 robot->BigBoom();
                 return;
             }
             if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_ENTER]) & 0x8000) == 0x8000) ||
                 ((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_ENTER_ALT]) & 0x8000) == 0x8000)) {
-                //"Esc", "ÐŸÑ€Ð¾Ð±ÐµÐ»","Enter" - Ð’Ð¾Ð¹Ñ‚Ð¸ Ð¸ Ð²Ñ‹Ð¹Ñ‚Ð¸ Ð¸Ð· Ñ€Ð¾Ð±Ð¾Ñ‚Ð°.
+                //"Esc", "Ïðîáåë","Enter" - Âîéòè è âûéòè èç ðîáîòà.
                 g_IFaceList->LiveRobot();
                 return;
             }
@@ -1158,20 +735,20 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
         else {
             CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
             if (!FLAG(g_IFaceList->m_IfListFlags, ORDERING_MODE) /*!IS_PREORDERING_NOSELECT*/) {
-                //Ð•ÑÐ»Ð¸ Ð¼Ñ‹ Ð½Ðµ Ð² Ñ€ÐµÐ¶Ð¸Ð¼Ðµ Ð¿Ñ€Ð¸ÐºÐ°Ð·Ð°
+                // Åñëè ìû íå â ðåæèìå ïðèêàçà
 
                 if (ps->GetCurGroup() && (ps->m_CurrSel == ROBOT_SELECTED || ps->m_CurrSel == GROUP_SELECTED)) {
-                    //Ð¡Ñ‚Ñ€Ð°Ñ‚ÐµÐ³Ð¸Ñ‡ÐµÑÐºÐ¸Ð¹ Ñ€ÐµÐ¶Ð¸Ð¼ - Ð²Ñ‹Ð±Ñ€Ð°Ð½Ð° Ð³Ñ€ÑƒÐ¿Ð¿Ð°
+                    // Ñòðàòåãè÷åñêèé ðåæèì - âûáðàíà ãðóïïà
                     if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_ENTER]) & 0x8000) == 0x8000) ||
                         ((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_ENTER_ALT]) & 0x8000) == 0x8000)) {
-                        //"Esc", "ÐŸÑ€Ð¾Ð±ÐµÐ»","Enter" - Ð’Ð¾Ð¹Ñ‚Ð¸ Ð¸ Ð²Ñ‹Ð¹Ñ‚Ð¸ Ð¸Ð· Ñ€Ð¾Ð±Ð¾Ñ‚Ð°.
+                        //"Esc", "Ïðîáåë","Enter" - Âîéòè è âûéòè èç ðîáîòà.
                         CMatrixMapStatic *obj = ps->GetCurGroup()->GetObjectByN(ps->GetCurSelNum());
                         ps->GetCurSelGroup()->RemoveAll();
                         ps->CreateGroupFromCurrent(obj);
                         g_IFaceList->EnterRobot(false);
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_AUTOORDER_ATTACK]) & 0x8000) == 0x8000)) {
-                        // a"U"to attack - ÐŸÑ€Ð¾Ð³Ñ€Ð°Ð¼Ð¼Ð° Ð°Ñ‚Ð°ÐºÐ¸.
+                        // a"U"to attack - Ïðîãðàììà àòàêè.
                         if (FLAG(g_IFaceList->m_IfListFlags, AUTO_FROBOT_ON)) {
                             RESETFLAG(g_IFaceList->m_IfListFlags, AUTO_FROBOT_ON | AUTO_CAPTURE_ON | AUTO_PROTECT_ON);
                             ps->PGOrderStop(ps->SelGroupToLogicGroup());
@@ -1183,7 +760,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                         }
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_AUTOORDER_CAPTURE]) & 0x8000) == 0x8000)) {
-                        //"C"apture - ÐŸÑ€Ð¾Ð³Ñ€Ð°Ð¼Ð¼Ð° Ð·Ð°Ñ…Ð²Ð°Ñ‚Ð°.
+                        //"C"apture - Ïðîãðàììà çàõâàòà.
                         if (FLAG(g_IFaceList->m_IfListFlags, AUTO_CAPTURE_ON)) {
                             RESETFLAG(g_IFaceList->m_IfListFlags, AUTO_FROBOT_ON | AUTO_CAPTURE_ON | AUTO_PROTECT_ON);
                             ps->PGOrderStop(ps->SelGroupToLogicGroup());
@@ -1195,7 +772,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                         }
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_AUTOORDER_DEFEND]) & 0x8000) == 0x8000)) {
-                        //"D"efender - ÐŸÑ€Ð¾Ð³Ñ€Ð°Ð¼Ð¼Ð° ÐžÑ…Ñ€Ð°Ð½ÑÑ‚ÑŒ Protect
+                        //"D"efender - Ïðîãðàììà Îõðàíÿòü Protect
                         if (FLAG(g_IFaceList->m_IfListFlags, AUTO_PROTECT_ON)) {
                             RESETFLAG(g_IFaceList->m_IfListFlags, AUTO_FROBOT_ON | AUTO_CAPTURE_ON | AUTO_PROTECT_ON);
                             ps->PGOrderStop(ps->SelGroupToLogicGroup());
@@ -1207,34 +784,34 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                         }
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ORDER_MOVE]) & 0x8000) == 0x8000)) {
-                        //"M"ove - Ð”Ð²Ð¸Ð³Ð°Ñ‚ÑŒÑÑ
+                        //"M"ove - Äâèãàòüñÿ
                         SETFLAG(g_IFaceList->m_IfListFlags, PREORDER_MOVE);
                         SETFLAG(g_IFaceList->m_IfListFlags, ORDERING_MODE);
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ORDER_STOP]) & 0x8000) == 0x8000)) {
-                        //"S"top - Ð¡Ñ‚Ð¾ÑÑ‚ÑŒ
+                        //"S"top - Ñòîÿòü
                         ps->PGOrderStop(ps->SelGroupToLogicGroup());
                         ps->SelectedGroupBreakOrders();
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ORDER_CAPTURE]) & 0x8000) == 0x8000)) {
-                        // Ta"K"e - Ð—Ð°Ñ…Ð²Ð°Ñ‚Ð¸Ñ‚ÑŒ
+                        // Ta"K"e - Çàõâàòèòü
                         SETFLAG(g_IFaceList->m_IfListFlags, PREORDER_CAPTURE);
                         SETFLAG(g_IFaceList->m_IfListFlags, ORDERING_MODE);
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ORDER_PATROL]) & 0x8000) == 0x8000)) {
-                        //"P"atrol - ÐŸÐ°Ñ‚Ñ€ÑƒÐ»Ð¸Ñ€Ð¾Ð²Ð°Ñ‚ÑŒ
+                        //"P"atrol - Ïàòðóëèðîâàòü
                         SETFLAG(g_IFaceList->m_IfListFlags, PREORDER_PATROL);
                         SETFLAG(g_IFaceList->m_IfListFlags, ORDERING_MODE);
                     }
                     else if (ps->GetCurGroup()->GetBombersCnt() &&
                              ((GetAsyncKeyState(g_Config.m_KeyActions[KA_ORDER_EXPLODE]) & 0x8000) == 0x8000)) {
-                        //"E"xplode - Ð’Ð·Ð¾Ñ€Ð²Ð°Ñ‚ÑŒ
+                        //"E"xplode - Âçîðâàòü
                         SETFLAG(g_IFaceList->m_IfListFlags, PREORDER_BOMB);
                         SETFLAG(g_IFaceList->m_IfListFlags, ORDERING_MODE);
                     }
                     else if (ps->GetCurGroup()->GetRepairsCnt() &&
                              ((GetAsyncKeyState(g_Config.m_KeyActions[KA_ORDER_REPAIR]) & 0x8000) == 0x8000)) {
-                        //"R"epair - Ð§Ð¸Ð½Ð¸Ñ‚ÑŒ
+                        //"R"epair - ×èíèòü
                         SETFLAG(g_IFaceList->m_IfListFlags, PREORDER_REPAIR);
                         SETFLAG(g_IFaceList->m_IfListFlags, ORDERING_MODE);
                     }
@@ -1245,18 +822,18 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                     }
                 }
                 else if (ps->m_CurrSel == BUILDING_SELECTED || ps->m_CurrSel == BASE_SELECTED) {
-                    //Ð¡Ñ‚Ñ€Ð°Ñ‚ÐµÐ³Ð¸Ñ‡ÐµÑÐºÐ¸Ð¹ Ñ€ÐµÐ¶Ð¸Ð¼ - Ð²Ñ‹Ð±Ñ€Ð°Ð½Ð° Ð‘Ð°Ð·Ð°\Ð—Ð°Ð²Ð¾Ð´
+                    // Ñòðàòåãè÷åñêèé ðåæèì - âûáðàíà Áàçà\Çàâîä
                     CMatrixBuilding *bld = (CMatrixBuilding *)ps->m_ActiveObject;
 
                     if (bld->IsBase() && !ps->m_ConstructPanel->IsActive() &&
                         ((GetAsyncKeyState(g_Config.m_KeyActions[KA_BUILD_ROBOT]) & 0x8000) == 0x8000)) {
-                        //"B"ase - Ð’Ñ…Ð¾Ð´ Ð² Ð¿Ð¾ÑÑ‚Ñ€Ð¾Ð¹ÐºÑƒ Ñ€Ð¾Ð±Ð¾Ñ‚Ð°
+                        //"B"ase - Âõîä â ïîñòðîéêó ðîáîòà
                         g_IFaceList->m_RCountControl->Reset();
                         g_IFaceList->m_RCountControl->CheckUp();
                         ps->m_ConstructPanel->ActivateAndSelect();
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_BUILD_TURRET]) & 0x8000) == 0x8000)) {
-                        //"T"urrel - ÐŸÐµÑ€ÐµÑ…Ð¾Ð´ Ð² Ð¼ÐµÐ½ÑŽ Ð²Ñ‹Ð±Ð¾Ñ€Ð° Ñ‚ÑƒÑ€ÐµÐ»ÐµÐ¹
+                        //"T"urrel - Ïåðåõîä â ìåíþ âûáîðà òóðåëåé
                         CPoint pl[MAX_PLACES];
                         bool cant_build_tu = false;
 
@@ -1280,7 +857,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                         }
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_BUILD_HELP]) & 0x8000) == 0x8000)) {
-                        //"Ð"elp - Ð’Ñ‹Ð·Ð¾Ð² Ð¿Ð¾Ð´ÐºÑ€ÐµÐ¿Ð»ÐµÐ½Ð¸Ñ
+                        //"Í"elp - Âûçîâ ïîäêðåïëåíèÿ
                         bld->Maintenance();
                     }
                     else if (scan > 1 && scan <= 11 && ps->m_ConstructPanel->IsActive() &&
@@ -1376,32 +953,32 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                 }
             }
             else {
-                //Ð•ÑÐ»Ð¸ Ð¼Ñ‹ Ð² Ñ€ÐµÐ¶Ð¸Ð¼Ðµ Ð¿Ñ€Ð¸ÐºÐ°Ð·Ð° Ð¸Ð»Ð¸ Ð¿Ð¾ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð¿ÑƒÑˆÐºÐ¸
+                // Åñëè ìû â ðåæèìå ïðèêàçà èëè ïîñòðîéêè ïóøêè
 
                 if (FLAG(g_IFaceList->m_IfListFlags, ORDERING_MODE) &&
                     FLAG(g_IFaceList->m_IfListFlags, PREORDER_BUILD_TURRET) && ps->m_CurrentAction != BUILDING_TURRET) {
                     // player_side->IsEnoughResources(g_Config.m_CannonsProps[1].m_Resources)
-                    //ÐœÐµÐ½ÑŽ Ð²Ñ‹Ð±Ð¾Ñ€Ð° Ñ‚ÑƒÑ€ÐµÐ»ÐµÐ¹:
+                    // Ìåíþ âûáîðà òóðåëåé:
                     if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_TURRET_CANNON]) & 0x8000) == 0x8000)) {
-                        //"C"annon - Ð¢ÑƒÑ€ÐµÐ»ÑŒ
+                        //"C"annon - Òóðåëü
                         g_IFaceList->BeginBuildTurret(1);
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_TURRET_GUN]) & 0x8000) == 0x8000)) {
-                        //"G"un - ÐŸÑƒÑˆÐºÐ°
+                        //"G"un - Ïóøêà
                         g_IFaceList->BeginBuildTurret(2);
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_TURRET_LASER]) & 0x8000) == 0x8000)) {
-                        //"L"azer - Ð›Ð°Ð·ÐµÑ€
+                        //"L"azer - Ëàçåð
                         g_IFaceList->BeginBuildTurret(3);
                     }
                     else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_TURRET_ROCKET]) & 0x8000) == 0x8000)) {
-                        //"R"ocket - Ð Ð°ÐºÐµÑ‚Ð½Ð¸Ñ†Ð°
+                        //"R"ocket - Ðàêåòíèöà
                         g_IFaceList->BeginBuildTurret(4);
                     }
                 }
 
                 if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ORDER_CANCEL]) & 0x8000) == 0x8000)) {
-                    //ÐšÐ°Ð½Ñ†ÐµÐ»
+                    // Êàíöåë
                     if (ps->m_CurrentAction == BUILDING_TURRET) {
                         ps->m_CannonForBuild.Delete();
                         ps->m_CurrentAction = NOTHING_SPECIAL;
@@ -1409,13 +986,13 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                     g_IFaceList->ResetOrderingMode();
                 }
             }
-            //ÐžÐ±Ñ‰ÐµÐµ Ð´Ð»Ñ ÑÑ‚Ñ€Ð°Ñ‚ÐµÐ³Ð¸Ñ‡ÐµÑÐºÐ¾Ð³Ð¾ Ñ€ÐµÐ¶Ð¸Ð¼Ð°
+            // Îáùåå äëÿ ñòðàòåãè÷åñêîãî ðåæèìà
             if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_MINIMAP_ZOOMIN]) & 0x8000) == 0x8000)) {
-                //Ð¿Ñ€Ð¸Ð±Ð»Ð¸Ð·Ð¸Ñ‚ÑŒ ÐºÐ°Ñ€Ñ‚Ñƒ
+                // ïðèáëèçèòü êàðòó
                 g_MatrixMap->m_Minimap.ButtonZoomIn(NULL);
             }
             else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_MINIMAP_ZOOMOUT]) & 0x8000) == 0x8000)) {
-                //Ð¾Ñ‚Ð´Ð°Ð»Ð¸Ñ‚ÑŒ ÐºÐ°Ñ€Ñ‚Ñƒ
+                // îòäàëèòü êàðòó
                 g_MatrixMap->m_Minimap.ButtonZoomOut(NULL);
             }
             else if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ORDER_ROBOT_SWITCH1]) & 0x8000) == 0x8000)) {
@@ -1523,11 +1100,8 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                 if (!ps->GetCurGroup()) {
                     prev_unselected = true;
                 }
-                else if (ps->GetCurGroup() &&
-                         iscan->scan == scan &&
-                         (iscan+1)->scan == scan &&
-                         (iscan->time - (iscan+1)->time) < DOUBLESCAN_TIME_DELTA)
-                {
+                else if (ps->GetCurGroup() && iscan->scan == scan && (iscan + 1)->scan == scan &&
+                         (iscan->time - (iscan + 1)->time) < DOUBLESCAN_TIME_DELTA) {
                     CMatrixMapStatic *object = NULL;
                     if (ps->GetCurGroup()->m_FirstObject)
                         object = ps->GetCurGroup()->m_FirstObject->GetObject();
@@ -1586,364 +1160,11 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
         // BUTTON UNPRESSED
         if (!down) {
             if (scan == KEY_LSHIFT) {}
-
-#if (defined _DEBUG) && !(defined _RELDEBUG)
-            if (scan == KEY_SPACE) {
-                if (sel) {
-                    sel->Kill();
-                }
-                sel = 0;
-
-                if (point.effect) {
-                    ((CMatrixEffectPointLight *)point.effect)->Kill(1000);
-                    point.Unconnect();
-                }
-                if (repair) {
-                    g_MatrixMap->SubEffect(DEBUG_CALL_INFO, repair);
-                    repair = 0;
-                }
-            }
-#endif
         }
-
-// BUTTON PRESSED
-#if (defined _DEBUG) && !(defined _RELDEBUG)
-
-        if (scan == KEY_Q) {
-            g_MatrixMap->DumpLogic();
-            g_MatrixMap->m_DI.T(L"LogicDump", L"LogicDump", 1000);
-        }
-        else if (/*scan == KEY_T*/ 0) {
-            SSpecialBot sb;
-            ZeroMemory(&sb, sizeof(SSpecialBot));
-
-            sb.m_Armor.m_Unit.m_nKind = RUK_ARMOR_NUCLEAR;
-            sb.m_Chassis.m_nKind = RUK_CHASSIS_HOVERCRAFT;
-            sb.m_Weapon[0].m_Unit.m_nKind = RUK_WEAPON_MISSILE;
-            sb.m_Weapon[1].m_Unit.m_nKind = RUK_WEAPON_MISSILE;
-            sb.m_Weapon[2].m_Unit.m_nKind = RUK_WEAPON_LASER;
-            sb.m_Weapon[3].m_Unit.m_nKind = RUK_WEAPON_PLASMA;
-            //            sb.m_Weapon[4].m_Unit.m_nKind = RUK_WEAPON_PLASMA;
-            sb.m_Weapon[4].m_Unit.m_nKind = RUK_WEAPON_MORTAR;
-            sb.m_Head.m_nKind = RUK_HEAD_BLOCKER;
-
-            int side_id = PLAYER_SIDE;
-            CMatrixSideUnit *side = g_MatrixMap->GetSideById(side_id);
-
-            if (side->GetRobotsCnt() + side->GetRobotsInStack() >= side->GetMaxSideRobots()) {
-                return;
-            }
-
-            sb.m_Team = 0;
-            int minr = side->m_Team[sb.m_Team].m_RobotCnt;
-            for (int i = 1; i < side->m_TeamCnt; i++) {
-                if (side->m_Team[i].m_RobotCnt < minr) {
-                    minr = side->m_Team[i].m_RobotCnt;
-                    sb.m_Team = i;
-                }
-            }
-
-            int cnt = side->GetRobotsCnt();
-            CMatrixMapStatic *mps = CMatrixMapStatic::GetFirstLogic();
-            while (mps) {
-                if (mps->GetSide() == side_id && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
-                    mps->AsBuilding()->IsBase()) {
-                    cnt += mps->AsBuilding()->m_BS.GetItemsCnt();
-                }
-                mps = mps->GetNextLogic();
-            }
-
-            if (cnt < side->GetMaxSideRobots()) {
-                CMatrixMapStatic *mps = CMatrixMapStatic::GetFirstLogic();
-                while (mps) {
-                    if (mps->GetSide() == side_id && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
-                        mps->AsBuilding()->IsBase()) {
-                        if (mps->AsBuilding()->m_BS.GetItemsCnt() < 6) {
-                            side->m_Constructor->SetBase(mps->AsBuilding());
-                            side->m_Constructor->BuildSpecialBot(sb);
-                            break;
-                        }
-                    }
-                    mps = mps->GetNextLogic();
-                }
-            }
-        }
-        else if (/*scan == KEY_Y*/ 0) {
-            SSpecialBot sb;
-            ZeroMemory(&sb, sizeof(SSpecialBot));
-
-            sb.m_Armor.m_Unit.m_nKind = RUK_ARMOR_NUCLEAR;
-            sb.m_Chassis.m_nKind = RUK_CHASSIS_HOVERCRAFT;
-            sb.m_Weapon[0].m_Unit.m_nKind = RUK_WEAPON_MISSILE;
-            sb.m_Weapon[1].m_Unit.m_nKind = RUK_WEAPON_MISSILE;
-            sb.m_Weapon[2].m_Unit.m_nKind = RUK_WEAPON_LASER;
-            sb.m_Weapon[3].m_Unit.m_nKind = RUK_WEAPON_PLASMA;
-            //            sb.m_Weapon[4].m_Unit.m_nKind = RUK_WEAPON_PLASMA;
-            sb.m_Weapon[4].m_Unit.m_nKind = RUK_WEAPON_MORTAR;
-            sb.m_Head.m_nKind = RUK_HEAD_BLOCKER;
-
-            int side_id = 2 /*PLAYER_SIDE*/;
-            CMatrixSideUnit *side = g_MatrixMap->GetSideById(side_id);
-
-            if (side->GetRobotsCnt() + side->GetRobotsInStack() >= side->GetMaxSideRobots()) {
-                return;
-            }
-
-            sb.m_Team = 0;
-            int minr = side->m_Team[sb.m_Team].m_RobotCnt;
-            for (int i = 1; i < side->m_TeamCnt; i++) {
-                if (side->m_Team[i].m_RobotCnt < minr) {
-                    minr = side->m_Team[i].m_RobotCnt;
-                    sb.m_Team = i;
-                }
-            }
-
-            int cnt = side->GetRobotsCnt();
-            CMatrixMapStatic *mps = CMatrixMapStatic::GetFirstLogic();
-            while (mps) {
-                if (mps->GetSide() == side_id && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
-                    mps->AsBuilding()->IsBase()) {
-                    cnt += mps->AsBuilding()->m_BS.GetItemsCnt();
-                }
-                mps = mps->GetNextLogic();
-            }
-
-            if (cnt < side->GetMaxSideRobots()) {
-                CMatrixMapStatic *mps = CMatrixMapStatic::GetFirstLogic();
-                while (mps) {
-                    if (mps->GetSide() == side_id && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
-                        mps->AsBuilding()->IsBase()) {
-                        if (mps->AsBuilding()->m_BS.GetItemsCnt() < 6) {
-                            side->m_Constructor->SetBase(mps->AsBuilding());
-                            side->m_Constructor->BuildSpecialBot(sb);
-                            break;
-                        }
-                    }
-                    mps = mps->GetNextLogic();
-                }
-            }
-        }
-
-        if (scan > 1 && scan < 12) {}
-
-        // if(scan==KEY_R) {
-        //    CMatrixSideUnit* s = g_MatrixMap->GetPlayerSide();
-        //    if(s){
-        //        s->AddTitan(1000);
-        //        s->AddElectronics(1000);
-        //        s->AddEnergy(1000);
-        //        s->AddPlasma(1000);
-        //    }
-        //}
-        // if(scan == KEY_RBRACKET){
-        //    if(g_IFaceList){
-        //        g_IFaceList->SlideFocusedInterfaceRight();
-        //    }
-        //}
-
-        // if(scan == KEY_LBRACKET){
-        //    if(g_IFaceList){
-        //        g_IFaceList->SlideFocusedInterfaceLeft();
-        //    }
-        //}
-
-        if (scan == KEY_F11) {
-            D3DResource::Dump(D3DRESTYPE_VB);
-            // CCache::Dump();
-        }
-        if (scan == KEY_DELETE) {
-            if (path)
-                path->Kill();
-            path = 0;
-        }
-        if (scan == KEY_E) {
-            g_MatrixMap->m_Minimap.AddEvent(g_MatrixMap->m_TraceStopPos.x, g_MatrixMap->m_TraceStopPos.y, 0xFF00FF00,
-                                            0xFF000000);
-        }
-        if (scan == KEY_F) {
-            g_MatrixMap->ResetMaintenanceTime();
-            if (IS_TRACE_STOP_OBJECT(g_MatrixMap->m_TraceStopObj) && g_MatrixMap->m_TraceStopObj->IsBuilding()) {
-                g_MatrixMap->m_TraceStopObj->AsBuilding()->Maintenance();
-            }
-        }
-#endif
-#if (defined _DEBUG) && !(defined _RELDEBUG)
-        if (scan == KEY_F3) {
-            static bool prev = false;
-            static D3DXVECTOR3 prevp;
-            D3DXVECTOR3 newp, p1, p2;
-
-            CHelper::DestroyByGroup(9090);
-            if (prev) {
-                newp = g_MatrixMap->m_TraceStopPos;
-                CHelper::Create(10000, 9090)
-                        ->Cone(prevp, prevp + D3DXVECTOR3(0, 0, 100), 30, 10, 0xFFFFFFFF, 0xFF00FF00, 10);
-
-                p1 = prevp;
-                p2 = newp;
-                prevp = newp;
-            }
-            else {
-                prevp = g_MatrixMap->m_TraceStopPos;
-                prev = true;
-                CHelper::Create(10000, 9090)
-                        ->Cone(prevp, prevp + D3DXVECTOR3(0, 0, 100), 30, 10, 0xFFFFFFFF, 0xFF00FF00, 10);
-                return;
-            }
-
-            D3DXVECTOR3 dir(p2 - p1), side;
-            float len = D3DXVec3Length(&dir);
-            float dd = len / 3;
-            dir *= 1.0f / len;
-            auto tmp = D3DXVECTOR3(0, 0, 1);
-            D3DXVec3Cross(&side, &dir, &tmp);
-            D3DXVec3Normalize(&side, &side);
-
-            D3DXVECTOR3 to[128];
-            int curi_t = 0;
-
-            for (int idx = 1; idx < 3; ++idx) {
-                D3DXVECTOR3 p = p1 + dir * float(idx * dd) + side * FSRND(len) * 0.2f;
-                to[curi_t++] = p;
-
-                CHelper::Create(10000, 9090)->Cone(p, p + D3DXVECTOR3(0, 0, 90), 30, 35, 0xFFFFFFFF, 0xFFFF0000, 10);
-            }
-
-            to[curi_t++] = p2;
-            CHelper::Create(10000, 9090)->Cone(p2, p2 + D3DXVECTOR3(0, 0, 90), 30, 35, 0xFFFFFFFF, 0xFFFF0000, 10);
-        }
-        {
-            // static int from = 0;
-            // static int to = 100000;
-            // static D3DXVECTOR3 ptfrom;
-
-            // bool fShift=(GetAsyncKeyState(VK_SHIFT) & 0x8000)==0x8000;
-
-            if (scan == KEY_F7) {
-                // ptfrom = g_MatrixMap->m_Camera.GetFrustumCenter();
-                // g_MatrixMap->CalcVisTemp(from, to, ptfrom);
-                g_MatrixMap->CalcVis();
-            }
-            // if (scan == KEY_F8)
-            //{
-            //    if (fShift) --to; else ++to;
-            //    if (to < from) to = from;
-
-            //    CDText::T("from", from);
-            //    CDText::T("to", to);
-
-            //    g_MatrixMap->CalcVisTemp(from, to, ptfrom);
-            //}
-            // if (scan == KEY_F6)
-            //{
-            //    if (fShift) --from; else ++from;
-            //    if (from > to) from = to;
-            //    if (from < 0) from = 0;
-
-            //    CDText::T("from", CStr(from));
-            //    CDText::T("to", CStr(to));
-
-            //    g_MatrixMap->CalcVisTemp(from, to, ptfrom);
-            //}
-        }
-        // if (scan == KEY_F8)
-        //{
-        //    D3DXVECTOR3 p;
-        //    g_MatrixMap->TraceLand(&p, g_MatrixMap->m_Camera.GetFrustumCenter(), g_MatrixMap->m_MouseDir);
-        //    CHelper::Create(10000,888)->Line(g_MatrixMap->m_Camera.GetFrustumCenter(), p);
-        //}
-        if (scan == KEY_F6) {
-            const D3DXVECTOR3 &cam = g_MatrixMap->m_Camera.GetFrustumCenter();
-            int gx = TruncFloat(cam.x / (GLOBAL_SCALE * MAP_GROUP_SIZE));
-            int gy = TruncFloat(cam.y / (GLOBAL_SCALE * MAP_GROUP_SIZE));
-
-            if (gx >= 0 && gx < g_MatrixMap->m_GroupSize.x && gy >= 0 && gy < g_MatrixMap->m_GroupSize.y) {
-                SGroupVisibility *gv = g_MatrixMap->m_GroupVis + gx + gy * g_MatrixMap->m_GroupSize.x;
-
-                int level = TruncFloat((cam.z - gv->z_from) / GLOBAL_SCALE);
-
-                if (level >= 0 && level < gv->levels_cnt) {
-                    int n = gv->levels[level];
-
-                    CHelper::DestroyByGroup(345);
-                    for (int i = 0; i < n; ++i) {
-                        PCMatrixMapGroup g = gv->vis[i];
-
-                        D3DXVECTOR3 f((g->GetPos0().x + g->GetPos1().x) * 0.5f,
-                                      (g->GetPos0().y + g->GetPos1().y) * 0.5f, 0);
-                        f.z = g_MatrixMap->GetZ(f.x, f.y);
-
-                        CHelper::Create(10000, 345)
-                                ->Cone(f, f + D3DXVECTOR3(0, 0, 100), 30, 30, 0xFF00FF00, 0xFF0000FF, 20);
-                    }
-                }
-            }
-        }
-
-        if (scan == KEY_F5 && IS_TRACE_STOP_OBJECT(g_MatrixMap->m_TraceStopObj)) {
-            if (g_MatrixMap->m_TraceStopObj->IsRobot()) {
-                g_MatrixMap->m_TraceStopObj->AsRobot()->m_PosX = 4110.0f;
-                g_MatrixMap->m_TraceStopObj->AsRobot()->m_PosY = 2295.0f;
-                g_MatrixMap->m_TraceStopObj->RChange(MR_Matrix);
-                g_MatrixMap->m_TraceStopObj->RNeed(MR_Matrix);
-                g_MatrixMap->m_TraceStopObj->JoinToGroup();
-
-                CPoint sss(Float2Int(4110.0f / GLOBAL_SCALE_MOVE), Float2Int(2295.0f / GLOBAL_SCALE_MOVE));
-
-                g_MatrixMap->GetPlayerSide()->PGOrderAttack(
-                        g_MatrixMap->GetPlayerSide()->RobotToLogicGroup(g_MatrixMap->m_TraceStopObj->AsRobot()), sss,
-                        NULL);
-            }
-        }
-        if (scan == KEY_K && IS_TRACE_STOP_OBJECT(g_MatrixMap->m_TraceStopObj)) {
-            CMatrixMapStatic *f = g_MatrixMap->m_TraceStopObj;
-            if (f->GetObjectType() == OBJECT_TYPE_FLYER || f->GetObjectType() == OBJECT_TYPE_ROBOTAI) {
-                CMatrixMapStatic::SortBegin();
-
-                if (f->IsFlyer())
-                    ((CMatrixFlyer *)f)->SetHitpoint(1);
-                f->Damage(WEAPON_FLAMETHROWER, f->GetGeoCenter(), D3DXVECTOR3(0, 0, 0), 0, NULL);
-            }
-            else if (f->GetObjectType() == OBJECT_TYPE_MAPOBJECT) {
-                f->Damage(WEAPON_BOMB, f->GetGeoCenter(), D3DXVECTOR3(0, 0, 0), 0, NULL);
-            }
-            else if (f->GetObjectType() == OBJECT_TYPE_BUILDING) {
-                bool killed = f->Damage(WEAPON_BIGBOOM, f->GetGeoCenter(), D3DXVECTOR3(0, 0, 0), 0, NULL);
-                if (!killed)
-                    killed = f->Damage(WEAPON_BIGBOOM, f->GetGeoCenter(), D3DXVECTOR3(0, 0, 0), 0, NULL);
-                if (!killed)
-                    killed = f->Damage(WEAPON_BIGBOOM, f->GetGeoCenter(), D3DXVECTOR3(0, 0, 0), 0, NULL);
-                if (!killed)
-                    killed = f->Damage(WEAPON_BIGBOOM, f->GetGeoCenter(), D3DXVECTOR3(0, 0, 0), 0, NULL);
-                if (!killed)
-                    killed = f->Damage(WEAPON_BIGBOOM, f->GetGeoCenter(), D3DXVECTOR3(0, 0, 0), 0, NULL);
-            }
-        }
-        if (scan == KEY_SPACE) {
-            D3DXVECTOR3 pos = g_MatrixMap->m_TraceStopPos;
-            pos.z += 10.0f;
-
-            if (0)
-                if (point.effect == NULL) {
-                    CMatrixEffect::CreatePointLight(&point, pos + D3DXVECTOR3(0, 0, 0), 150, 0xFF0033FF, false);
-                }
-
-            if (0)
-                if (!sel) {
-                    sel = (CMatrixEffectSelection *)CMatrixEffect::CreateSelection(pos, 20);
-                    g_MatrixMap->AddEffect(sel);
-                }
-            if (0)
-                if (!repair) {
-                    repair = (CMatrixEffectRepair *)CMatrixEffect::CreateRepair(pos, D3DXVECTOR3(1, 0, 0), 200, NULL);
-                    g_MatrixMap->AddEffect(repair);
-                }
-        }
-#endif
     }
 }
 
-void CFormMatrixGame::SystemEvent(ESysEvent se) {
+void CNetGameForm::SystemEvent(ESysEvent se) {
     DTRACE();
     if (se == SYSEV_DEACTIVATING) {
         if (FLAG(g_MatrixMap->m_Flags, MMFLAG_VIDEO_RESOURCES_READY)) {

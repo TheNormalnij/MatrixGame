@@ -62,3 +62,32 @@ else()
   target_link_libraries(LIBPNG INTERFACE png ZLIB)
 endif()
 add_dependencies(LIBPNG libpng-external)
+
+if(MATRIXGAME_BUILD_SERVER)
+    ExternalProject_Add(libuv-external
+      GIT_REPOSITORY https://github.com/libuv/libuv
+      GIT_TAG        v1.45.0
+      GIT_SUBMODULES ""
+      UPDATE_DISCONNECTED false
+      PREFIX         libuv
+      CMAKE_ARGS
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/libuv
+        -DLIBUV_BUILD_SHARED=OFF
+        -DBUILD_TESTING=OFF
+      INSTALL_COMMAND
+        ${CMAKE_COMMAND}
+          --build .
+          --target install
+          --config Release
+    )
+
+    add_library(LIBUV INTERFACE)
+    target_include_directories(LIBUV INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/libuv/include)
+    target_link_directories(LIBUV INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/libuv/lib)
+    target_link_libraries(LIBUV INTERFACE libuv)
+    target_link_libraries(LIBUV INTERFACE Ws2_32.lib)
+    target_link_libraries(LIBUV INTERFACE DbgHelp.lib)
+    target_link_libraries(LIBUV INTERFACE Userenv.lib)
+    target_link_libraries(LIBUV INTERFACE iphlpapi.lib)
+    add_dependencies(LIBUV libuv-external)
+endif()

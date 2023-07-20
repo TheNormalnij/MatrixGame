@@ -25,4 +25,6 @@ extern "C" {
 MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t *name));
 MATRIXGAMEDLL_API int __cdecl RunStandalone(HINSTANCE hinst, wchar *map, SMatrixSettings *set,
                                             SMatrixTextParams *textParams, SRobotGameState *rgs);
+MATRIXGAMEDLL_API int __cdecl ConnectNetGame(HINSTANCE hinst, char *host, SMatrixSettings *set,
+                                             SMatrixTextParams *textParams, SRobotGameState *rgs);
 }

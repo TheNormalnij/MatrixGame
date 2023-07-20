@@ -33,3 +33,16 @@ void CWindowsApplication::StartLocalGame(wchar_t* map) {
     // Takes controll
     RunStandalone(m_hInstance, map, matrixSettings, &texts, &robotGameState);
 }
+
+void CWindowsApplication::StartNetworkGame(char *serverHost) {
+    SMatrixSettings *matrixSettings = m_settings.GetMatrixGameSettings();
+
+    SRobotGameState robotGameState{0};
+
+    SMatrixTextParams texts{};
+    texts.lossText = L"Fail";
+    texts.winText = L"Win";
+    texts.planetName = L"Moon";
+
+    ConnectNetGame(m_hInstance, serverHost, matrixSettings, &texts, &robotGameState);
+}
