@@ -9,6 +9,7 @@
 #include "CServerMainLoop.h"
 #include "net/transports/IServerTransport.h"
 
+// Application main class
 class CServerCore {
 public:
     CServerCore();
@@ -18,6 +19,7 @@ public:
     void StopServer();
 
 private:
+    CSessionStore m_sessionStore;
     CServerMainLoop m_mainLoop;
     IServerTransport *m_pNetHandler;
 };

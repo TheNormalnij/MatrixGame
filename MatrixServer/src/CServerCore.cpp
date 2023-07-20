@@ -5,22 +5,22 @@
 
 #include "CServerCore.h"
 #include "net/transports/CServerTCPTransport.h"
+#include "jobs/CSessionCleaner.h"
+#include "game/CServerMatrixGame.h"
 
 CServerCore::CServerCore() {
-    m_mainLoop = CServerMainLoop();
     m_pNetHandler = new CServerTCPTransport(m_mainLoop.GetLoop());
 }
 
 CServerCore::~CServerCore() {
-    m_pNetHandler->Release();
+    m_pNetHandler->Close([](IServerTransport *transport) { delete transport; });
 }
 
 void CServerCore::StartServer(std::string_view host, uint16_t port) {
     m_pNetHandler->Listen(host, port);
 
-    m_pNetHandler->SetPacketHandler([](void* source, size_t len, char* data) {
-
-    });
+    m_mainLoop.AddServerJob(new CServerMatrixGame());
+    m_mainLoop.AddServerJob(new CSessionCleaner(&m_sessionStore));
 
     m_mainLoop.Start();
 }

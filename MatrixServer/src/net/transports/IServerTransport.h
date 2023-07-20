@@ -8,16 +8,20 @@
 #include <string_view>
 #include <stdint.h>
 
-typedef void (*packet_handler)(void *source, size_t len, char *data);
+class IServerTransport;
 
+typedef void (*packet_handler)(void *source, size_t len, char *data);
+typedef void (*tranport_close_cb)(IServerTransport *transport);
+
+// Adapter interface for transport service TCP/UDP/Websockets...
 class IServerTransport {
 public:
+    // Free resources
+    virtual ~IServerTransport() = 0;
     // Start server
     virtual bool Listen(std::string_view host, uint16_t port) = 0;
     // Stop server
-    virtual void Close() = 0;
+    virtual void Close(tranport_close_cb cb) = 0;
     // Set data handler
     virtual void SetPacketHandler(packet_handler handler) = 0;
-    // Release resources, free data
-    virtual void Release() = 0;
 };

@@ -5,35 +5,16 @@
 
 #include "CServerTCPTransport.h"
 
-const int MAX_CONNECTIONS = 100;
-
-static void on_recv(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
-    if (nread > 0) {
-        printf("%lu\n", nread);
-        printf("%s", buf->base);
-    }
-    printf("free  :%lu %p\n", buf->len, buf->base);
-
-    delete[] buf->base;
-}
-
-static void on_alloc(uv_handle_t *client, size_t suggested_size, uv_buf_t *buf) {
-    buf->base = new char[suggested_size];
-    buf->len = suggested_size;
-    printf("malloc:%lu %p\n", buf->len, buf->base);
-}
-
-static void on_new_connection(uv_stream_t *server, int status) {
-    CServerTCPHandler *self = (CServerTCPHandler*) server->data;
-    self->OnConnection(server, status);
-}
+constexpr int MAX_CONNECTIONS = 100;
 
 CServerTCPTransport::CServerTCPTransport(uv_loop_t *loop) {
     m_loop = loop;
     m_server = {0};
 }
 
-CServerTCPTransport::~CServerTCPTransport() {}
+CServerTCPTransport::~CServerTCPTransport() {
+
+}
 
 bool CServerTCPTransport::Listen(std::string_view host, uint16_t port) {
     int status;
@@ -60,7 +41,8 @@ bool CServerTCPTransport::Listen(std::string_view host, uint16_t port) {
 
     uv_tcp_nodelay(&m_server, true);
 
-    int r = uv_listen((uv_stream_t *)&m_server, MAX_CONNECTIONS, on_new_connection);
+    int r = uv_listen((uv_stream_t *)&m_server, MAX_CONNECTIONS, CServerTCPTransport::StaticOnConnection);
+
     if (r) {
         fprintf(stderr, "Can not start TCP server: %s\n", uv_strerror(r));
         return false;
@@ -69,41 +51,56 @@ bool CServerTCPTransport::Listen(std::string_view host, uint16_t port) {
     return true;
 }
 
-void CServerTCPTransport::OnConnection(uv_stream_t *server, int status) {
+void CServerTCPTransport::SetPacketHandler(packet_handler handler) {
+    m_currentPacketHandlerFun = handler;
+}
+
+void CServerTCPTransport::SendPacket(void *hander, char *data, uint16_t count) {
+    uv_udp_send_t *req = new uv_udp_send_t();
+
+    uv_buf_t wrbuf = uv_buf_init(data, count);
+
+    uv_write(req, handler, &wrbuf, 1, [](uv_write_t *req, int status) {
+        // Write callback
+        if (status) {
+            fprintf(stderr, "Write error %s\n", uv_strerror(status));
+        }
+        delete reg;
+    });
+}
+
+void CServerTCPTransport::Close(tranport_close_cb cb) {
+    uv_close((uv_handle_t *)&m_server, [&](void *handler) { cb(this); });
+}
+
+void CServerTCPTransport::StaticOnConnection(uv_stream_t *server, int status) {
     if (status < 0) {
         fprintf(stderr, "New connection error %s\n", uv_strerror(status));
         return;
     }
 
-    uv_tcp_t *client = (uv_tcp_t *)malloc(sizeof(uv_tcp_t));
+    // Кто и как это освобождает?
+    uv_tcp_t *client = new uv_tcp_t();
     uv_tcp_init(m_loop, client);
     if (uv_accept(server, (uv_stream_t *)client) == 0) {
-        uv_read_start((uv_stream_t *)client, on_alloc, on_recv);
+        uv_read_start((uv_stream_t *)client, CServerTCPTransport::StaticOnAlloc, CServerTCPTransport::StaticOnRecieve);
+    } else {
+        uv_close((uv_handle_t *)client, NULL);
     }
 }
 
-void CServerTCPTransport::SetPacketHandler(packet_handler handler) {
-    m_currentPacketHandlerFun = handler;
+void CServerTCPTransport::StaticOnAlloc(uv_handle_t *client, size_t suggested_size, uv_buf_t *buf) {
+    buf->base = new char[suggested_size];
+    buf->len = suggested_size;
+    printf("[TCP transport] Allocate:%lu %p\n", buf->len, buf->base);
 }
 
-void send_cb(uv_udp_send_t *req, int status) {
-    delete req;
-}
+void CServerTCPTransport::StaticOnRecieve(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
+    if (nread > 0) {
+        printf("%lu\n", nread);
+        printf("%s", buf->base);
+    }
+    printf("free  :%lu %p\n", buf->len, buf->base);
 
-void CServerTCPTransport::SendPacket(const struct sockaddr *addr, char *data, uint16_t count) {
-    uv_udp_send_t *req = new uv_udp_send_t();
-
-    uv_buf_t buf;
-    buf.base = data;
-    buf.len = count;
-
-    //uv_tcp_send(req, &m_server, &buf, count, addr, send_cb);
-}
-
-void CServerTCPTransport::Close() {
-    uv_close((uv_handle_t *)&m_server, nullptr);
-}
-
-void CServerTCPTransport::Release() {
-    delete this;
+    delete[] buf->base;
 }

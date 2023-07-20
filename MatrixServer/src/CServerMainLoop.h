@@ -5,13 +5,17 @@
 
 #pragma once
 
-#include <string_view>
+#include "jobs/IServerJob.h"
+#include <vector>
 #include "uv.h"
 
+// Application event loop controller
 class CServerMainLoop {
 public:
-    CServerMainLoop();
-    ~CServerMainLoop();
+    CServerMainLoop() = default;
+    ~CServerMainLoop() = default;
+
+    void AddServerJob(IServerJob *job) { m_jobs.push_back(job); };
 
     void Start();
     void Stop();
@@ -19,4 +23,8 @@ public:
     void DoTick();
 
     uv_loop_t *GetLoop();
+
+private:
+    std::vector<IServerJob *> m_jobs;
+    uv_idle_t m_uvIdleHandler;
 };
