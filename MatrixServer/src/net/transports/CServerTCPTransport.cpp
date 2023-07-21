@@ -4,6 +4,7 @@
 // Refer to the LICENSE file included
 
 #include "CServerTCPTransport.h"
+#include "../sessions/CSessionTCP.h"
 
 constexpr int MAX_CONNECTIONS = 100;
 
@@ -79,16 +80,17 @@ void CServerTCPTransport::StaticOnConnection(uv_stream_t *server, int status) {
         return;
     }
 
-    // Кто и как это освобождает?
-    uv_tcp_t *client = new uv_tcp_t();
-    uv_tcp_init(m_loop, client);
-    if (uv_accept(server, (uv_stream_t *)client) == 0) {
-        uv_read_start((uv_stream_t *)client, CServerTCPTransport::StaticOnAlloc, CServerTCPTransport::StaticOnRecieve);
+    CSessionTCP *client = new CSessionTCP();
+    client->RegisterInEventLoop(m_loop);
+
+    if (uv_accept(server, (uv_stream_t *)client->GetHandler()) == 0) {
+        uv_read_start((uv_stream_t *)client->GetHandler(), CServerTCPTransport::StaticOnAlloc,
+                      CServerTCPTransport::StaticOnRecieve);
     } else {
-        uv_close((uv_handle_t *)client, NULL);
+        client->CloseAndDestroy();
     }
 }
-
+ 
 void CServerTCPTransport::StaticOnAlloc(uv_handle_t *client, size_t suggested_size, uv_buf_t *buf) {
     buf->base = new char[suggested_size];
     buf->len = suggested_size;

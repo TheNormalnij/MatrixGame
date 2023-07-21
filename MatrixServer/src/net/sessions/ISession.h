@@ -8,6 +8,7 @@
 
 class ISession {
 public:
+    virtual ~ISession() = 0;
     virtual bool IsSource(void* source) = 0;
     virtual std::string_view GetToken() = 0;
     virtual uint64_t GetLastUpdate() = 0;

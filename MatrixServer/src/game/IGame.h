@@ -6,7 +6,7 @@
 #pragma once
 
 #include "players/IPlayer.h"
-#include "IGameCommand.h"
+#include "commands/IGameCommand.h"
 #include "../jobs/IServerJob.h"
 
 class IGame : public IServerJob {

@@ -7,6 +7,7 @@
 
 #include "IGame.h"
 #include "CCommandLog.h"
+#include "CGameNetwork.h"
 #include <list>
 
 enum class EGameStatus {
@@ -34,10 +35,9 @@ private:
     void GameStart();
     void GameStop();
 
-    void SendCurrentTickCommands();
-
 private:
     EGameStatus m_currentStatus;
     size_t m_currentTick;
     CCommandLog m_commandLog;
+    CGameNetwork *m_net;
 };

@@ -5,13 +5,13 @@
 
 #pragma once
 
-enum class ECommandSourceType {
-    SERVER,
-    PLAYER,
-};
+#include "IGameCommand.h"
 
-class IGameCommand {
-    virtual void Serialize() = 0;
-    virtual void *GetSource() = 0;
-    virtual ECommandSourceType GetSourceType() = 0;
+class CCommandAnonimous : public IGameCommand {
+public:
+    CCommandAnonimous(char *data, size_t len);
+
+private:
+    char *m_data;
+    size_t m_len;
 };
