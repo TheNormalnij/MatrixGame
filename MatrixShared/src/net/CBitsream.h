@@ -9,7 +9,7 @@
 
 class CBitstream {
 public:
-    CBitstream(char *data) : m_data(data){};
+    CBitstream(char *data, size_t len) : m_data(data), m_len(len) {};
     ~CBitstream() = default;
 
     template <class T>
@@ -26,5 +26,7 @@ public:
 
 private:
     size_t m_currentPos = 0;
+    size_t m_len;
     char *m_data;
+
 };

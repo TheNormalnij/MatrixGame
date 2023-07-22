@@ -5,10 +5,8 @@
 
 #pragma once
 
-class CServerPacketHandler {
-public:
-    CServerPacketHandler() = default;
-    ~CServaerPacketHandler() = default;
+#include "IPacketHandler.h"
 
-
+class CConnectPacketHandler : IPacketHandler {
+    void Handle(CBitstream &stream, ISession *session, IGame *game) override;
 };

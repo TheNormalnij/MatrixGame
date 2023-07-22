@@ -8,6 +8,7 @@
 #include <string_view>
 #include "CServerMainLoop.h"
 #include "net/transports/IServerTransport.h"
+#include "net/sessions/CSessionStore.h"
 
 // Application main class
 class CServerCore {

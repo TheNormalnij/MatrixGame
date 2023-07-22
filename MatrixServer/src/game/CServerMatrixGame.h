@@ -26,10 +26,10 @@ public:
 
     // IGame interface
     void DoTick() override;
-    void HandleCommand(IGameCommand command) override;
-    void OnRequestPlayerJoin(IPlayer player) override;
-    void OnRequestPlayerQuit(IPlayer player) override;
-    void OnPlayerReady(IPlayer source) override;
+    void HandleCommand(IGameCommand *command) override;
+    void OnRequestPlayerJoin(IPlayer *player) override;
+    void OnRequestPlayerQuit(IPlayer *player) override;
+    void OnPlayerReady(IPlayer *source) override;
 
 private:
     void GameStart();

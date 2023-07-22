@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "../../../../MatrixShared/src/net/CBitsream.h"
+#include "IPacketHandler.h"
 
-class IPacketHandler {
-    virtual void Handle(CBitstream *stream) = 0;
+class CReadyPacketHandler : IPacketHandler {
+    void Handle(CBitstream &stream, ISession *session, IGame *game) override;
 };

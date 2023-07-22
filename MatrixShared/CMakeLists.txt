@@ -10,4 +10,8 @@ target_sources(
         ${MATRIX_SHARED_HEADERS}
 )
 
-target_include_directories(MatrixShared INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/shared/include)
+target_include_directories(
+    MatrixShared
+    INTERFACE
+        src
+)

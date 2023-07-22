@@ -5,6 +5,8 @@
 
 #pragma once
 
-class ITransportHandler {
-	virtual void HandlePacket(char *data, size_t len) = 0;
+#include "IPacketHandler.h"
+
+class CDisconnectPacketHandler : IPacketHandler {
+    void Handle(CBitstream &stream, ISession *session, IGame *game) override;
 };

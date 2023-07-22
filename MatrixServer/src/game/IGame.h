@@ -11,9 +11,9 @@
 
 class IGame : public IServerJob {
 public:
-    virtual void HandleCommand(IGameCommand command) = 0;
-    virtual void OnRequestPlayerJoin(IPlayer source) = 0;
-    virtual void OnRequestPlayerQuit(IPlayer source) = 0;
+    virtual void HandleCommand(IGameCommand *command) = 0;
+    virtual void OnRequestPlayerJoin(IPlayer *source) = 0;
+    virtual void OnRequestPlayerQuit(IPlayer *source) = 0;
 
-    virtual void OnPlayerReady(IPlayer source) = 0;
+    virtual void OnPlayerReady(IPlayer *source) = 0;
 };

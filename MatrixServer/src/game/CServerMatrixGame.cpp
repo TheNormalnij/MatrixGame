@@ -40,6 +40,6 @@ void CServerMatrixGame::DoTick() {
     m_net->SendTickCommands(m_currentTick, m_commandLog.GetTickCommands(m_currentTick));
 }
 
-void CServerMatrixGame::HandleCommand(IGameCommand command) {
+void CServerMatrixGame::HandleCommand(IGameCommand *command) {
     m_commandLog.PushCommand(m_currentTick + 1, command);
 };

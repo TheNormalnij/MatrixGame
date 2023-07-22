@@ -5,8 +5,9 @@
 
 #pragma once
 
-enum class EPacketType {
-	CONNECT,
-	DISCONNECT,
-	GAME_INFO,
+enum class EGamePacketType {
+    CONNECT,
+    DISCONNECT,
+    READY,
+    COMMAND,
 };

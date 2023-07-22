@@ -5,8 +5,11 @@
 
 #pragma once
 
-#include "IPacketHandler.h"
+#include <net/CBitsream.h>
+#include <game/IGame.h>
+#include <net/sessions/ISession.h>
 
-class CConnectPacket : IPacketHandler {
-    void Handle(CBitstream *stream);
+class IPacketHandler {
+public:
+    virtual void Handle(CBitstream &stream, ISession *session, IGame *game) = 0;
 };

@@ -3,6 +3,10 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "CConnectPacket.h"
+#pragma once
 
-void CConnectPacket::Handle(CBitstream *stream) {}
+#include "IPacketHandler.h"
+
+class CCommandPacketHandler : IPacketHandler {
+    void Handle(CBitstream &stream, ISession *session, IGame *game) override;
+};

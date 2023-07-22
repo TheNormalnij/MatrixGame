@@ -16,9 +16,7 @@ target_sources(
 target_include_directories(
     MatrixServer
     PUBLIC
-        .
         src
-        MatrixShared
 )
 
 target_compile_options(

@@ -13,7 +13,7 @@ CServerCore::CServerCore() {
 }
 
 CServerCore::~CServerCore() {
-    m_pNetHandler->Close([](IServerTransport *transport) { delete transport; });
+    
 }
 
 void CServerCore::StartServer(std::string_view host, uint16_t port) {
@@ -27,5 +27,5 @@ void CServerCore::StartServer(std::string_view host, uint16_t port) {
 
 void CServerCore::StopServer() {
     m_mainLoop.Stop();
-    m_pNetHandler->Close();
+    m_pNetHandler->Close([](IServerTransport *transport) { delete transport; });
 }

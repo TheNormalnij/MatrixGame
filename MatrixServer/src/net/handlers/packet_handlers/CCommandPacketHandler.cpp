@@ -3,8 +3,8 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#pragma once
+#include "CCommandPacketHandler.h"
 
-class ITransportHandler {
-	virtual void HandlePacket(char *data, size_t len) = 0;
-};
+void CCommandPacketHandler::Handle(CBitstream &stream, ISession *session, IGame *game) {
+    //game->OnRequestPlayerJoin(session);
+}

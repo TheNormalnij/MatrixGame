@@ -14,6 +14,7 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+option(MATRIXGAME_BUILD_GAME "Build main game" TRUE)
 option(MATRIXGAME_BUILD_LAUNCHER "Build standalone launcher for game" TRUE)
 option(MATRIXGAME_BUILD_SERVER "Build server for multipayer game" TRUE)
 option(MATRIXGAME_CHEATS "Enable cheats" TRUE)
@@ -87,7 +88,24 @@ endif()
 
 add_subdirectory(MatrixShared)
 add_subdirectory(MatrixLib)
-add_subdirectory(MatrixGame)
+
+if(MATRIXGAME_BUILD_GAME)
+    add_subdirectory(MatrixGame)
+
+    install(
+        TARGETS MatrixGame
+        RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
+        LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
+    )
+    if(MSVC)
+        install(
+            FILES $<TARGET_PDB_FILE:MatrixGame>
+            CONFIGURATIONS Debug
+            DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
+        )
+    endif()
+
+endif()
 
 if(MATRIXGAME_BUILD_LAUNCHER)
     add_subdirectory(MatrixLauncher)
@@ -124,17 +142,4 @@ if(MATRIXGAME_BUILD_SERVER)
             DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
         )
     endif()
-endif()
-
-install(
-    TARGETS MatrixGame
-    RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
-    LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
-)
-if(MSVC)
-    install(
-        FILES $<TARGET_PDB_FILE:MatrixGame>
-        CONFIGURATIONS Debug
-        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
-    )
 endif()
