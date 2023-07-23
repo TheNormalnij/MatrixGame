@@ -8,9 +8,10 @@
 
 constexpr int MAX_CONNECTIONS = 100;
 
-CServerTCPTransport::CServerTCPTransport(uv_loop_t *loop) {
+CServerTCPTransport::CServerTCPTransport(uv_loop_t *loop, ITransportHandler *handler) {
     m_loop = loop;
     m_server = {0};
+    m_transportHandler = handler;
 }
 
 CServerTCPTransport::~CServerTCPTransport() {
@@ -52,21 +53,17 @@ bool CServerTCPTransport::Listen(std::string_view host, uint16_t port) {
     return true;
 }
 
-void CServerTCPTransport::SetPacketHandler(packet_handler handler) {
-    m_currentPacketHandlerFun = handler;
-}
-
-void CServerTCPTransport::SendPacket(void *hander, char *data, uint16_t count) {
-    uv_udp_send_t *req = new uv_udp_send_t();
+void CServerTCPTransport::SendData(ISession *handler, char *data, size_t count) {
+    uv_write_t *req = new uv_write_t();
 
     uv_buf_t wrbuf = uv_buf_init(data, count);
 
-    uv_write(req, handler, &wrbuf, 1, [](uv_write_t *req, int status) {
+    uv_write(req, (uv_stream_t*)handler, &wrbuf, 1, [](uv_write_t *req, int status) {
         // Write callback
         if (status) {
             fprintf(stderr, "Write error %s\n", uv_strerror(status));
         }
-        delete reg;
+        delete req;
     });
 }
 

@@ -4,7 +4,7 @@
 // Refer to the LICENSE file included
 
 #include "CGamePacketHandler.h"
-#include <net/CBitsream.h>
+#include <shared/net/CBitsream.h>
 #include <cstdint>
 
 void CGamePacketHandler::HandlePacket(ISession *session, char *data, size_t len) {

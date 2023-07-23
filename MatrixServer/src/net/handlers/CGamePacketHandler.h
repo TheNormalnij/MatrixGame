@@ -5,15 +5,15 @@
 
 #pragma once
 
-#include "transports/ITransportHandler.h"
+#include "net/transports/ITransportHandler.h"
 #include "packet_handlers/IPacketHandler.h"
 #include "CGamePacketHandlerFactory.h"
-#include <net/PacketEnums.h>
+#include <shared/net/PacketEnums.h>
 
 class CGamePacketHandler : public ITransportHandler {
 public:
-    CServerPacketHandler(IGame *game) : m_game(game){};
-    ~CServaerPacketHandler() = default;
+    CGamePacketHandler(IGame *game) : m_game(game){};
+    ~CGamePacketHandler() = default;
 
     void HandlePacket(char *data, size_t len) override;
 

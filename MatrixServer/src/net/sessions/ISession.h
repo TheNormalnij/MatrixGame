@@ -9,8 +9,16 @@
 class ISession {
 public:
     virtual ~ISession() = 0;
-    virtual bool IsSource(void* source) = 0;
-    virtual std::string_view GetToken() = 0;
-    virtual uint64_t GetLastUpdate() = 0;
-    virtual void SendData(char *data, size_t size) = 0;
+    //virtual bool IsSource(void* source) = 0;
+    //virtual std::string_view GetToken() = 0;
+    //virtual uint64_t GetLastUpdate() = 0;
+
+    // Set custom data to session
+    void SetCustomData(void *data) { m_data = data; };
+
+    // Get custom data from session
+    void *GetCustomData() { return m_data; };
+
+private:
+    void *m_data;
 };

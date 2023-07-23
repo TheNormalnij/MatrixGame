@@ -7,9 +7,10 @@
 
 #include "IGameCommand.h"
 
-class CCommandAnonimous : public IGameCommand {
+class CCommandAnonymous : public IGameCommand {
 public:
-    CCommandAnonimous(char *data, size_t len);
+    CCommandAnonymous(char *data, size_t len);
+    ~CCommandAnonymous() override;
 
 private:
     char *m_data;

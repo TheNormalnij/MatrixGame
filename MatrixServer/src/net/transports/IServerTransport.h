@@ -7,6 +7,7 @@
 
 #include <string_view>
 #include <stdint.h>
+#include "../sessions/ISession.h"
 
 class IServerTransport;
 
@@ -22,6 +23,6 @@ public:
     virtual bool Listen(std::string_view host, uint16_t port) = 0;
     // Stop server
     virtual void Close(tranport_close_cb cb) = 0;
-    // Set data handler
-    virtual void SetPacketHandler(packet_handler handler) = 0;
+    // Send data
+    virtual void SendData(ISession *session, char *data, size_t len) = 0;
 };

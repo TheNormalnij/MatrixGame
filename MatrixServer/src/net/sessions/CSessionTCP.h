@@ -1,3 +1,7 @@
+// MatrixServer - Multiplayer server for SR2 PB game
+// Copyright (C) 2023, Uladzislau "TheNormalnij" Nikalayevich
+// Licensed under GPLv2 or any later version
+// Refer to the LICENSE file included
 
 #pragma once
 
@@ -6,12 +10,10 @@
 
 class CSessionTCP : public ISession {
 public:
-    CSessionTCP() = default;
-    ~CSessionTCP() = default;
+    CSessionTCP();
+    ~CSessionTCP();
 
-    void Send(char *data, size_t len);
-
-    uv_tcp_t *GetHandler() const { return m_handler; };
+    uv_tcp_t *GetHandler() { return &m_handler; };
     void RegisterInEventLoop(uv_loop_t* loop);
 
     // Free itself after operation

@@ -5,8 +5,10 @@
 
 #pragma once
 
-class IPlayer {
-    virtual ISession *GetSession() = 0;
-    //virtual void SendCommand();
+#include "../../net/sessions/ISession.h"
 
+class IPlayer {
+public:
+    virtual ISession *GetSession() = 0;
 };
+

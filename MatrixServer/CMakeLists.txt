@@ -1,7 +1,7 @@
 add_executable(MatrixServer)
 
-file(GLOB MATRIX_SERVER_SOURCES src/*.cpp)
-file(GLOB MATRIX_SERVER_HEADERS src/*.h)
+file(GLOB_RECURSE MATRIX_SERVER_SOURCES src/*.cpp)
+file(GLOB_RECURSE MATRIX_SERVER_HEADERS src/*.h)
 
 source_group ("MatrixServer\\Source Files" FILES ${MATRIX_SERVER_SOURCES})
 source_group ("MatrixServer\\Header Files" FILES ${MATRIX_SERVER_HEADERS})

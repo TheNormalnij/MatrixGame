@@ -10,7 +10,7 @@
 
 class CNetPlayer : public IPlayer {
 public:
-    CNetPlayer(ISession session) : m_session(session){};
+    CNetPlayer(ISession *session) : m_session(session){};
     ~CNetPlayer() = default;
 
     ISession *GetSession() { return m_session; };

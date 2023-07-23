@@ -19,9 +19,19 @@ public:
     }
 
     template <class T>
+    void Read(T &out, size_t size) {
+        out = *(T *)(m_data + m_currentPos);
+        m_currentPos += size;
+    }
+
+    template <class T>
     void Write(T in) {
         *(m_data + m_currentPos) = in;
         m_currentPos += sizeof(T);
+    }
+
+    void Skip(size_t count) {
+        m_currentPos += count;
     }
 
 private:
