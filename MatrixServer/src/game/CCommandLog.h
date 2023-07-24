@@ -15,7 +15,7 @@ public:
     ~CCommandLog() = default;
 
     void PushCommand(size_t tick, IGameCommand *commad);
-    std::list<IGameCommand*> &GetTickCommands(size_t tick);
+    std::list<IGameCommand*> *GetTickCommands(size_t tick);
 
 private:
     std::vector<std::list<IGameCommand *>> m_commandsByTick;

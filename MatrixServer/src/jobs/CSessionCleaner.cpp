@@ -11,7 +11,7 @@ constexpr uint64_t SESSION_DROP_TIME = 30;
 void CSessionCleaner::DoTick() {
     const uint64_t now = std::time(nullptr);
     for (ISession *session : m_sessionStore->GetSessions()) {
-        if (now - session->GetLastUpdate() > SESSION_DROP_TIME) {
+        if (now - session->GetLastClientUpdateTimestamp() > SESSION_DROP_TIME) {
             m_sessionStore->RemoveSession(session);
         }
     }

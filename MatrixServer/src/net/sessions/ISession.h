@@ -11,14 +11,19 @@ public:
     virtual ~ISession() = 0;
     //virtual bool IsSource(void* source) = 0;
     //virtual std::string_view GetToken() = 0;
-    //virtual uint64_t GetLastUpdate() = 0;
+
+    // Send data
+    virtual void SendData(char *data, size_t len) = 0;
+
+    // Handler should set timestamp here to mark session active
+    virtual void SetLastClientUpdateTimestamp(uint64_t timestamp) = 0;
+
+    // returns unix timestamp ms
+    virtual uint64_t GetLastClientUpdateTimestamp() = 0;
 
     // Set custom data to session
-    void SetCustomData(void *data) { m_data = data; };
+    virtual void SetCustomData(void *data) = 0;
 
     // Get custom data from session
-    void *GetCustomData() { return m_data; };
-
-private:
-    void *m_data;
+    virtual void *GetCustomData() = 0;
 };

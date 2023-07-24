@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <net/CBitsream.h>
+#include <shared/net/CBitsream.h>
 #include <game/IGame.h>
 #include <net/sessions/ISession.h>
 

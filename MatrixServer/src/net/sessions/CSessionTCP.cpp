@@ -5,8 +5,10 @@
 
 #include "CSessionTCP.h"
 
-CSessionTCP::CSessionTCP() {
+CSessionTCP::CSessionTCP(ITransportHandler *transportHandler, IServerTransport* transport) {
     m_handler.data = this;
+    m_transportHandler = transportHandler;
+    m_transport = transport;
 }
 
 CSessionTCP::~CSessionTCP() {
@@ -21,4 +23,8 @@ void CSessionTCP::CloseAndDestroy() {
     uv_close((uv_handle_t *)&m_handler, [](uv_handle_t * handle) {
         delete (CSessionTCP *)handle->data;
     });
+}
+
+void CSessionTCP::SendData(char *data, size_t len) {
+    m_transport->SendData(this, data, len);
 }

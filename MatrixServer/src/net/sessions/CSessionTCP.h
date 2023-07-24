@@ -6,19 +6,27 @@
 #pragma once
 
 #include "uv.h"
-#include "ISession.h"
+#include "CSessionBase.h"
+#include "../transports/ITransportHandler.h"
+#include "../transports/IServerTransport.h"
 
-class CSessionTCP : public ISession {
+class CSessionTCP : public CSessionBase {
 public:
-    CSessionTCP();
+    CSessionTCP(ITransportHandler* transportHandler, IServerTransport* transport);
     ~CSessionTCP();
 
     uv_tcp_t *GetHandler() { return &m_handler; };
+    ITransportHandler *GetTransportHandler() const { return m_transportHandler; };
+
     void RegisterInEventLoop(uv_loop_t* loop);
 
     // Free itself after operation
     void CloseAndDestroy();
 
+    void SendData(char *data, size_t len) override;
+
 private:
     uv_tcp_t m_handler;
+    ITransportHandler *m_transportHandler;
+    IServerTransport *m_transport;
 };

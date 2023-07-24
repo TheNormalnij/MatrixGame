@@ -19,7 +19,7 @@ private:
 
 public:
     bool Listen(std::string_view host, uint16_t port) override;
-    void Close() override;
+    void Close(tranport_close_cb cb) override;
     void SetPacketHandler(cb_packet_handler handler);
     void SendPacket(const struct sockaddr *addr, char *data, uint16_t count);
     void Release();

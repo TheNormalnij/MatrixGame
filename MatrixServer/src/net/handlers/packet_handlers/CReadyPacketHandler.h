@@ -7,6 +7,10 @@
 
 #include "IPacketHandler.h"
 
-class CReadyPacketHandler : IPacketHandler {
+class CReadyPacketHandler : public IPacketHandler {
+public:
+    CReadyPacketHandler() = default;
+    ~CReadyPacketHandler() = default;
+
     void Handle(CBitstream &stream, ISession *session, IGame *game) override;
 };

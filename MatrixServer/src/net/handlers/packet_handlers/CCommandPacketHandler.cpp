@@ -4,29 +4,29 @@
 // Refer to the LICENSE file included
 
 #include "CCommandPacketHandler.h"
-#include <game/commands/CCommandAnonimous.h>
+#include "game/commands/CCommandAnonymous.h"
 #include <shared/game/Comands.h>
 #include <cstdint>
 
 void CCommandPacketHandler::Handle(CBitstream &stream, ISession *session, IGame *game) {
-    const uint8_t commandsCount;
+    uint8_t commandsCount;
 
     stream.Read(commandsCount);
 
     for (size_t i; i < commandsCount; i++) {
-        const uint8_t commandType;
+        uint8_t commandType;
 
         stream.Read(commandType);
 
         switch ((EGmaeCommandType)commandType) {
             case EGmaeCommandType::ANONYMOUS:
-                const uint16_t commandSize;
+                uint16_t commandSize;
                 stream.Read(commandSize);
 
-                const uint8_t *commandData;
+                uint8_t *commandData;
                 stream.Read(commandData, commandSize);
 
-                const IGameCommand *command = new CCommandAnonimous(commandData, commandSize);
+                IGameCommand *command = new CCommandAnonymous(commandData, commandSize);
 
                 game->HandleCommand(command);
             default:

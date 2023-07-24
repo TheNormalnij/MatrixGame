@@ -15,7 +15,7 @@ public:
     CGamePacketHandler(IGame *game) : m_game(game){};
     ~CGamePacketHandler() = default;
 
-    void HandlePacket(char *data, size_t len) override;
+    void HandlePacket(ISession *session, char *data, size_t len) override;
 
 private:
     IGame *m_game;

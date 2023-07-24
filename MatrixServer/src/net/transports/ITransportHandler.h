@@ -4,7 +4,9 @@
 // Refer to the LICENSE file included
 
 #pragma once
+#include "../sessions/ISession.h"
 
 class ITransportHandler {
-	virtual void HandlePacket(char *data, size_t len) = 0;
+public:
+	virtual void HandlePacket(ISession* session, char *data, size_t len) = 0;
 };

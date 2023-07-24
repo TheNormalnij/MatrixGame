@@ -8,10 +8,12 @@
 
 constexpr int MAX_CONNECTIONS = 100;
 
-CServerTCPTransport::CServerTCPTransport(uv_loop_t *loop, ITransportHandler *handler) {
+CServerTCPTransport::CServerTCPTransport(uv_loop_t *loop, CSessionStore *sessionStore, ITransportHandler *handler) {
     m_loop = loop;
     m_server = {0};
     m_transportHandler = handler;
+    m_sessionStore = sessionStore;
+    m_pendingCloseCb = nullptr;
 }
 
 CServerTCPTransport::~CServerTCPTransport() {
@@ -68,7 +70,19 @@ void CServerTCPTransport::SendData(ISession *handler, char *data, size_t count) 
 }
 
 void CServerTCPTransport::Close(tranport_close_cb cb) {
-    uv_close((uv_handle_t *)&m_server, [&](void *handler) { cb(this); });
+    if (m_pendingCloseCb) {
+        return;
+    }
+
+    m_pendingCloseCb = cb;
+
+    uv_close((uv_handle_t *)&m_server, CServerTCPTransport::StaticCloseCallback);
+}
+
+void CServerTCPTransport::StaticCloseCallback(uv_handle_t * server)
+{
+    CServerTCPTransport *self = (CServerTCPTransport *)server->data;
+    self->m_pendingCloseCb(self);
 }
 
 void CServerTCPTransport::StaticOnConnection(uv_stream_t *server, int status) {
@@ -77,12 +91,16 @@ void CServerTCPTransport::StaticOnConnection(uv_stream_t *server, int status) {
         return;
     }
 
-    CSessionTCP *client = new CSessionTCP();
-    client->RegisterInEventLoop(m_loop);
+    const CServerTCPTransport* self = (CServerTCPTransport*) server->data;
+
+    CSessionTCP *client = new CSessionTCP(self->GetHandler());
+    client->RegisterInEventLoop(self->GetLoop());
 
     if (uv_accept(server, (uv_stream_t *)client->GetHandler()) == 0) {
         uv_read_start((uv_stream_t *)client->GetHandler(), CServerTCPTransport::StaticOnAlloc,
                       CServerTCPTransport::StaticOnRecieve);
+
+        self->m_sessionStore->AddSession(client);
     } else {
         client->CloseAndDestroy();
     }
@@ -94,12 +112,15 @@ void CServerTCPTransport::StaticOnAlloc(uv_handle_t *client, size_t suggested_si
     printf("[TCP transport] Allocate:%lu %p\n", buf->len, buf->base);
 }
 
-void CServerTCPTransport::StaticOnRecieve(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf) {
+void CServerTCPTransport::StaticOnRecieve(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
     if (nread > 0) {
         printf("%lu\n", nread);
         printf("%s", buf->base);
-    }
-    printf("free  :%lu %p\n", buf->len, buf->base);
 
+        CSessionTCP *session = (CSessionTCP *)client->data;
+        session->GetTransportHandler()->HandlePacket(session, buf->base, buf->len);
+    }
+
+    printf("free  :%lu %p\n", buf->len, buf->base);
     delete[] buf->base;
 }

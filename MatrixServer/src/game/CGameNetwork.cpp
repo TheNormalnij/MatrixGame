@@ -11,7 +11,7 @@ void CGameNetwork::SendTickCommands(size_t tick, std::list<IGameCommand *> comma
 }
 
 void CGameNetwork::Broadcast(char* data, size_t len) {
-    for (auto &session : m_sessionStore->GetSessions()) {
+    for (ISession *session : m_sessionStore->GetSessions()) {
 
     }
 }

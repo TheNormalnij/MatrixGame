@@ -9,15 +9,7 @@
 #include "CCommandLog.h"
 #include "CGameNetwork.h"
 #include <list>
-
-enum class EGameStatus {
-    WAIT_PLAYERS,
-    WAIT_PLAYERS_READY,
-    STARTING,
-    RUNNING,
-    STOPPING,
-    FINISHED,
-};
+#include <shared/game/Game.h>
 
 class CServerMatrixGame : public IGame {
 public:

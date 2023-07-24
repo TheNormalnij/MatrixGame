@@ -3,3 +3,13 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
+#pragma once
+
+enum class EGameStatus {
+    WAIT_PLAYERS,
+    WAIT_PLAYERS_READY,
+    STARTING,
+    RUNNING,
+    STOPPING,
+    FINISHED,
+};

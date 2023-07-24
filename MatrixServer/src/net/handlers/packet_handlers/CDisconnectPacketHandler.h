@@ -7,6 +7,10 @@
 
 #include "IPacketHandler.h"
 
-class CDisconnectPacketHandler : IPacketHandler {
+class CDisconnectPacketHandler : public IPacketHandler {
+public:
+    CDisconnectPacketHandler() = default;
+    ~CDisconnectPacketHandler() = default;
+
     void Handle(CBitstream &stream, ISession *session, IGame *game) override;
 };

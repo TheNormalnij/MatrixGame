@@ -12,5 +12,5 @@ public:
     CGamePacketHandlerFactory() = default;
     ~CGamePacketHandlerFactory() = default;
 
-    IPacketHandler *CreateHandler(EGamePacketType packetId) const;
+    IPacketHandler *CreateHandler(EGamePacketType packetId);
 };

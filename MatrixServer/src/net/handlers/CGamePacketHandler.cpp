@@ -6,15 +6,20 @@
 #include "CGamePacketHandler.h"
 #include <shared/net/CBitsream.h>
 #include <cstdint>
+#include <ctime>
 
 void CGamePacketHandler::HandlePacket(ISession *session, char *data, size_t len) {
-    CBitstream stream = CBitstream(data, len);
-    const EGamePacketType packetId = (EGamePacketType)stream.Read<uint8_t>();
+    session->SetLastClientUpdateTimestamp(std::time(nullptr));
 
-    IPacketHandler* handler = m_handlerFactory.CreateHandler(packetId);
+    CBitstream stream = CBitstream(data, len);
+
+    uint8_t packetId;
+    stream.Read(packetId);
+
+    IPacketHandler* handler = m_handlerFactory.CreateHandler((EGamePacketType)packetId);
 
     if (!handler) {
-        //printf("Got unsupported packet id");
+        printf("Got unsupported packet id: %d", packetId);
         return;
     }
 

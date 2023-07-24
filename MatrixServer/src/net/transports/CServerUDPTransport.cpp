@@ -79,10 +79,6 @@ void CServerUDPTransport::SendPacket(const struct sockaddr *addr, char *data, ui
     uv_udp_send(req, &m_server, &buf, count, addr, send_cb);
 }
 
-void CServerUDPTransport::Close() {
+void CServerUDPTransport::Close(tranport_close_cb cb) {
     uv_close((uv_handle_t *)&m_server, nullptr);
-}
-
-void CServerUDPTransport::Release() {
-    delete this;
 }
