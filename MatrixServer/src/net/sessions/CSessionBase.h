@@ -9,6 +9,7 @@
 #include <cstdint>
 
 class CSessionBase : public ISession {
+public:
     std::string_view GetToken() override { return ""; };
 
     // Transport should set timestamp here to mark session active

@@ -11,6 +11,7 @@
 class CGameInfoPacket : public IPacket {
 public:
     CGameInfoPacket(std::string_view &map) : m_map(map){};
+    ~CGameInfoPacket() = default;
 
     void WritePacket(CWriteStream *stream) override;
 

@@ -12,6 +12,7 @@
 class CCommandsPacket : public IPacket {
 public:
     CCommandsPacket(std::list<IGameCommand *> &commands) : m_commands(commands){};
+    ~CCommandsPacket() = default;
 
      void WritePacket(CWriteStream *stream) override;
 

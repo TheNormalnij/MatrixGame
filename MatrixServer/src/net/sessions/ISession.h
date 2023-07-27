@@ -9,7 +9,7 @@
 
 class ISession {
 public:
-    virtual ~ISession() = 0;
+    virtual ~ISession() = default;
   
     virtual std::string_view GetToken() = 0;
 

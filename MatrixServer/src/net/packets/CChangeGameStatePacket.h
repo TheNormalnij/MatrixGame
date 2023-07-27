@@ -11,6 +11,7 @@
 class CChangeGameStatePacket : public IPacket {
 public:
     CChangeGameStatePacket(EGameStatus status) : m_status(status){};
+    ~CChangeGameStatePacket() = default;
 
     void WritePacket(CWriteStream *stream) override;
 

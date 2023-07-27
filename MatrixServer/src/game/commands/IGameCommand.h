@@ -15,7 +15,7 @@ enum class ECommandSourceType {
 
 class IGameCommand {
 public:
-    virtual ~IGameCommand() = 0;
+    virtual ~IGameCommand() = default;
     virtual void Write(CWriteStream &stream) = 0;
     virtual void Read(CReadStream &stream) = 0;
 };

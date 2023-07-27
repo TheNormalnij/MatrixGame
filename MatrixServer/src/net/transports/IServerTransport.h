@@ -19,7 +19,7 @@ typedef void (*tranport_close_cb)(IServerTransport *transport);
 class IServerTransport {
 public:
     // Free resources
-    virtual ~IServerTransport() = 0;
+    virtual ~IServerTransport() = default;
     // Start server
     virtual bool Listen(std::string_view host, uint16_t port) = 0;
     // Stop server
