@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <shared/net/CWriteStream.h>
+#include "CWriteStream.h"
 
 class IPacket {
 public:

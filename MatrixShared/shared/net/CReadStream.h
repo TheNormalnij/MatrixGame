@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <cstring>
+
 class CReadStream {
 public:
     CReadStream(char *data, size_t len) : m_data(data), m_len(len){};
@@ -17,8 +19,8 @@ public:
     }
 
     template <class T>
-    void Read(T &out, size_t size) {
-        out = *(T *)(m_data + m_currentPos);
+    void Read(T *out, size_t size) {
+        std::memcpy(out, m_data + m_currentPos, size);
         m_currentPos += size;
     }
 

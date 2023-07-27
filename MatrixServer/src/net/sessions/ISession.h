@@ -5,7 +5,7 @@
 
 #pragma once
 #include <string_view>
-#include "../transports/CRequest.h"
+#include <shared/net/CRequest.h>
 
 class ISession {
 public:

@@ -2373,6 +2373,7 @@ int CMatrixMapLogic::FindNearPlace(byte mm, const CPoint &mappos) {
     return -1;
 }
 #ifdef _MSC_FULL_VER
+    // TODO remove this. This enables optimisation in debug mmode too
     #pragma optimize("g", on)
 #endif
 

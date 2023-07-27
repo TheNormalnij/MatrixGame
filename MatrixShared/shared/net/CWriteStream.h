@@ -5,7 +5,7 @@
 
 #pragma once
 #include <vector>
-#include <memory>
+#include <cstring>
 
 class CWriteStream {
 public:

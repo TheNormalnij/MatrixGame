@@ -9,8 +9,9 @@
 #include "commands/IGameCommand.h"
 #include "net/transports/IServerTransport.h"
 #include "net/sessions/CSessionStore.h"
-#include "net/packets/IPacket.h"
+#include <shared/net/CRequest.h>
 #include <shared/game/Game.h>
+#include <shared/net/IPacket.h>
 
 class CGameNetwork {
 public:

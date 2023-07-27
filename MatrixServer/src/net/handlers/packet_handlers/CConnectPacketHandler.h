@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "IPacketHandler.h"
+#include <shared/net/IPacketHandler.h>
 
 class CConnectPacketHandler : public IPacketHandler {
 public:

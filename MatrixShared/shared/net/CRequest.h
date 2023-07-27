@@ -2,7 +2,7 @@
 // Copyright (C) 2023, Uladzislau "TheNormalnij" Nikalayevich
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
- 
+
 #pragma once
 
 class CRequest;
@@ -23,7 +23,6 @@ public:
 
     char *GetData() const { return m_data; };
     unsigned long GetSize() const { return m_len; };
-
 
     void SetCustomData(void *data) { m_customData = data; };
     void *GetCustomData() const { return m_customData; };

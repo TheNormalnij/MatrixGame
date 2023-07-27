@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "IPacket.h"
+#include <shared/net/IPacket.h>
 #include <shared/game/Game.h>
 
 class CChangeGameStatePacket : public IPacket {

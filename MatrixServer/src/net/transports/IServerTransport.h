@@ -7,7 +7,7 @@
 
 #include <string_view>
 #include <stdint.h>
-#include "CRequest.h"
+#include <shared/net/CRequest.h>
 #include "../sessions/ISession.h"
 
 class IServerTransport;

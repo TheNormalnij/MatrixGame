@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "IPacket.h"
+#include <shared/net/IPacket.h>
 #include <list>
 #include "game/commands/IGameCommand.h"
 

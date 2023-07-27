@@ -6,7 +6,7 @@
 #pragma once
 
 #include "net/transports/ITransportHandler.h"
-#include "packet_handlers/IPacketHandler.h"
+#include <shared/net/CRequest.h>
 #include "CGamePacketHandlerFactory.h"
 #include <shared/net/PacketEnums.h>
 
