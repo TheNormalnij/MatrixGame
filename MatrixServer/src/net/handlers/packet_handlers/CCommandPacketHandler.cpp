@@ -8,7 +8,7 @@
 #include <shared/game/Comands.h>
 #include <cstdint>
 
-void CCommandPacketHandler::Handle(CBitstream &stream, ISession *session, IGame *game) {
+void CCommandPacketHandler::Handle(CReadStream &stream, ISession *session, IGame *game) {
     uint8_t commandsCount;
 
     stream.Read(commandsCount);
@@ -19,16 +19,18 @@ void CCommandPacketHandler::Handle(CBitstream &stream, ISession *session, IGame 
         stream.Read(commandType);
 
         switch ((EGmaeCommandType)commandType) {
-            case EGmaeCommandType::ANONYMOUS:
+            case EGmaeCommandType::ANONYMOUS: {
                 uint16_t commandSize;
                 stream.Read(commandSize);
 
-                uint8_t *commandData;
+                char *commandData;
                 stream.Read(commandData, commandSize);
 
                 IGameCommand *command = new CCommandAnonymous(commandData, commandSize);
 
                 game->HandleCommand(command);
+                break;
+            }
             default:
                 break;
         }

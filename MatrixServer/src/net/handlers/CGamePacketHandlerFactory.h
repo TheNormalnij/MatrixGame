@@ -6,6 +6,7 @@
 #pragma once
 
 #include "packet_handlers/IPacketHandler.h"
+#include <shared/net/PacketEnums.h>
 
 class CGamePacketHandlerFactory {
 public:

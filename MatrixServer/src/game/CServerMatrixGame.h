@@ -19,8 +19,10 @@ public:
     // IGame interface
     void DoTick() override;
     void HandleCommand(IGameCommand *command) override;
-    void OnRequestPlayerJoin(IPlayer *player) override;
-    void OnRequestPlayerQuit(IPlayer *player) override;
+
+    void OnRequestSessionStart(ISession *source) override;
+    void OnRequestSessionQuit(ISession *source) override;
+
     void OnPlayerReady(IPlayer *source) override;
 
 private:
@@ -31,5 +33,7 @@ private:
     EGameStatus m_currentStatus;
     size_t m_currentTick;
     CCommandLog m_commandLog;
-    CGameNetwork *m_net;
+    CGameNetwork m_net;
+
+    std::string_view m_mapName;
 };

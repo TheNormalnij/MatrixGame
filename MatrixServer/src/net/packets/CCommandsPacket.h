@@ -5,16 +5,16 @@
 
 #pragma once
 
-#include <cstdint>
+#include "IPacket.h"
 #include <list>
-#include "../../game/IGameCommand.h"
+#include "game/commands/IGameCommand.h"
 
-class CCommandsPacket {
+class CCommandsPacket : public IPacket {
 public:
-    CCommandPacket(std::list<IGameCommand *> commands) : m_commands(commands){};
+    CCommandsPacket(std::list<IGameCommand *> &commands) : m_commands(commands){};
 
-    char* Pack();
+     void WritePacket(CWriteStream *stream) override;
 
 private:
-    std::list<IGameCommand *> m_commands;
+    std::list<IGameCommand *> &m_commands;
 };

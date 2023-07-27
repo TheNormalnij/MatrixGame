@@ -12,6 +12,9 @@ public:
     CCommandAnonymous(char *data, size_t len);
     ~CCommandAnonymous() override;
 
+    void Write(CWriteStream &stream) override;
+    void Read(CReadStream &stream) override;
+
 private:
     char *m_data;
     size_t m_len;

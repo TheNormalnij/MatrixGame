@@ -7,19 +7,23 @@
 
 #include <list>
 #include "commands/IGameCommand.h"
-#include "../net/transports/IServerTransport.h"
-#include "../net/sessions/CSessionStore.h"
+#include "net/transports/IServerTransport.h"
+#include "net/sessions/CSessionStore.h"
+#include "net/packets/IPacket.h"
+#include <shared/game/Game.h>
 
 class CGameNetwork {
 public:
-    void SendTickCommands(size_t tick, std::list<IGameCommand *> commands);
-    void SendEvent();
-    void SendGameStart();
-    void SendGameStop();
+    CGameNetwork() = default;
+    ~CGameNetwork() = default;
+
+    void SendTickCommands(size_t tick, std::list<IGameCommand *> &commands);
+    void SendGameStatusChanged(EGameStatus status);
+    void SendGameInfo(std::string_view mapName);
 
 private:
-    void Broadcast(char *data, size_t len);
-    void Unicast(ISession* session, char *data, size_t len);
+    void Broadcast(IPacket &packet);
+    void Unicast(ISession* session, IPacket &packet);
 
 private:
     CSessionStore *m_sessionStore;

@@ -25,6 +25,6 @@ void CSessionTCP::CloseAndDestroy() {
     });
 }
 
-void CSessionTCP::SendData(char *data, size_t len) {
-    m_transport->SendData(this, data, len);
+void CSessionTCP::SendData(CRequest* req) {
+    m_transport->SendData(this, req);
 }

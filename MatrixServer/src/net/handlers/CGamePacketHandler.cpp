@@ -4,14 +4,14 @@
 // Refer to the LICENSE file included
 
 #include "CGamePacketHandler.h"
-#include <shared/net/CBitsream.h>
+#include <shared/net/CReadStream.h>
 #include <cstdint>
 #include <ctime>
 
 void CGamePacketHandler::HandlePacket(ISession *session, char *data, size_t len) {
     session->SetLastClientUpdateTimestamp(std::time(nullptr));
 
-    CBitstream stream = CBitstream(data, len);
+    CReadStream stream = CReadStream(data, len);
 
     uint8_t packetId;
     stream.Read(packetId);

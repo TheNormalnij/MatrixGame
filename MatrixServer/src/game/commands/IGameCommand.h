@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include <shared/net/CWriteStream.h>
+#include <shared/net/CReadStream.h>
+
 enum class ECommandSourceType {
     SERVER,
     PLAYER,
@@ -13,7 +16,6 @@ enum class ECommandSourceType {
 class IGameCommand {
 public:
     virtual ~IGameCommand() = 0;
-    //virtual void Serialize() = 0;
-    //virtual void *GetSource() = 0;
-    //virtual ECommandSourceType GetSourceType() = 0;
+    virtual void Write(CWriteStream &stream) = 0;
+    virtual void Read(CReadStream &stream) = 0;
 };

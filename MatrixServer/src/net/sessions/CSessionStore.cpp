@@ -32,12 +32,5 @@ ISession *CSessionStore::GetSessionByToken(std::string_view sessionToken) {
             return session;
         }
     }
-}
-
-ISession *CSessionStore::GetSessionBySource(void *source) {
-    for (ISession *session : m_sessions) {
-        if (session->IsSource(source)) {
-            return session;
-        }
-    }
+    return nullptr;
 }

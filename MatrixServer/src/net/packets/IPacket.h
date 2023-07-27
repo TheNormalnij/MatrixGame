@@ -5,11 +5,9 @@
 
 #pragma once
 
-enum class EGamePacketType {
-    CONNECT,
-    DISCONNECT,
-    READY,
-    COMMANDS,
-    GAME_STATUS_CHANGED,
-    GAME_INFO,
+#include <shared/net/CWriteStream.h>
+
+class IPacket {
+public:
+    virtual void WritePacket(CWriteStream *stream) = 0;
 };

@@ -16,7 +16,7 @@ IPacketHandler *CGamePacketHandlerFactory::CreateHandler(EGamePacketType packetI
             return new CConnectPacketHandler();
         case EGamePacketType::DISCONNECT:
             return new CDisconnectPacketHandler();
-        case EGamePacketType::COMMAND:
+        case EGamePacketType::COMMANDS:
             return new CCommandPacketHandler();
         case EGamePacketType::READY:
             return new CReadyPacketHandler();

@@ -55,17 +55,22 @@ bool CServerTCPTransport::Listen(std::string_view host, uint16_t port) {
     return true;
 }
 
-void CServerTCPTransport::SendData(ISession *handler, char *data, size_t count) {
-    uv_write_t *req = new uv_write_t();
+void CServerTCPTransport::SendData(ISession *handler, CRequest *req) {
+    uv_write_t *uvreq = new uv_write_t();
 
-    uv_buf_t wrbuf = uv_buf_init(data, count);
+    const uv_buf_t wrbuf = uv_buf_init(req->GetData(), req->GetSize());
+    uvreq->data = req;
 
-    uv_write(req, (uv_stream_t*)handler, &wrbuf, 1, [](uv_write_t *req, int status) {
+    uv_write(uvreq, (uv_stream_t *)handler, &wrbuf, 1, [](uv_write_t *uvreq, int status) {
         // Write callback
         if (status) {
-            fprintf(stderr, "Write error %s\n", uv_strerror(status));
+            fprintf(stderr, "[TCP] Write error %s\n", uv_strerror(status));
         }
-        delete req;
+
+        CRequest *req = (CRequest *)uvreq->data;
+        req->CallCallback(status == 0);
+
+        delete uvreq;
     });
 }
 
@@ -91,9 +96,9 @@ void CServerTCPTransport::StaticOnConnection(uv_stream_t *server, int status) {
         return;
     }
 
-    const CServerTCPTransport* self = (CServerTCPTransport*) server->data;
+    CServerTCPTransport* self = (CServerTCPTransport*) server->data;
 
-    CSessionTCP *client = new CSessionTCP(self->GetHandler());
+    CSessionTCP *client = new CSessionTCP(self->GetHandler(), self);
     client->RegisterInEventLoop(self->GetLoop());
 
     if (uv_accept(server, (uv_stream_t *)client->GetHandler()) == 0) {

@@ -23,7 +23,7 @@ public:
     // Free itself after operation
     void CloseAndDestroy();
 
-    void SendData(char *data, size_t len) override;
+    void SendData(CRequest *req) override;
 
 private:
     uv_tcp_t m_handler;

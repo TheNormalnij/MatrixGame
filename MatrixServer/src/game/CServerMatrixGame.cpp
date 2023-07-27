@@ -4,10 +4,13 @@
 // Refer to the LICENSE file included
 
 #include "CServerMatrixGame.h"
+#include "players/CNetPlayer.h"
 
 CServerMatrixGame::CServerMatrixGame() {
     m_currentStatus = EGameStatus::WAIT_PLAYERS;
     m_currentTick = 0;
+    m_net = CGameNetwork();
+    m_mapName = "TEST.map";
 }
 
 void CServerMatrixGame::GameStart(){
@@ -16,7 +19,7 @@ void CServerMatrixGame::GameStart(){
     }
 
     m_currentStatus = EGameStatus::RUNNING;
-    m_net->SendGameStart();
+    m_net.SendGameStatusChanged(m_currentStatus);
 };
 
 void CServerMatrixGame::GameStop(){
@@ -24,7 +27,7 @@ void CServerMatrixGame::GameStop(){
         return;
     }
 
-    m_net->SendGameStop();
+    m_net.SendGameStatusChanged(m_currentStatus);
 }
 
 void CServerMatrixGame::DoTick() {
@@ -37,9 +40,27 @@ void CServerMatrixGame::DoTick() {
     m_currentTick++;
 
     // Send current tick commands
-    m_net->SendTickCommands(m_currentTick, m_commandLog.GetTickCommands(m_currentTick));
+    m_net.SendTickCommands(m_currentTick, *m_commandLog.GetTickCommands(m_currentTick));
 }
 
 void CServerMatrixGame::HandleCommand(IGameCommand *command) {
     m_commandLog.PushCommand(m_currentTick + 1, command);
-};
+}
+
+void CServerMatrixGame::OnRequestSessionStart(ISession *session) {
+    if (session->GetCustomData())
+        return;
+
+    IPlayer *player = new CNetPlayer(session);
+    session->SetCustomData(player);
+}
+
+void CServerMatrixGame::OnRequestSessionQuit(ISession *session) {
+    IPlayer *player = (IPlayer*)session->GetCustomData();
+    
+    delete player;
+}
+
+void CServerMatrixGame::OnPlayerReady(IPlayer *source) {
+    GameStart();
+}

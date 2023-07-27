@@ -5,6 +5,6 @@
 
 #include "CConnectPacketHandler.h"
 
-void CConnectPacketHandler::Handle(CBitstream &stream, ISession *session, IGame *game) {
-    game->OnRequestPlayerJoin(session);
+void CConnectPacketHandler::Handle(CReadStream &stream, ISession *session, IGame *game) {
+    game->OnRequestSessionStart(session);
 }

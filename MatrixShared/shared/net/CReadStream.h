@@ -3,14 +3,12 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "PacketEnums.h"
-
 #pragma once
 
-class CBitstream {
+class CReadStream {
 public:
-    CBitstream(char *data, size_t len) : m_data(data), m_len(len) {};
-    ~CBitstream() = default;
+    CReadStream(char *data, size_t len) : m_data(data), m_len(len){};
+    ~CReadStream() = default;
 
     template <class T>
     void Read(T& out) {
@@ -22,12 +20,6 @@ public:
     void Read(T &out, size_t size) {
         out = *(T *)(m_data + m_currentPos);
         m_currentPos += size;
-    }
-
-    template <class T>
-    void Write(T in) {
-        *(m_data + m_currentPos) = in;
-        m_currentPos += sizeof(T);
     }
 
     void Skip(size_t count) {

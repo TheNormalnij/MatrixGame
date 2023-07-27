@@ -12,5 +12,5 @@ public:
     CConnectPacketHandler() = default;
     ~CConnectPacketHandler() = default;
 
-    void Handle(CBitstream &stream, ISession *session, IGame *game) override;
+    void Handle(CReadStream &stream, ISession *session, IGame *game) override;
 };

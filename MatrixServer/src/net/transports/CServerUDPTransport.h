@@ -5,6 +5,8 @@
 
 #pragma once
 
+#ifdef WITH_GAME_UDP_TRANSPORT
+
 #include "IServerTransport.h"
 #include "uv.h"
 
@@ -28,3 +30,5 @@ private:
     uv_loop_t *m_loop;
     uv_udp_t m_server;
 };
+
+#endif  // WITH_GAME_UDP_TRANSPORT

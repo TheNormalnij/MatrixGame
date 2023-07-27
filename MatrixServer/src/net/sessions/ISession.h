@@ -5,15 +5,16 @@
 
 #pragma once
 #include <string_view>
+#include "../transports/CRequest.h"
 
 class ISession {
 public:
     virtual ~ISession() = 0;
-    //virtual bool IsSource(void* source) = 0;
-    //virtual std::string_view GetToken() = 0;
+  
+    virtual std::string_view GetToken() = 0;
 
     // Send data
-    virtual void SendData(char *data, size_t len) = 0;
+    virtual void SendData(CRequest *req) = 0;
 
     // Handler should set timestamp here to mark session active
     virtual void SetLastClientUpdateTimestamp(uint64_t timestamp) = 0;

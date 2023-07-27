@@ -17,7 +17,7 @@ public:
 
     bool Listen(std::string_view host, uint16_t port) override;
     void Close(tranport_close_cb cb) override;
-    void SendData(ISession *session, char *data, size_t len) override;
+    void SendData(ISession *session, CRequest *req) override;
 
 private:
     uv_loop_t *GetLoop() const { return m_loop; };

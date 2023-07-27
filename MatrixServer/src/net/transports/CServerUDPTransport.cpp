@@ -5,6 +5,8 @@
 
 #include "CServerUDPTransport.h"
 
+#ifdef WITH_GAME_UDP_TRANSPORT
+
 static void on_recv(uv_udp_t *handle, ssize_t nread, const uv_buf_t *rcvbuf, const struct sockaddr *addr,
                     unsigned flags) {
     if (nread > 0) {
@@ -82,3 +84,5 @@ void CServerUDPTransport::SendPacket(const struct sockaddr *addr, char *data, ui
 void CServerUDPTransport::Close(tranport_close_cb cb) {
     uv_close((uv_handle_t *)&m_server, nullptr);
 }
+
+#endif  // WITH_GAME_UDP_TRANSPORT

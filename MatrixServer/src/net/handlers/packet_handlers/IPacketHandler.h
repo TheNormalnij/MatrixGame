@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <shared/net/CBitsream.h>
+#include <shared/net/CReadStream.h>
 #include <game/IGame.h>
 #include <net/sessions/ISession.h>
 
 class IPacketHandler {
 public:
-    virtual void Handle(CBitstream &stream, ISession *session, IGame *game) = 0;
+    virtual void Handle(CReadStream &stream, ISession *session, IGame *game) = 0;
 };

@@ -5,11 +5,9 @@
 
 #pragma once
 
-enum class EGamePacketType {
-    CONNECT,
-    DISCONNECT,
-    READY,
-    COMMANDS,
-    GAME_STATUS_CHANGED,
-    GAME_INFO,
+enum class EPlayerStatus {
+	DISCONNECTED,
+	WAITING,
+	READY,
+	PLAYING,
 };

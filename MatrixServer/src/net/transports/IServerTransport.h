@@ -7,6 +7,7 @@
 
 #include <string_view>
 #include <stdint.h>
+#include "CRequest.h"
 #include "../sessions/ISession.h"
 
 class IServerTransport;
@@ -24,5 +25,5 @@ public:
     // Stop server
     virtual void Close(tranport_close_cb cb) = 0;
     // Send data
-    virtual void SendData(ISession *session, char *data, size_t len) = 0;
+    virtual void SendData(ISession *session, CRequest *req) = 0;
 };
