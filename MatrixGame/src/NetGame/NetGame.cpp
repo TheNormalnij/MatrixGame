@@ -5,9 +5,37 @@
 
 #include "NetGame.h"
 #include "NetGameForm.h"
+#include "Clients/CClientTCP.h"
+#include <future>
+
+bool CNetGame::StartNetworkGame(std::string_view host) {
+    const bool connectSuccess = ConnectGame(host);
+    if (!connectSuccess) {
+        return false;
+    }
+
+   
+
+    return true;
+}
 
 bool CNetGame::ConnectGame(std::string_view host) {
-    return false;
+    static std::promise<bool> *waitingConnection = nullptr;
+    if (waitingConnection) {
+        return false;
+    }
+
+    m_pClient->Connect(host, [](INetworkClient *client, bool success, std::string_view error) {
+        if (waitingConnection) {
+            waitingConnection->set_value(success);
+        }
+    });
+
+    waitingConnection->get_future().wait();
+
+    const bool success = waitingConnection;
+    waitingConnection = nullptr;
+    return success;
 }
 
 void CNetGame::StartNetworkGame(wchar *map, uint32_t seed) {

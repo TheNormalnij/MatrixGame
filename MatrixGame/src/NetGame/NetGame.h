@@ -8,15 +8,17 @@
 #include "MatrixGameDllEx.hpp"
 #include "MatrixGame.h"
 #include <string_view>
+#include "Clients/IClient.h"
 
 class CNetGame {
 public:
     CNetGame(HINSTANCE hInstance, SMatrixSettings *set) : m_hAppInstance(hInstance), m_pMatrixSettings(set) {};
     ~CNetGame() = default;
 
-    bool ConnectGame(std::string_view host);
+    bool StartNetworkGame(std::string_view host);
 
 private:
+    bool ConnectGame(std::string_view host);
     void StartNetworkGame(wchar *map, uint32_t seed);
     void StopNetworkGame();
 
@@ -24,4 +26,5 @@ private:
     HINSTANCE m_hAppInstance;
     SMatrixSettings *m_pMatrixSettings;
     CGame m_currentGame;
+    INetworkClient *m_pClient;
 };

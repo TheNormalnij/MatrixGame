@@ -6,7 +6,7 @@
 #pragma once
 
 #include "IGame.h"
-#include "CCommandLog.h"
+#include <shared/game/CCommandLog.h>
 #include "CGameNetwork.h"
 #include <list>
 #include <shared/game/Game.h>

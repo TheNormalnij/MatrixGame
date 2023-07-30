@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "commands/IGameCommand.h"
+#include "IGameCommand.h"
 #include <list>
 #include <vector>
 

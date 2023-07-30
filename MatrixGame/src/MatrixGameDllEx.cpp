@@ -60,16 +60,26 @@ MATRIXGAMEDLL_API int __cdecl RunStandalone(HINSTANCE hinst, wchar *map, SMatrix
     return g_ExitState;
 }
 
-MATRIXGAMEDLL_API int __cdecl ConnectNetGame(HINSTANCE hinst, char *host, SMatrixSettings *set,
-                                            SMatrixTextParams *textParams, SRobotGameState *rgs) {
+MATRIXGAMEDLL_API int __cdecl ConnectNetGame(HINSTANCE hinst, char *host, SMatrixSettings *set, SRobotGameState *rgs) {
     g_RangersInterface = RangersInterfaceInternal::getInstance()->getSMGDIntervace();
     RangersInterfaceInternal::getInstance()->LoadResources(set->m_Lang);
 
+    SMatrixTextParams textParams;
+
+    textParams.lossText = L"";
+    textParams.planetName = L"";
+    textParams.startText = L"";
+    textParams.winText = L"";
+
     CNetGame netGame(hinst, set);
 
-    netGame.ConnectGame(host);
+    const bool status = netGame.ConnectGame(host);
 
     g_RangersInterface = nullptr;
+
+    if (!status) {
+        return 99;
+    }
 
     return g_ExitState;
 }

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "IGameCommand.h"
+#include <shared/game/IGameCommand.h>
 
 class CCommandAnonymous : public IGameCommand {
 public:
