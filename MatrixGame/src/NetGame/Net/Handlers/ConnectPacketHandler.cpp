@@ -3,11 +3,8 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#pragma once
+#include "ConnectPacketHandler.h"
 
-#include <shared/net/CReadStream.h>
+CConnectPacketHandler::Handle() {
 
-class IPacketHandler {
-public:
-    virtual void Handle(CReadStream *stream) = 0;
-};
+}

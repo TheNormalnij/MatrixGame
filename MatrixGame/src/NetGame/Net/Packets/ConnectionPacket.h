@@ -3,4 +3,9 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-class CConnectPacketHandler::Handle()
+#include <shared/net/IPacket.h>
+
+class CConnectionPacket : public IPacket {
+public:
+    void WritePacket(CWriteStream *stream);
+};

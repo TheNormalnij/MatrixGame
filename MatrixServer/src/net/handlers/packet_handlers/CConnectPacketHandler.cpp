@@ -4,7 +4,24 @@
 // Refer to the LICENSE file included
 
 #include "CConnectPacketHandler.h"
+#include <shared/net/Protocol.h>
 
 void CConnectPacketHandler::Handle(CReadStream &stream, ISession *session, IGame *game) {
+    char *header;
+
+    stream.Read(header, 13);
+
+    const std::string_view should;
+    if (!std::string_view(header).starts_with(PROTOCOL_MAGIC)) {
+        return;
+    }
+
+    uint32_t protocolVersion;
+    stream.Read(protocolVersion);
+
+    if (protocolVersion != PROTOCOL_VERSION) {
+        return;
+    }
+
     game->OnRequestSessionStart(session);
 }

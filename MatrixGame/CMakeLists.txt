@@ -53,6 +53,7 @@ target_link_libraries(
         xaudio2_8
         ${DIRECTX9_LIBRARIES}
         MatrixLib
+        MatrixShared
         "$<$<C_COMPILER_ID:MSVC>:legacy_stdio_definitions>"
 )
 
@@ -68,10 +69,11 @@ add_matrix_directory(src/Interface)
 add_matrix_directory(src/Logic)
 add_matrix_directory(src/RangersInterface)
 add_matrix_directory(src/NetGame)
-add_matrix_directory(src/NetGame/Clients)
-add_matrix_directory(src/NetGame/Packets)
-add_matrix_directory(src/NetGame/Packets/Handlers)
-add_matrix_directory(src/NetGame/Transports)
+add_matrix_directory(src/NetGame/Logic)
+add_matrix_directory(src/NetGame/Net)
+add_matrix_directory(src/NetGame/Net/Clients)
+add_matrix_directory(src/NetGame/Net/Packets)
+add_matrix_directory(src/NetGame/Net/Handlers)
 
 add_library(MatrixGame SHARED)
 # remove lib prefix from the DLL name (for GCC build)
