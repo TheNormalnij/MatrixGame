@@ -5,15 +5,29 @@
 
 #include "ServerApi.h"
 
-void CServerAPI::SendConnect() {
+#include "Packets/ConnectionPacket.h"
+#include "Packets/AskGameInfoPacket.h"
 
+void CServerAPI::SendConnect() {
+    CConnectionPacket packet;
+    Send(packet);
+}
+
+void CServerAPI::SendAskGameInfo() {
+    CAskGameInfoPacket packet;
+    Send(packet);
+}
+
+void CServerAPI::Send(IPacket &packet) {
+    CWriteStream stream = CWriteStream();
+    packet.WritePacket(&stream);
+
+    CRequest req = CRequest(stream.GetData(), stream.GetSize());
+
+    m_pNetClient->SendData(&req);
 }
 
 template <class T>
 void CServerAPI::SendCommands(T commands){
     
 };
-
-void CServerAPI::Send(CWriteStream &stream) {
-    
-}

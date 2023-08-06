@@ -8,6 +8,7 @@
 #include <string>
 #include <string_view>
 #include "Clients/IClient.h"
+#include "ServerApi.h"
 
 enum class EServerConnectionStatus {
     CONNECTING,
@@ -18,21 +19,26 @@ enum class EServerConnectionStatus {
 
 class CServerConnection {
 public:
-    CServerConnection(std::string_view host);
+    CServerConnection(std::string_view host, INetworkClient *pTransport, CServerAPI *pServerApi);
     ~CServerConnection() = default;
 
     void Connect();
     void Reconnect();
     void Disconnect();
-    void SendPacket();
-    void ReadPacket();
+
+    EServerConnectionStatus GetConnectStatus() const noexcept { return m_status; };
 
 private:
     void StartTransport();
     void TryHandshake();
+    void ApplyInitialPacketHandler();
+    void ApplyMainPacketHandler();
+    void RemoveCurrentPacketHandler();
 
 private:
     EServerConnectionStatus m_status;
     std::string m_host;
     INetworkClient *m_pTransport;
+    IPacketHandler *m_pCurrentPacketHandler;
+    CServerAPI *m_pServerApi;
 };

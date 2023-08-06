@@ -41,7 +41,7 @@
       "inheritEnvironments": [ "msvc_x86" ]
     },
     {
-      "name": "Game Relese",
+      "name": "Game Release",
       "generator": "Visual Studio 17 2022",
       "configurationType": "Release",
       "buildRoot": "${projectDir}\\build\\${name}",

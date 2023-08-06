@@ -6,18 +6,26 @@
 #pragma once
 
 #include "IClient.h"
-#include "../IPacketHandler.h"
+#include "../Handlers/IPacketHandler.h"
+#include <WinSock2.h>
 
 class CClientTCP : public INetworkClient {
 public:
-    CClientTCP() = default;
-    ~CClientTCP() = default;
+    CClientTCP();
+    ~CClientTCP();
 
     // Inherited via INetworkClient
     virtual void Connect(std::string_view adress, net_client_connect_cb callback) override;
-    virtual void Close(std::function<net_client_close_cb> callback) override;
+    virtual void Close(net_client_close_cb callback) override;
     virtual void SendData(CRequest *req) override;
+    virtual void DoUpdate() override;
+    virtual void SetPacketHandler(IPacketHandler *handler) override { m_pPacketHandler = handler; };
+
+private:
+    bool CreateSocket(int netType);
+    int  GetAdressType(std::string_view adress) const noexcept;
 
 private:
     IPacketHandler *m_pPacketHandler;
+    SOCKET m_hSocket;
 };

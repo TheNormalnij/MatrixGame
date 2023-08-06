@@ -6,16 +6,22 @@
 #pragma once
 
 #include <shared/net/IPacket.h>
+#include "Clients/IClient.h"
 
 class CServerAPI {
 public:
-    CServerAPI();
+    CServerAPI(INetworkClient *pNetClient) : m_pNetClient(pNetClient){};
     ~CServerAPI();
 
 	void SendConnect();
+    void SendAskGameInfo();
+
     template<class T>
     void SendCommands(T commands);
 
 private:
     void Send(IPacket &stream);
+
+private:
+    INetworkClient *m_pNetClient;
 };

@@ -5,13 +5,13 @@
 
 #include "NetPacketHandler.h"
 #include <shared/net/PacketEnums.h>
-#include "Handlers/ConnectPacketHandler.h"
+#include "PacketHandelrs/ConnectPacketHandler.h"
 
 #include <cstdint>
 
 void CNetPacketHandler::Handle(CReadStream *stream) {
     uint8_t packetType;
-    stream->Read((&packetType);
+    stream->Read(packetType);
     switch ((EGamePacketType)packetType)
 	{
         case EGamePacketType::CONNECT: {

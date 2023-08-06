@@ -5,40 +5,47 @@
 
 #include "NetGame.h"
 #include "NetGameForm.h"
-#include "Clients/CClientTCP.h"
-#include <future>
+#include "../Net/Clients/ClientTCP.h"
+
+CNetGame::CNetGame(HINSTANCE hInstance, SMatrixSettings *set) {
+    m_hAppInstance = hInstance;
+    m_pMatrixSettings = set;
+    m_pClient = new CClientTCP();
+    m_pServerApi = new CServerAPI(m_pClient);
+}
 
 bool CNetGame::StartNetworkGame(std::string_view host) {
+    ConnectGame(host);
+
     const bool connectSuccess = ConnectGame(host);
     if (!connectSuccess) {
         return false;
     }
 
-   
+    //m_serverApi.
+
+    StartGame((wchar_t*)L"Shit", 0);
 
     return true;
 }
 
 bool CNetGame::ConnectGame(std::string_view host) {
-    static std::promise<bool> *waitingConnection = nullptr;
-    if (waitingConnection) {
-        return false;
-    }
+    m_pServerConnection = new CServerConnection(host, m_pClient, m_pServerApi);
+    m_pServerConnection->Connect();
 
-    m_pClient->Connect(host, [](INetworkClient *client, bool success, std::string_view error) {
-        if (waitingConnection) {
-            waitingConnection->set_value(success);
+    while (true) {
+        m_pClient->DoUpdate();
+
+        if (m_pServerConnection->GetConnectStatus() == EServerConnectionStatus::CONNECTED) {
+            return true;
         }
-    });
-
-    waitingConnection->get_future().wait();
-
-    const bool success = waitingConnection;
-    waitingConnection = nullptr;
-    return success;
+        else if (m_pServerConnection->GetConnectStatus() == EServerConnectionStatus::DISCONNECTED) {
+            return false;
+        }
+    }
 }
 
-void CNetGame::StartNetworkGame(wchar *map, uint32_t seed) {
+void CNetGame::StartGame(wchar *map, uint32_t seed) {
     SMatrixTextParams textReplace = {0};
     m_currentGame.Init(m_hAppInstance, NULL, map, seed, m_pMatrixSettings, &textReplace);
 
@@ -52,5 +59,5 @@ void CNetGame::StartNetworkGame(wchar *map, uint32_t seed) {
 }
 
 void CNetGame::StopNetworkGame() {
-
+    m_pClient->Close([](INetworkClient *client, bool success, std::string_view error) { delete client; });
 }

@@ -3,11 +3,9 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#pragma once
+#include <shared/net/IPacket.h>
 
-#include <shared/net/CReadStream.h>
-
-class IPacketHandler {
+class CAskGameInfoPacket : public IPacket {
 public:
-    virtual void Handle(CReadStream *stream) = 0;
+    void WritePacket(CWriteStream *stream);
 };

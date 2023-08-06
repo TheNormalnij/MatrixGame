@@ -7,10 +7,8 @@
 
 #include <shared/net/CReadStream.h>
 
-class CNetPacketHandler {
+class IPacketHandler {
 public:
-    CNetPacketHandler();
-    ~CNetPacketHandler();
-
-    void Handle(CReadStream *stream);
+    virtual ~IPacketHandler() = 0;
+    virtual void Handle(CReadStream *stream) = 0;
 };

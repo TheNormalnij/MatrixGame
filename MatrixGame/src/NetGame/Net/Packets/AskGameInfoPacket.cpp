@@ -8,7 +8,5 @@
 #include <shared/net/PacketEnums.h>
 
 void CConnectionPacket::WritePacket(CWriteStream *stream) {
-    stream->Write((uint8_t)EGamePacketType::CONNECT);
-    stream->Write(PROTOCOL_MAGIC, 12);
-    stream->Write((uint32_t)PROTOCOL_VERSION);
+    stream->Write((uint8_t)EGamePacketType::GAME_INFO);
 }

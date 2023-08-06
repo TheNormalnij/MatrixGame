@@ -10,7 +10,7 @@
 #include <string_view>
 #include "RangersInterface/RangersInterfaceInternal.h"
 #include "Pack.hpp"
-#include "NetGame/NetGame.h"
+#include "NetGame/Logic/NetGame.h"
 #include "MatrixFormGame.hpp"
 
 // TODO more map info

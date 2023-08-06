@@ -14,7 +14,7 @@ public:
 
     bool NextTick();
 
-    auto &GetCommands() { return m_commandLog.GetTickCommands(m_currentTick); };
+    auto GetCommands() { return m_commandLog.GetTickCommands(m_currentTick); };
 
     void OnGetServerCommands();
     void OnGetServerInfo();
