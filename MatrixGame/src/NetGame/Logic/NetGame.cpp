@@ -45,7 +45,7 @@ bool CNetGame::ConnectGame(std::string_view host) {
     }
 }
 
-void CNetGame::StartGame(wchar *map, uint32_t seed) {
+void CNetGame::StartGame(wchar_t *map, uint32_t seed) {
     SMatrixTextParams textReplace = {0};
     m_currentGame.Init(m_hAppInstance, NULL, map, seed, m_pMatrixSettings, &textReplace);
 
@@ -56,8 +56,4 @@ void CNetGame::StartGame(wchar *map, uint32_t seed) {
     //m_currentGame.SaveResult(rgs);
     m_currentGame.SafeFree();
 
-}
-
-void CNetGame::StopNetworkGame() {
-    m_pClient->Close([](INetworkClient *client, bool success, std::string_view error) { delete client; });
 }

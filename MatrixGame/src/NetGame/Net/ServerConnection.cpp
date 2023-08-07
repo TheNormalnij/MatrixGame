@@ -36,7 +36,7 @@ void CServerConnection::StartTransport() {
         m_status = EServerConnectionStatus::CONNECTED;
     };
 
-    m_pTransport->SetPacketHandler();
+    ApplyInitialPacketHandler();
     m_pTransport->Connect(m_host, cb);
 }
 

@@ -7,5 +7,8 @@
 
 class CConnectionPacket : public IPacket {
 public:
-    void WritePacket(CWriteStream *stream);
+    CConnectionPacket() = default;
+    ~CConnectionPacket() = default;
+
+    void WritePacket(CWriteStream *stream) override;
 };

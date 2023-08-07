@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include <shared/net/CWriteStream.h>
-#include <shared/net/CReadStream.h>
+#include "../net/CWriteStream.h"
+#include "../net/CReadStream.h"
 
 enum class ECommandSourceType {
     SERVER,

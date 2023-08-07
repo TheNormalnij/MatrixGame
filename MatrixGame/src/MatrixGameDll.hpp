@@ -8,6 +8,11 @@
 
 #pragma once
 
+// This disables old winsock 1.1 lib
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
 #include <BaseDef.hpp>
 #include <windows.h>
 #include <cstdint>

@@ -21,7 +21,7 @@ public:
 
 private:
     bool ConnectGame(std::string_view host);
-    void StartGame(wchar *map, uint32_t seed);
+    void StartGame(wchar_t *map, uint32_t seed);
 
 private:
     HINSTANCE m_hAppInstance;

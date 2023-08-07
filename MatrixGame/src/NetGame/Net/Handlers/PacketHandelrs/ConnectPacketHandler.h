@@ -5,9 +5,12 @@
 
 #pragma once
 
-#include "IPacketHandler.h"
+#include "../IPacketHandler.h"
 
 class CConnectPacketHandler : public IPacketHandler {
 public:
+    CConnectPacketHandler() = default;
+    ~CConnectPacketHandler() = default;
 
+    virtual void Handle(CReadStream *stream) override;
 };

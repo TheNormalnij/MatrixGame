@@ -51,6 +51,7 @@ target_link_libraries(
     PUBLIC
         winmm
         xaudio2_8
+        Ws2_32
         ${DIRECTX9_LIBRARIES}
         MatrixLib
         MatrixShared
@@ -74,6 +75,7 @@ add_matrix_directory(src/NetGame/Net)
 add_matrix_directory(src/NetGame/Net/Clients)
 add_matrix_directory(src/NetGame/Net/Packets)
 add_matrix_directory(src/NetGame/Net/Handlers)
+add_matrix_directory(src/NetGame/Net/Handlers/PacketHandelrs)
 
 add_library(MatrixGame SHARED)
 # remove lib prefix from the DLL name (for GCC build)

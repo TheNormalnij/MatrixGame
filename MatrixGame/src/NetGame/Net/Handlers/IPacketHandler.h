@@ -9,6 +9,6 @@
 
 class IPacketHandler {
 public:
-    virtual ~IPacketHandler() = 0;
+    virtual ~IPacketHandler() = default;
     virtual void Handle(CReadStream *stream) = 0;
 };

@@ -39,10 +39,5 @@ void CWindowsApplication::StartNetworkGame(char *serverHost) {
 
     SRobotGameState robotGameState{0};
 
-    SMatrixTextParams texts{};
-    texts.lossText = L"Fail";
-    texts.winText = L"Win";
-    texts.planetName = L"Moon";
-
-    ConnectNetGame(m_hInstance, serverHost, matrixSettings, &texts, &robotGameState);
+    ConnectNetGame(m_hInstance, serverHost, matrixSettings, &robotGameState);
 }

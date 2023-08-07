@@ -6,7 +6,7 @@
 #pragma once
 
 #include <list>
-#include "commands/IGameCommand.h"
+#include <shared/game/IGameCommand.h>
 #include "net/transports/IServerTransport.h"
 #include "net/sessions/CSessionStore.h"
 #include <shared/net/CRequest.h>

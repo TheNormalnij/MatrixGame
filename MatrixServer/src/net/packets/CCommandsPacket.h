@@ -7,7 +7,7 @@
 
 #include <shared/net/IPacket.h>
 #include <list>
-#include "game/commands/IGameCommand.h"
+#include <shared/game/IGameCommand.h>
 
 class CCommandsPacket : public IPacket {
 public:

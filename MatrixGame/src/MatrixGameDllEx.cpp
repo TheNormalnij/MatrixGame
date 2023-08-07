@@ -73,12 +73,12 @@ MATRIXGAMEDLL_API int __cdecl ConnectNetGame(HINSTANCE hinst, char *host, SMatri
 
     CNetGame netGame(hinst, set);
 
-    const bool status = netGame.ConnectGame(host);
+    const bool status = netGame.StartNetworkGame(host);
 
     g_RangersInterface = nullptr;
 
     if (!status) {
-        return 99;
+        return EGameExitCode::NETWORK_ERROR;
     }
 
     return g_ExitState;

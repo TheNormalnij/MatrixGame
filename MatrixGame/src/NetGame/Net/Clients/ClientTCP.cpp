@@ -5,7 +5,6 @@
 
 #include "ClientTCP.h"
 #include <format>
-#include <ws2tcpip.h>
 
 CClientTCP::CClientTCP() {
     m_hSocket = INVALID_SOCKET;
@@ -113,7 +112,7 @@ bool CClientTCP::CreateSocket(int netType) {
     if (m_hSocket == INVALID_SOCKET) {
         printf("[TCP Client] CreateSocket socket failed: %d\n", WSAGetLastError());
         WSACleanup();
-        return;
+        return false;
     }
 
     // Set the socket to nonblocking mode
@@ -123,7 +122,7 @@ bool CClientTCP::CreateSocket(int netType) {
         printf("ioctlsocket failed: %ld\n", iResult);
         closesocket(m_hSocket);
         WSACleanup();
-        return;
+        return false;
     }
 
     return true;

@@ -5,6 +5,6 @@
 
 #include "ConnectPacketHandler.h"
 
-CConnectPacketHandler::Handle() {
+void CConnectPacketHandler::Handle(CReadStream *stream) {
 
 }

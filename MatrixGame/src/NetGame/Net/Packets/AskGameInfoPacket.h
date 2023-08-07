@@ -7,5 +7,8 @@
 
 class CAskGameInfoPacket : public IPacket {
 public:
-    void WritePacket(CWriteStream *stream);
+    CAskGameInfoPacket() = default;
+    ~CAskGameInfoPacket() = default;
+
+    void WritePacket(CWriteStream *stream) override;
 };
