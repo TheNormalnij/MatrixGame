@@ -6,31 +6,52 @@
 #include "NetGame.h"
 #include "NetGameForm.h"
 #include "../Net/Clients/ClientTCP.h"
+#include "../Net/Handlers/CGameNetDataHandler.h"
+#include "utils.hpp"
+
+constexpr time_t SERVER_TIMEOUT_SEC = 30;
 
 CNetGame::CNetGame(HINSTANCE hInstance, SMatrixSettings *set) {
     m_hAppInstance = hInstance;
     m_pMatrixSettings = set;
     m_pClient = new CClientTCP();
     m_pServerApi = new CServerAPI(m_pClient);
+    m_pServerConnection = nullptr;
+    m_pNetDataHandler = new CGameNetDataHandler(&m_serverSync);
 }
 
 bool CNetGame::StartNetworkGame(std::string_view host) {
-    ConnectGame(host);
-
     const bool connectSuccess = ConnectGame(host);
     if (!connectSuccess) {
         return false;
     }
 
-    //m_serverApi.
+    m_pServerApi->SendAskGameInfo();
 
-    StartGame((wchar_t*)L"Shit", 0);
+    const bool isGameReady = WaitForGameInfoReady();
 
-    return true;
+    if (isGameReady) {
+        StartGame();
+    }
+
+    return isGameReady;
+}
+
+bool CNetGame::WaitForGameInfoReady() {
+    const time_t startWaitSec = time(nullptr);
+    while (true) {
+        m_pClient->DoUpdate();
+        if (m_serverSync.IsGameInfoReady()) {
+            return true;
+        }
+        if (time(nullptr) - startWaitSec > SERVER_TIMEOUT_SEC) {
+            return false;
+        }
+    }
 }
 
 bool CNetGame::ConnectGame(std::string_view host) {
-    m_pServerConnection = new CServerConnection(host, m_pClient, m_pServerApi);
+    m_pServerConnection = new CServerConnection(host, m_pClient, m_pServerApi, m_pNetDataHandler);
     m_pServerConnection->Connect();
 
     while (true) {
@@ -45,9 +66,12 @@ bool CNetGame::ConnectGame(std::string_view host) {
     }
 }
 
-void CNetGame::StartGame(wchar_t *map, uint32_t seed) {
+void CNetGame::StartGame() {
+    std::wstring wstrMapName = utils::to_wstring(m_serverSync.GetMapName().data());
+    const uint32_t seed = m_serverSync.GetGameSeed();
+
     SMatrixTextParams textReplace = {0};
-    m_currentGame.Init(m_hAppInstance, NULL, map, seed, m_pMatrixSettings, &textReplace);
+    m_currentGame.Init(m_hAppInstance, NULL, wstrMapName.data(), seed, m_pMatrixSettings, &textReplace);
 
     CNetGameForm formgame;
 

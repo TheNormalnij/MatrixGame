@@ -6,18 +6,23 @@
 #pragma once
 
 #include <shared/game/CCommandLog.h>
+#include "Handlers/INetGameHandler.h"
 
-class CServerSync {
+class CServerSync : public INetGameHandler {
 public:
-    CServerSync();
-    ~CServerSync();
+    CServerSync() = default;
+    ~CServerSync() = default;
 
     bool NextTick();
 
+    bool IsGameInfoReady() const noexcept { return !m_mapName.empty(); };
+    std::string_view GetMapName() const noexcept { return m_mapName; };
+    uint32_t GetGameSeed() const noexcept { return m_seed; };
+
     auto GetCommands() { return m_commandLog.GetTickCommands(m_currentTick); };
 
-    void OnGetServerCommands();
-    void OnGetServerInfo();
+    // Inherited via INetGameHanlder
+    virtual void OnGetGameInfo(std::string_view mapName, uint32_t seed) override;
 
 private:
     size_t GetLastAllowerTick() const noexcept { return m_lastAllowedTick; };
@@ -26,4 +31,7 @@ private:
     size_t m_currentTick;
     size_t m_lastAllowedTick;
     CCommandLog m_commandLog;
+
+    std::string m_mapName;
+    uint32_t m_seed;
 };

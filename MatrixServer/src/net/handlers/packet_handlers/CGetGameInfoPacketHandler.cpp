@@ -3,11 +3,8 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "CServerCore.h"
-#include <shared/defaults.h>
+#include "CGetGameInfoPacketHandler.h"
 
-int main(int argc, char *argv[]) {
-    CServerCore server;
-
-    server.StartServer("0.0.0.0", DEFAULT_NET_GAME_PORT);
+void CGetGameInfoPacketHandler::Handle(CReadStream &stream, ISession *session, IGame *game) {
+    game->OnAskGameInfo(session);
 }

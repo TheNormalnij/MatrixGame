@@ -6,6 +6,7 @@
 #pragma once
 #include <vector>
 #include <cstring>
+#include <cstdint>
 
 class CWriteStream {
 public:

@@ -8,8 +8,8 @@
 #include <shared/net/CReadStream.h>
 #include "INetGameHandler.h"
 
-class IPacketHandler {
+class ITransportDataHandler {
 public:
-    virtual ~IPacketHandler() = default;
-    virtual void Handle(CReadStream *stream, INetGameHandler *game) = 0;
+    virtual ~ITransportDataHandler() = default;
+    virtual void Handle(CReadStream *stream) = 0;
 };

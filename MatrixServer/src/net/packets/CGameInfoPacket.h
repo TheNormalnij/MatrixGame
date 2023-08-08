@@ -10,11 +10,12 @@
 
 class CGameInfoPacket : public IPacket {
 public:
-    CGameInfoPacket(std::string_view &map) : m_map(map){};
+    CGameInfoPacket(std::string_view &map, uint32_t seed = 0) : m_map(map), m_seed(seed) {};
     ~CGameInfoPacket() = default;
 
     void WritePacket(CWriteStream *stream) override;
 
 private:
     std::string_view &m_map;
+    uint32_t m_seed;
 };

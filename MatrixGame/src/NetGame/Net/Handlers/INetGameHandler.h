@@ -5,11 +5,10 @@
 
 #pragma once
 
-#include <shared/net/CReadStream.h>
-#include "INetGameHandler.h"
+#include <string_view>
+#include <cstdint>
 
-class IPacketHandler {
+class INetGameHandler {
 public:
-    virtual ~IPacketHandler() = default;
-    virtual void Handle(CReadStream *stream, INetGameHandler *game) = 0;
+    virtual void OnGetGameInfo(std::string_view mapName, uint32_t seed) = 0;
 };

@@ -5,6 +5,6 @@
 
 #include "ConnectPacketHandler.h"
 
-void CConnectPacketHandler::Handle(CReadStream *stream) {
+void CConnectPacketHandler::Handle(CReadStream *stream, INetGameHandler *game) {
 
 }

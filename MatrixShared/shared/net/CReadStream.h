@@ -20,7 +20,7 @@ public:
 
     template <class T>
     void Read(T *out, size_t size) {
-        std::memcpy(out, m_data + m_currentPos, size);
+        std::memcpy((void*)out, m_data + m_currentPos, size);
         m_currentPos += size;
     }
 

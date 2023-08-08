@@ -15,3 +15,8 @@ bool CServerSync::NextTick() {
     return true;
 }
 
+void CServerSync::OnGetGameInfo(std::string_view mapName, uint32_t seed) {
+    m_mapName = mapName;
+    m_seed = seed;
+}
+

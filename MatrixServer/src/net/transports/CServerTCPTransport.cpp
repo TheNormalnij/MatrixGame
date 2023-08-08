@@ -25,11 +25,11 @@ bool CServerTCPTransport::Listen(std::string_view host, uint16_t port) {
     struct sockaddr_in addr;
     uv_loop_t *loop = uv_default_loop();
 
-    printf("Starting server on port: %d...", port);
+    printf("Starting server on port: %d...\n", port);
 
     status = uv_tcp_init(loop, &m_server);
     if (status < 0) {
-        printf("Can not start main loop. Error code: %d", status);
+        printf("Can not start main loop. Error code: %d\n", status);
         return false;
     }
 
@@ -39,7 +39,7 @@ bool CServerTCPTransport::Listen(std::string_view host, uint16_t port) {
 
     status = uv_tcp_bind(&m_server, (const struct sockaddr *)&addr, 0);
     if (status < 0) {
-        printf("Can not bind server. Address used? Error code: %d", status);
+        printf("Can not bind server. Address used? Error code: %d\n", status);
         return false;
     }
 
@@ -120,7 +120,7 @@ void CServerTCPTransport::StaticOnAlloc(uv_handle_t *client, size_t suggested_si
 void CServerTCPTransport::StaticOnRecieve(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
     if (nread > 0) {
         printf("%lu\n", nread);
-        printf("%s", buf->base);
+        printf("%s\n", buf->base);
 
         CSessionTCP *session = (CSessionTCP *)client->data;
         session->GetTransportHandler()->HandlePacket(session, buf->base, buf->len);

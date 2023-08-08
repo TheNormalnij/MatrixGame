@@ -3,11 +3,6 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "CServerCore.h"
-#include <shared/defaults.h>
+#pragma once
 
-int main(int argc, char *argv[]) {
-    CServerCore server;
-
-    server.StartServer("0.0.0.0", DEFAULT_NET_GAME_PORT);
-}
+constexpr auto DEFAULT_NET_GAME_PORT = 22173;

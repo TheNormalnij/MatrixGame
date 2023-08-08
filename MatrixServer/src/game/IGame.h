@@ -17,4 +17,5 @@ public:
     virtual void OnRequestSessionQuit(ISession *source) = 0;
 
     virtual void OnPlayerReady(IPlayer *source) = 0;
+    virtual void OnAskGameInfo(ISession *source) = 0;
 };

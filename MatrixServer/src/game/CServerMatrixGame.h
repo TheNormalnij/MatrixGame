@@ -23,6 +23,8 @@ public:
     void OnRequestSessionStart(ISession *source) override;
     void OnRequestSessionQuit(ISession *source) override;
 
+    void OnAskGameInfo(ISession *source) override;
+
     void OnPlayerReady(IPlayer *source) override;
 
 private:

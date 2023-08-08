@@ -8,7 +8,7 @@
 #include <string_view>
 #include <functional>
 #include <shared/net/CRequest.h>
-#include "../Handlers/IPacketHandler.h"
+#include "../Handlers/ITransportDataHandler.h"
 
 class INetworkClient;
 
@@ -22,5 +22,5 @@ public:
     virtual void Close(net_client_close_cb callback) = 0;
     virtual void SendData(CRequest *req) = 0;
     virtual void DoUpdate() = 0;
-    virtual void SetPacketHandler(IPacketHandler *handler) = 0;
+    virtual void SetPacketHandler(ITransportDataHandler *handler) = 0;
 };

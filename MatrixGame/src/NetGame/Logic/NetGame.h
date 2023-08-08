@@ -11,6 +11,8 @@
 #include "../Net/Clients/IClient.h"
 #include "../Net/ServerApi.h"
 #include "../Net/ServerConnection.h"
+#include "../Net/ServerSync.h"
+#include "../Net/Handlers/INetGameHandler.h"
 
 class CNetGame {
 public:
@@ -21,7 +23,8 @@ public:
 
 private:
     bool ConnectGame(std::string_view host);
-    void StartGame(wchar_t *map, uint32_t seed);
+    void StartGame();
+    bool WaitForGameInfoReady();
 
 private:
     HINSTANCE m_hAppInstance;
@@ -30,4 +33,7 @@ private:
     CServerAPI *m_pServerApi;
     CServerConnection *m_pServerConnection;
     INetworkClient *m_pClient;
+    CServerSync m_serverSync;
+    ITransportDataHandler *m_pNetDataHandler;
+    
 };

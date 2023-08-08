@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "IPacketHandler.h"
+#include "ITransportDataHandler.h"
 #include <functional>
 #include <string_view>
 
@@ -13,7 +13,7 @@ typedef std::function<void(bool succees, const char* error)> server_initial_cb;
 
 // This packet handler should prevent connecting to wrong server
 
-class CInitialPacketHandler : public IPacketHandler {
+class CInitialPacketHandler : public ITransportDataHandler {
 public:
     CInitialPacketHandler(server_initial_cb cb) : m_callback(cb){};
 

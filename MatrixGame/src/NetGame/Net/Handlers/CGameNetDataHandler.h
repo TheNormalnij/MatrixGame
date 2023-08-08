@@ -6,12 +6,16 @@
 #pragma once
 
 #include <shared/net/CReadStream.h>
-#include "IPacketHandler.h"
+#include "ITransportDataHandler.h"
+#include "INetGameHandler.h"
 
-class CNetPacketHandler : public IPacketHandler {
+class CGameNetDataHandler : public ITransportDataHandler {
 public:
-    CNetPacketHandler() = default;
-    ~CNetPacketHandler() override = default;
+    CGameNetDataHandler(INetGameHandler *pGame) : m_pGame(pGame){};
+    ~CGameNetDataHandler() override = default;
 
     void Handle(CReadStream *stream) override;
+
+private:
+    INetGameHandler *m_pGame;
 };

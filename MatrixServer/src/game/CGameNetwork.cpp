@@ -8,6 +8,7 @@
 #include <shared/net/PacketEnums.h>
 #include "net/packets/CCommandsPacket.h"
 #include "net/packets/CChangeGameStatePacket.h"
+#include "net/packets/CGameInfoPacket.h"
 
 struct SMiltictasRequestSendStatus {
     size_t sendetCount = 0;
@@ -25,7 +26,10 @@ void CGameNetwork::SendGameStatusChanged(EGameStatus status) {
     Broadcast(packet);
 }
 
-void CGameNetwork::SendGameInfo(std::string_view mapName) {}
+void CGameNetwork::SendGameInfo(ISession *session, std::string_view mapName) {
+    CGameInfoPacket packet(mapName);
+    Unicast(session, packet);
+}
 
 void CGameNetwork::Broadcast(IPacket &packet) {
     CWriteStream *stream = new CWriteStream();

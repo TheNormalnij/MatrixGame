@@ -19,7 +19,7 @@ enum class EServerConnectionStatus {
 
 class CServerConnection {
 public:
-    CServerConnection(std::string_view host, INetworkClient *pTransport, CServerAPI *pServerApi);
+    CServerConnection(std::string_view host, INetworkClient *pTransport, CServerAPI *pServerApi, ITransportDataHandler *pTargetHandler);
     ~CServerConnection() = default;
 
     void Connect();
@@ -39,6 +39,7 @@ private:
     EServerConnectionStatus m_status;
     std::string m_host;
     INetworkClient *m_pTransport;
-    IPacketHandler *m_pCurrentPacketHandler;
+    ITransportDataHandler *m_pCurrentDataHandler;
+    ITransportDataHandler *m_pTargetDataHandler;
     CServerAPI *m_pServerApi;
 };

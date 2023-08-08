@@ -7,10 +7,10 @@
 
 #include "../IPacketHandler.h"
 
-class CConnectPacketHandler : public IPacketHandler {
+class CGameInfoPacketHandler : public IPacketHandler {
 public:
-    CConnectPacketHandler() = default;
-    ~CConnectPacketHandler() = default;
+    CGameInfoPacketHandler() = default;
+    ~CGameInfoPacketHandler() = default;
 
     virtual void Handle(CReadStream *stream, INetGameHandler *game) override;
 };

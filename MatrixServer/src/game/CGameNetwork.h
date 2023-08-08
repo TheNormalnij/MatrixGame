@@ -20,7 +20,7 @@ public:
 
     void SendTickCommands(size_t tick, std::list<IGameCommand *> &commands);
     void SendGameStatusChanged(EGameStatus status);
-    void SendGameInfo(std::string_view mapName);
+    void SendGameInfo(ISession *session, std::string_view mapName);
 
 private:
     void Broadcast(IPacket &packet);

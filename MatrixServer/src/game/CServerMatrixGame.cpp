@@ -10,7 +10,7 @@ CServerMatrixGame::CServerMatrixGame() {
     m_currentStatus = EGameStatus::WAIT_PLAYERS;
     m_currentTick = 0;
     m_net = CGameNetwork();
-    m_mapName = "TEST.map";
+    m_mapName = "TRAINING.CMAP";
 }
 
 void CServerMatrixGame::GameStart(){
@@ -59,6 +59,10 @@ void CServerMatrixGame::OnRequestSessionQuit(ISession *session) {
     IPlayer *player = (IPlayer*)session->GetCustomData();
     
     delete player;
+}
+
+void CServerMatrixGame::OnAskGameInfo(ISession *source) {
+    m_net.SendGameInfo(source, m_mapName);
 }
 
 void CServerMatrixGame::OnPlayerReady(IPlayer *source) {

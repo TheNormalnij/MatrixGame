@@ -19,13 +19,14 @@ public:
     virtual void Close(net_client_close_cb callback) override;
     virtual void SendData(CRequest *req) override;
     virtual void DoUpdate() override;
-    virtual void SetPacketHandler(IPacketHandler *handler) override { m_pPacketHandler = handler; };
+    virtual void SetPacketHandler(ITransportDataHandler *handler) override { m_pPacketHandler = handler; };
 
 private:
+    bool EnableNetwork();
     bool CreateSocket(int netType);
     int  GetAdressType(std::string_view adress) const noexcept;
 
 private:
-    IPacketHandler *m_pPacketHandler;
+    ITransportDataHandler *m_pPacketHandler;
     SOCKET m_hSocket;
 };

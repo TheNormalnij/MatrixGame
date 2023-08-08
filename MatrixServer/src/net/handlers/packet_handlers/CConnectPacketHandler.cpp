@@ -7,7 +7,7 @@
 #include <shared/net/Protocol.h>
 
 void CConnectPacketHandler::Handle(CReadStream &stream, ISession *session, IGame *game) {
-    char *header;
+    char header[14] = {0};
 
     stream.Read(header, 13);
 

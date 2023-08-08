@@ -40,6 +40,11 @@ LRESULT CWindowsLauncherUI::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam
                         m_pApp->StartLocalGame(m_wcSelectedMap);
                     }
                     return TRUE;
+                case ID_BTN_JOIN: {
+                    //Close();
+                    m_pApp->StartNetworkGame((char*)"127.0.0.1");
+                    return TRUE;
+                }
                 case ID_BTN_SETTINGS: {
                     CWindowsSettingsUI settingsWnd = CWindowsSettingsUI(m_pSettings);
                     settingsWnd.Run(m_hWnd);

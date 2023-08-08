@@ -6,13 +6,14 @@
 #include "ServerConnection.h"
 #include "Clients/ClientTCP.h"
 #include "Handlers/InitialPacketHandler.h"
-#include "Handlers/NetPacketHandler.h"
 
-CServerConnection::CServerConnection(std::string_view host, INetworkClient *pTransport, CServerAPI *pServerApi) {
+CServerConnection::CServerConnection(std::string_view host, INetworkClient *pTransport, CServerAPI *pServerApi,
+                                     ITransportDataHandler *pTargetHandler) {
     m_host = host;
     m_status = EServerConnectionStatus::DISCONNECTED;
     m_pTransport = pTransport;
-    m_pCurrentPacketHandler = nullptr;
+    m_pCurrentDataHandler = nullptr;
+    m_pTargetDataHandler = pTargetHandler;
     m_pServerApi = pServerApi;
 }
 
@@ -24,6 +25,10 @@ void CServerConnection::Connect() {
     m_status == EServerConnectionStatus::CONNECTING;
     StartTransport();
 }
+
+void CServerConnection::Reconnect() {}
+
+void CServerConnection::Disconnect() {}
 
 void CServerConnection::StartTransport() {
      net_client_connect_cb cb = [this](INetworkClient *client, bool success, std::string_view error) {
@@ -47,7 +52,7 @@ void CServerConnection::TryHandshake() {
 void CServerConnection::ApplyInitialPacketHandler() {
     RemoveCurrentPacketHandler();
 
-    m_pCurrentPacketHandler = new CInitialPacketHandler([this](bool succees, const char *error) {
+    m_pCurrentDataHandler = new CInitialPacketHandler([this](bool succees, const char *error) {
         if (succees) {
             m_status = EServerConnectionStatus::CONNECTED;
             ApplyMainPacketHandler();
@@ -57,18 +62,16 @@ void CServerConnection::ApplyInitialPacketHandler() {
         }
     });
 
-    m_pTransport->SetPacketHandler(m_pCurrentPacketHandler);
+    m_pTransport->SetPacketHandler(m_pCurrentDataHandler);
 }
 
 void CServerConnection::ApplyMainPacketHandler() {
     RemoveCurrentPacketHandler();
-
-    m_pCurrentPacketHandler = new CNetPacketHandler();
-    m_pTransport->SetPacketHandler(m_pCurrentPacketHandler);
+    m_pTransport->SetPacketHandler(m_pTargetDataHandler);
 }
 
 void CServerConnection::RemoveCurrentPacketHandler() {
-    if (m_pCurrentPacketHandler) {
-        delete m_pCurrentPacketHandler;
+    if (m_pCurrentDataHandler) {
+        delete m_pCurrentDataHandler;
     }
 }

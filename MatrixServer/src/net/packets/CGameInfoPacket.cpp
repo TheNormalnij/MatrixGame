@@ -11,4 +11,5 @@ void CGameInfoPacket::WritePacket(CWriteStream *stream) {
     const uint32_t stringLen = m_map.size();
     stream->Write(stringLen);
     stream->Write(m_map.data(), stringLen);
+    stream->Write(m_seed);
 }

@@ -5,6 +5,8 @@
 
 #include "ClientTCP.h"
 #include <format>
+#include "../Utilits/AddressUtils.h"
+#include <shared/defaults.h>
 
 CClientTCP::CClientTCP() {
     m_hSocket = INVALID_SOCKET;
@@ -15,17 +17,30 @@ CClientTCP::~CClientTCP() {
 
 }
 
-void CClientTCP::Connect(std::string_view adress, net_client_connect_cb callback) {
-    if (m_hSocket == INVALID_SOCKET) {
-        const int netType = GetAdressType(adress);
-        CreateSocket(netType);
+void CClientTCP::Connect(std::string_view address, net_client_connect_cb callback) {
+    const unsigned short port = AddressUtils::GetPortFromAddress(address, DEFAULT_NET_GAME_PORT);
+    if (!port) {
+        return;
+    }
+
+    if (m_hSocket != INVALID_SOCKET) {
+        return;
+    }
+
+    if (!EnableNetwork()) {
+        return;
+    }
+
+    const int netType = GetAdressType(address);
+    if (!CreateSocket(netType)) {
+        return;
     }
 
     // Connect to the remote server
     struct sockaddr_in serverAddr;
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_addr.s_addr = inet_addr(adress.data());
-    serverAddr.sin_port = htons(1234);
+    serverAddr.sin_addr.s_addr = inet_addr(address.data());
+    serverAddr.sin_port = htons(port);
 
     auto iResult = connect(m_hSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
     if (iResult == SOCKET_ERROR) {
@@ -105,6 +120,16 @@ void CClientTCP::DoUpdate() {
     CReadStream stream = CReadStream(buffer, bytesReceived);
 
     m_pPacketHandler->Handle(&stream);
+}
+
+bool CClientTCP::EnableNetwork() {
+    WSADATA wsaData;
+    int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (iResult != 0) {
+        printf("[TCP Client] WSAStartup failed: %d\n", iResult);
+        return false;
+    }
+    return true;
 }
 
 bool CClientTCP::CreateSocket(int netType) {
