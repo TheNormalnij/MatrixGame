@@ -7,3 +7,4 @@
 
 constexpr size_t PROTOCOL_VERSION = 0;
 constexpr const char* PROTOCOL_MAGIC = "SR2_PB_ONLINE";
+constexpr const char PROTOCOL_MAGIC_SIZE = 13;

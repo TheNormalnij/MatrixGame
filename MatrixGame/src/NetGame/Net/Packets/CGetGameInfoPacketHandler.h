@@ -5,10 +5,10 @@
 
 #include <shared/net/IPacket.h>
 
-class CAskGameInfoPacket : public IPacket {
+class CGetGameInfoPacketHandler : public IPacket {
 public:
-    CAskGameInfoPacket() = default;
-    ~CAskGameInfoPacket() = default;
+    CGetGameInfoPacketHandler() = default;
+    ~CGetGameInfoPacketHandler() = default;
 
     void WritePacket(CWriteStream *stream) override;
 };

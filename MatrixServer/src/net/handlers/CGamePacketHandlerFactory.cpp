@@ -9,6 +9,7 @@
 #include "packet_handlers/CCommandPacketHandler.h"
 #include "packet_handlers/CDisconnectPacketHandler.h"
 #include "packet_handlers/CReadyPacketHandler.h"
+#include "packet_handlers/CGetGameInfoPacketHandler.h"
 
 IPacketHandler *CGamePacketHandlerFactory::CreateHandler(EGamePacketType packetId) {
     switch (packetId) {
@@ -20,6 +21,8 @@ IPacketHandler *CGamePacketHandlerFactory::CreateHandler(EGamePacketType packetI
             return new CCommandPacketHandler();
         case EGamePacketType::READY:
             return new CReadyPacketHandler();
+        case EGamePacketType::GAME_INFO:
+            return new CGetGameInfoPacketHandler();
         default:
             return nullptr;
     }

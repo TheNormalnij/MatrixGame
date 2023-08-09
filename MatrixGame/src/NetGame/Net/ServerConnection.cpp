@@ -22,7 +22,7 @@ void CServerConnection::Connect() {
         return;
     }
 
-    m_status == EServerConnectionStatus::CONNECTING;
+    m_status = EServerConnectionStatus::CONNECTING;
     StartTransport();
 }
 
@@ -31,18 +31,14 @@ void CServerConnection::Reconnect() {}
 void CServerConnection::Disconnect() {}
 
 void CServerConnection::StartTransport() {
-     net_client_connect_cb cb = [this](INetworkClient *client, bool success, std::string_view error) {
-        if (success) {
-           TryHandshake();
-        }
-        else {
-            m_status = EServerConnectionStatus::DISCONNECTED;
-        }
-        m_status = EServerConnectionStatus::CONNECTED;
-    };
-
     ApplyInitialPacketHandler();
-    m_pTransport->Connect(m_host, cb);
+    const bool success = m_pTransport->Connect(m_host);
+    if (success) {
+        TryHandshake();
+    }
+    else {
+        m_status = EServerConnectionStatus::DISCONNECTED;
+    } 
 }
 
 void CServerConnection::TryHandshake() {

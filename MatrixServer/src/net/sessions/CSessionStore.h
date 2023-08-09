@@ -21,8 +21,6 @@ public:
 
     ISession *GetSessionByToken(std::string_view sessionToken);
 
-    ISession *GetSessionBySource(void *source);
-
     std::list<ISession *> &GetSessions() { return m_sessions; };
 
 private:

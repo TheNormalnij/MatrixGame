@@ -6,7 +6,7 @@
 #include "ServerApi.h"
 
 #include "Packets/ConnectionPacket.h"
-#include "Packets/AskGameInfoPacket.h"
+#include "Packets/CGetGameInfoPacketHandler.h"
 
 void CServerAPI::SendConnect() {
     CConnectionPacket packet;
@@ -14,7 +14,7 @@ void CServerAPI::SendConnect() {
 }
 
 void CServerAPI::SendAskGameInfo() {
-    CAskGameInfoPacket packet;
+    CGetGameInfoPacketHandler packet;
     Send(packet);
 }
 

@@ -15,8 +15,8 @@ public:
     ~CClientTCP();
 
     // Inherited via INetworkClient
-    virtual void Connect(std::string_view adress, net_client_connect_cb callback) override;
-    virtual void Close(net_client_close_cb callback) override;
+    virtual bool Connect(std::string_view adress) override;
+    virtual bool Close() override;
     virtual void SendData(CRequest *req) override;
     virtual void DoUpdate() override;
     virtual void SetPacketHandler(ITransportDataHandler *handler) override { m_pPacketHandler = handler; };

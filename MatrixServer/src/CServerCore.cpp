@@ -25,7 +25,7 @@ void CServerCore::StartServer(std::string_view host, uint16_t port) {
     m_pNetHandler->Listen(host, port);
 
     m_mainLoop.AddServerJob(m_game);
-    m_mainLoop.AddServerJob(new CSessionCleaner(&m_sessionStore));
+    //m_mainLoop.AddServerJob(new CSessionCleaner(&m_sessionStore));
 
     m_mainLoop.Start();
 }

@@ -6,6 +6,7 @@
 #include "CGameNetDataHandler.h"
 #include <shared/net/PacketEnums.h>
 #include "PacketHandelrs/ConnectPacketHandler.h"
+#include "PacketHandelrs/GameInfoPacketHandler.h"
 
 #include <cstdint>
 
@@ -20,7 +21,7 @@ void CGameNetDataHandler::Handle(CReadStream *stream) {
             break;
         }
         case EGamePacketType::GAME_INFO: {
-            CConnectPacketHandler handler;
+            CGameInfoPacketHandler handler;
             handler.Handle(stream, m_pGame);
             break;
         }

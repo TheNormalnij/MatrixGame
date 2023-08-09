@@ -17,8 +17,8 @@ void CInitialPacketHandler::Handle(CReadStream *stream) {
         return;
     }
 
-    char magick[13] = {0};
-    stream->Read(magick, 12);
+    char magick[PROTOCOL_MAGIC_SIZE + 1] = {0};
+    stream->Read(magick, PROTOCOL_MAGIC_SIZE);
     if (std::string_view(PROTOCOL_MAGIC).compare(magick) != 0) {
         m_callback(false, "[CInitialPacketHandler] Server respons with invalid magick symbols");
         return;

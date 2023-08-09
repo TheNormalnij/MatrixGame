@@ -16,5 +16,5 @@ public:
     void WritePacket(CWriteStream *stream) override;
 
 private:
-    EGameStatus &m_status;
+    EGameStatus m_status;
 };

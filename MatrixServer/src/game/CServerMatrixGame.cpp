@@ -53,6 +53,8 @@ void CServerMatrixGame::OnRequestSessionStart(ISession *session) {
 
     IPlayer *player = new CNetPlayer(session);
     session->SetCustomData(player);
+
+    m_net.SendConnect(session);
 }
 
 void CServerMatrixGame::OnRequestSessionQuit(ISession *session) {

@@ -9,6 +9,7 @@
 #include "net/packets/CCommandsPacket.h"
 #include "net/packets/CChangeGameStatePacket.h"
 #include "net/packets/CGameInfoPacket.h"
+#include "net/packets/CConnectPacket.h"
 
 struct SMiltictasRequestSendStatus {
     size_t sendetCount = 0;
@@ -28,6 +29,11 @@ void CGameNetwork::SendGameStatusChanged(EGameStatus status) {
 
 void CGameNetwork::SendGameInfo(ISession *session, std::string_view mapName) {
     CGameInfoPacket packet(mapName);
+    Unicast(session, packet);
+}
+
+void CGameNetwork::SendConnect(ISession *session) {
+    CConnectPacket packet;
     Unicast(session, packet);
 }
 

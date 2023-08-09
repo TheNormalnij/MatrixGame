@@ -7,9 +7,9 @@
 #include <shared/net/Protocol.h>
 
 void CConnectPacketHandler::Handle(CReadStream &stream, ISession *session, IGame *game) {
-    char header[14] = {0};
+    char header[PROTOCOL_MAGIC_SIZE + 1] = {0};
 
-    stream.Read(header, 13);
+    stream.Read(header, PROTOCOL_MAGIC_SIZE);
 
     const std::string_view should;
     if (!std::string_view(header).starts_with(PROTOCOL_MAGIC)) {

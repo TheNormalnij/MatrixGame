@@ -17,23 +17,23 @@ CClientTCP::~CClientTCP() {
 
 }
 
-void CClientTCP::Connect(std::string_view address, net_client_connect_cb callback) {
+bool CClientTCP::Connect(std::string_view address) {
     const unsigned short port = AddressUtils::GetPortFromAddress(address, DEFAULT_NET_GAME_PORT);
     if (!port) {
-        return;
+        return false;
     }
 
     if (m_hSocket != INVALID_SOCKET) {
-        return;
+        return false;
     }
 
     if (!EnableNetwork()) {
-        return;
+        return false;
     }
 
     const int netType = GetAdressType(address);
     if (!CreateSocket(netType)) {
-        return;
+        return false;
     }
 
     // Connect to the remote server
@@ -48,23 +48,46 @@ void CClientTCP::Connect(std::string_view address, net_client_connect_cb callbac
             printf("connect failed: %d\n", WSAGetLastError());
             closesocket(m_hSocket);
             WSACleanup();
-            return;
+
+            return false;
         }
     }
 
-    callback(this, true, "");
+    // check socket is writable
+    fd_set writeSet;
+    FD_ZERO(&writeSet);
+    FD_SET(m_hSocket, &writeSet);
+
+    timeval timeout;
+    timeout.tv_sec = 30;
+    timeout.tv_usec = 0;
+
+    iResult = select(0, nullptr, &writeSet, nullptr, &timeout);
+
+    if (iResult == SOCKET_ERROR) {
+        printf("connect failed: %d\n", WSAGetLastError());
+        closesocket(m_hSocket);
+        return false;
+    }
+    else if (iResult == 0) {
+        printf("connect timed out\n");
+        closesocket(m_hSocket);
+        return false;
+    }
+
+    return true;
 }
 
-void CClientTCP::Close(net_client_close_cb callback) {
+bool CClientTCP::Close() {
     int status = closesocket(m_hSocket);
     m_hSocket = INVALID_SOCKET;
     if (status == SOCKET_ERROR) {
-        const int errorCode = WSAGetLastError();
-        std::string error = std::format("Error code: {}", errorCode);
-        callback(this, false, error);
+        // const int errorCode = WSAGetLastError();
+        // std::string error = std::format("Error code: {}", errorCode);
+        return false;
     }
     else {
-        callback(this, true, "");
+        return true;
     }
 }
 
@@ -85,7 +108,7 @@ void CClientTCP::DoUpdate() {
     FD_SET(m_hSocket, &readSet);
 
     timeval timeout;
-    timeout.tv_sec = 0;
+    timeout.tv_sec = 1;
     timeout.tv_usec = 0;
 
     int iResult = select(0, &readSet, NULL, NULL, &timeout);

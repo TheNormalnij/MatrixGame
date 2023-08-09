@@ -55,11 +55,15 @@ bool CServerTCPTransport::Listen(std::string_view host, uint16_t port) {
     return true;
 }
 
-void CServerTCPTransport::SendData(ISession *handler, CRequest *req) {
+void CServerTCPTransport::SendData(ISession *session, CRequest *req) {
     uv_write_t *uvreq = new uv_write_t();
 
     const uv_buf_t wrbuf = uv_buf_init(req->GetData(), req->GetSize());
     uvreq->data = req;
+
+    printf("[TCP] Write data\n");
+
+    const auto handler = ((CSessionTCP *)session)->GetHandler();
 
     uv_write(uvreq, (uv_stream_t *)handler, &wrbuf, 1, [](uv_write_t *uvreq, int status) {
         // Write callback
@@ -117,15 +121,16 @@ void CServerTCPTransport::StaticOnAlloc(uv_handle_t *client, size_t suggested_si
     printf("[TCP transport] Allocate:%lu %p\n", buf->len, buf->base);
 }
 
+// TODO: UV call this when connection closed
 void CServerTCPTransport::StaticOnRecieve(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
     if (nread > 0) {
-        printf("%lu\n", nread);
-        printf("%s\n", buf->base);
+        printf("[TCP transport] Count read: %lu\n", nread);
 
         CSessionTCP *session = (CSessionTCP *)client->data;
         session->GetTransportHandler()->HandlePacket(session, buf->base, buf->len);
     }
 
-    printf("free  :%lu %p\n", buf->len, buf->base);
+    printf("[TCP transport] free  :%lu %p\n", buf->len, buf->base);
     delete[] buf->base;
+
 }
