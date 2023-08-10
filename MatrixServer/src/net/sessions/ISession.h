@@ -4,8 +4,10 @@
 // Refer to the LICENSE file included
 
 #pragma once
+
 #include <string_view>
 #include <shared/net/CRequest.h>
++#include <cstdint>
 
 class ISession {
 public:
