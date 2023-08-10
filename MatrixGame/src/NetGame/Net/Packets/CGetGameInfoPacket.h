@@ -5,9 +5,9 @@
 
 #include <shared/net/IPacket.h>
 
-class CGetGameInfoPacketHandler : public IPacket {
+class CGetGameInfoPacket : public IPacket {
 public:
-    CGetGameInfoPacketHandler() = default;
+    CGetGameInfoPacket() = default;
     ~CGetGameInfoPacketHandler() = default;
 
     void WritePacket(CWriteStream *stream) override;

@@ -3,10 +3,10 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "CGetGameInfoPacketHandler.h"
+#include "CGetGameInfoPacket.h"
 #include <shared/net/Protocol.h>
 #include <shared/net/PacketEnums.h>
 
-void CGetGameInfoPacketHandler::WritePacket(CWriteStream *stream) {
+void CGetGameInfoPacket::WritePacket(CWriteStream *stream) {
     stream->Write((uint8_t)EGamePacketType::GAME_INFO);
 }

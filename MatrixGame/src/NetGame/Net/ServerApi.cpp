@@ -5,8 +5,9 @@
 
 #include "ServerApi.h"
 
-#include "Packets/ConnectionPacket.h"
-#include "Packets/CGetGameInfoPacketHandler.h"
+#include "Packets/CConnectionPacket.h"
+#include "Packets/CGetGameInfoPacket.h"
+#include "Packets/CReadyPacket.h"
 
 void CServerAPI::SendConnect() {
     CConnectionPacket packet;
@@ -14,11 +15,19 @@ void CServerAPI::SendConnect() {
 }
 
 void CServerAPI::SendAskGameInfo() {
-    CGetGameInfoPacketHandler packet;
+    CGetGameInfoPacket packet;
     Send(packet);
 }
 
-void CServerAPI::SendReady() {}
+void CServerAPI::SendReady() {
+    CReadyPacket packet;
+    Send(packet);
+}
+
+template <class T>
+void CServerAPI::SendCommands(T commands){
+
+};
 
 void CServerAPI::Send(IPacket &packet) {
     CWriteStream stream = CWriteStream();
@@ -28,8 +37,3 @@ void CServerAPI::Send(IPacket &packet) {
 
     m_pNetClient->SendData(&req);
 }
-
-template <class T>
-void CServerAPI::SendCommands(T commands){
-    
-};

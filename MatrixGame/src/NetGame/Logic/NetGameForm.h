@@ -12,15 +12,8 @@
 #include <string>
 
 class CNetGameForm : public CForm {
-private:
-    float m_LastWorldX, m_LastWorldY;
-    int m_Action;
-
-    std::deque<SKeyScan> m_LastScans{MAX_SCANS};
-    bool IsInputEqual(std::string str);
-
 public:
-    CNetGameForm(void);
+    CNetGameForm();
     ~CNetGameForm();
 
     virtual void Enter(void);
@@ -47,4 +40,14 @@ private:
 
     void DelegateClickToInterface(ButtonStatus status, int key);
     void DelegateClickToMap(ButtonStatus status, int key, int x, int y);
+
+    bool IsInputEqual(std::string str);
+private:
+    bool m_wasReadyClicked;
+
+    float m_LastWorldX, m_LastWorldY;
+    int m_Action;
+
+    std::deque<SKeyScan> m_LastScans{MAX_SCANS};
+    
 };
