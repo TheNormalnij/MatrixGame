@@ -11,7 +11,7 @@ class ISession {
 public:
     virtual ~ISession() = default;
   
-    virtual std::string_view GetToken() = 0;
+    virtual std::string_view GetToken() const noexcept = 0;
 
     // Send data
     virtual void SendData(CRequest *req) = 0;
@@ -20,11 +20,14 @@ public:
     virtual void SetLastClientUpdateTimestamp(uint64_t timestamp) = 0;
 
     // returns unix timestamp ms
-    virtual uint64_t GetLastClientUpdateTimestamp() = 0;
+    virtual uint64_t GetLastClientUpdateTimestamp() const noexcept = 0;
 
     // Set custom data to session
     virtual void SetCustomData(void *data) = 0;
 
     // Get custom data from session
-    virtual void *GetCustomData() = 0;
+    virtual void *GetCustomData() const noexcept = 0;
+
+    // Get session hander for transport
+    virtual void *GetHandler() const noexcept = 0;
 };

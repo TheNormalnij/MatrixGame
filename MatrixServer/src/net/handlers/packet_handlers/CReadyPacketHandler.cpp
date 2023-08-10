@@ -8,6 +8,5 @@
 
 
 void CReadyPacketHandler::Handle(CReadStream &stream, ISession *session, IGame *game) {
-    IPlayer *player = (IPlayer*)session->GetCustomData();
-    game->OnPlayerReady(player);
+    game->OnSessionReady(session);
 }

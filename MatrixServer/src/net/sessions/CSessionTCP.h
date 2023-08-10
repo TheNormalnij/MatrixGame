@@ -15,7 +15,7 @@ public:
     CSessionTCP(ITransportHandler* transportHandler, IServerTransport* transport);
     ~CSessionTCP();
 
-    uv_tcp_t *GetHandler() { return &m_handler; };
+    void *GetHandler() const noexcept override { return (void*) & m_handler; };
     ITransportHandler *GetTransportHandler() const { return m_transportHandler; };
 
     void RegisterInEventLoop(uv_loop_t* loop);

@@ -54,6 +54,7 @@ bool CNetGame::ConnectGame(std::string_view host) {
     m_pServerConnection = new CServerConnection(host, m_pClient, m_pServerApi, m_pNetDataHandler);
     m_pServerConnection->Connect();
 
+    const time_t startWaitSec = time(nullptr);
     while (true) {
         m_pClient->DoUpdate();
 
@@ -61,6 +62,11 @@ bool CNetGame::ConnectGame(std::string_view host) {
             return true;
         }
         else if (m_pServerConnection->GetConnectStatus() == EServerConnectionStatus::DISCONNECTED) {
+            return false;
+        }
+
+         if (time(nullptr) - startWaitSec > SERVER_TIMEOUT_SEC) {
+            m_pServerConnection->Disconnect();
             return false;
         }
     }
@@ -71,6 +77,8 @@ void CNetGame::StartGame() {
     const uint32_t seed = m_serverSync.GetGameSeed();
 
     SMatrixTextParams textReplace = {0};
+    textReplace.startText = L"Press accept to start";
+
     m_currentGame.Init(m_hAppInstance, NULL, wstrMapName.data(), seed, m_pMatrixSettings, &textReplace);
 
     CNetGameForm formgame;

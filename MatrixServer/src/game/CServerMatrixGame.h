@@ -10,6 +10,8 @@
 #include "CGameNetwork.h"
 #include <list>
 #include <shared/game/Game.h>
+#include "SMatrixGameSettings.h"
+#include "CPlayersStore.h"
 
 class CServerMatrixGame : public IGame {
 public:
@@ -25,17 +27,20 @@ public:
 
     void OnAskGameInfo(ISession *source) override;
 
-    void OnPlayerReady(IPlayer *source) override;
+    void OnSessionReady(ISession *source) override;
 
 private:
     void GameStart();
     void GameStop();
+
+    IPlayer *GetSessionPlayer(ISession *session) const noexcept;
+    bool IsAllPlayersReady() const noexcept;
 
 private:
     EGameStatus m_currentStatus;
     size_t m_currentTick;
     CCommandLog m_commandLog;
     CGameNetwork m_net;
-
-    std::string_view m_mapName;
+    SMatrixGameSettings m_settings;
+    CPlayersStore m_playersStore;
 };

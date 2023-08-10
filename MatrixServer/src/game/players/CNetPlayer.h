@@ -5,15 +5,14 @@
 
 #pragma once
 
-#include "IPlayer.h"
-#include "../../net/sessions/ISession.h"
+#include "CPlayerBase.h"
 
-class CNetPlayer : public IPlayer {
+class CNetPlayer : public CPlayerBase {
 public:
     CNetPlayer(ISession *session) : m_session(session){};
     ~CNetPlayer() = default;
 
-    ISession *GetSession() { return m_session; };
+    ISession *GetSession() const noexcept { return m_session; };
    
 private:
     ISession *m_session;

@@ -8,5 +8,6 @@
 
 class ITransportHandler {
 public:
+    virtual ~ITransportHandler() = default;
 	virtual void HandlePacket(ISession* session, char *data, size_t len) = 0;
 };

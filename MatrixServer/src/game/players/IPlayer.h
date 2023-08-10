@@ -9,6 +9,9 @@
 
 class IPlayer {
 public:
-    virtual ISession *GetSession() = 0;
+    virtual ~IPlayer() = default;
+    virtual ISession *GetSession() const noexcept = 0;
+    virtual void SetReady(bool status) = 0;
+    virtual bool IsReady() const noexcept = 0;
 };
 

@@ -11,5 +11,6 @@
 
 class IPacketHandler {
 public:
+    virtual ~IPacketHandler() = default;
     virtual void Handle(CReadStream &stream, ISession *session, IGame *game) = 0;
 };

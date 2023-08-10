@@ -6,7 +6,8 @@
 #include "CServerTCPTransport.h"
 #include "../sessions/CSessionTCP.h"
 
-constexpr int MAX_CONNECTIONS = 100;
+constexpr const unsigned short BUFFER_SIZE = 1380;
+constexpr const int MAX_CONNECTIONS = 100;
 
 CServerTCPTransport::CServerTCPTransport(uv_loop_t *loop, CSessionStore *sessionStore, ITransportHandler *handler) {
     m_loop = loop;
@@ -61,9 +62,7 @@ void CServerTCPTransport::SendData(ISession *session, CRequest *req) {
     const uv_buf_t wrbuf = uv_buf_init(req->GetData(), req->GetSize());
     uvreq->data = req;
 
-    printf("[TCP] Write data\n");
-
-    const auto handler = ((CSessionTCP *)session)->GetHandler();
+    const uv_tcp_t *handler = (uv_tcp_t*)session->GetHandler();
 
     uv_write(uvreq, (uv_stream_t *)handler, &wrbuf, 1, [](uv_write_t *uvreq, int status) {
         // Write callback
@@ -116,21 +115,23 @@ void CServerTCPTransport::StaticOnConnection(uv_stream_t *server, int status) {
 }
  
 void CServerTCPTransport::StaticOnAlloc(uv_handle_t *client, size_t suggested_size, uv_buf_t *buf) {
+    // Suggested_size is always 64KB for localhost
     buf->base = new char[suggested_size];
     buf->len = suggested_size;
-    printf("[TCP transport] Allocate:%lu %p\n", buf->len, buf->base);
 }
 
-// TODO: UV call this when connection closed
 void CServerTCPTransport::StaticOnRecieve(uv_stream_t *client, ssize_t nread, const uv_buf_t *buf) {
     if (nread > 0) {
-        printf("[TCP transport] Count read: %lu\n", nread);
-
         CSessionTCP *session = (CSessionTCP *)client->data;
         session->GetTransportHandler()->HandlePacket(session, buf->base, buf->len);
     }
-
-    printf("[TCP transport] free  :%lu %p\n", buf->len, buf->base);
-    delete[] buf->base;
-
+    else if (nread < 0) {
+        // -4077 is connection close
+        printf( "Connection error: %s\n", uv_strerror(nread));
+        uv_close((uv_handle_t *)client, nullptr);
+    }
+    
+    if (buf->base != nullptr) {
+        delete[] buf->base;   
+    }
 }

@@ -11,11 +11,12 @@
 
 class IGame : public IServerJob {
 public:
+    virtual ~IGame() = default;
     virtual void HandleCommand(IGameCommand *command) = 0;
 
     virtual void OnRequestSessionStart(ISession *source) = 0;
     virtual void OnRequestSessionQuit(ISession *source) = 0;
 
-    virtual void OnPlayerReady(IPlayer *source) = 0;
+    virtual void OnSessionReady(ISession *source) = 0;
     virtual void OnAskGameInfo(ISession *source) = 0;
 };

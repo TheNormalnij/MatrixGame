@@ -19,6 +19,11 @@ option(MATRIXGAME_BUILD_LAUNCHER "Build standalone launcher for game" TRUE)
 option(MATRIXGAME_BUILD_SERVER "Build server for multipayer game" TRUE)
 option(MATRIXGAME_CHEATS "Enable cheats" TRUE)
 
+if(NOT WIN32)
+    set(MATRIXGAME_BUILD_GAME FALSE)
+    set(MATRIXGAME_BUILD_LAUNCHER FALSE)
+endif()
+
 find_package(DIRECTX9 REQUIRED)
 if(MSVC)
     if(NOT DIRECTX9_FOUND)
@@ -87,9 +92,9 @@ endif()
 
 
 add_subdirectory(MatrixShared)
-add_subdirectory(MatrixLib)
 
 if(MATRIXGAME_BUILD_GAME)
+    add_subdirectory(MatrixLib)
     add_subdirectory(MatrixGame)
 
     install(
