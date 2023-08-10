@@ -18,6 +18,8 @@ void CServerAPI::SendAskGameInfo() {
     Send(packet);
 }
 
+void CServerAPI::SendReady() {}
+
 void CServerAPI::Send(IPacket &packet) {
     CWriteStream stream = CWriteStream();
     packet.WritePacket(&stream);

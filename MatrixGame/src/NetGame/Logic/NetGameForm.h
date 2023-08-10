@@ -34,4 +34,17 @@ public:
 
     virtual void Keyboard(bool down, int scan);
     virtual void SystemEvent(ESysEvent se);
+
+private:
+    bool IsRobotManualControllEnabled() const;
+    void MoveCameraByScreenBorders();
+    void MoveCameraByKeyboard();
+    void RotateCameraByKeyboard();
+    bool ApplyZoomCameraByWheel(ButtonStatus status, int pos);
+    bool ApplyMouseCamStatus(ButtonStatus status, int key);
+    void CheckSelectionUp(ButtonStatus status, int key);
+    void TryStartSelection();
+
+    void DelegateClickToInterface(ButtonStatus status, int key);
+    void DelegateClickToMap(ButtonStatus status, int key, int x, int y);
 };

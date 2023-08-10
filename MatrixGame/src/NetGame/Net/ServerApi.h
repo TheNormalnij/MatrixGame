@@ -15,6 +15,7 @@ public:
 
 	void SendConnect();
     void SendAskGameInfo();
+    void SendReady();
 
     template<class T>
     void SendCommands(T commands);

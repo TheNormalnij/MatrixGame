@@ -8,5 +8,7 @@
 
 
 void CReadyPacketHandler::Handle(CReadStream &stream, ISession *session, IGame *game) {
+    uint8_t status;
+    stream.Read(status);
     game->OnSessionReady(session);
 }

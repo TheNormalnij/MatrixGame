@@ -28,13 +28,13 @@ bool CNetGame::StartNetworkGame(std::string_view host) {
 
     m_pServerApi->SendAskGameInfo();
 
-    const bool isGameReady = WaitForGameInfoReady();
+    const bool isGameInfoReady = WaitForGameInfoReady();
 
-    if (isGameReady) {
+    if (isGameInfoReady) {
         StartGame();
     }
 
-    return isGameReady;
+    return isGameInfoReady;
 }
 
 bool CNetGame::WaitForGameInfoReady() {

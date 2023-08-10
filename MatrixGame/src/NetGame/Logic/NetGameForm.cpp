@@ -24,11 +24,6 @@
 #include "Interface/CCounter.h"
 #include "MatrixGamePathUtils.hpp"
 
-//#include <time.h>
-//#include <sys/timeb.h>
-//#include "stdio.h"
-//
-//#include <utils.hpp>
 
 CNetGameForm::CNetGameForm() : CForm() {
     DTRACE();
@@ -152,192 +147,72 @@ void CNetGameForm::Takt(int step) {
 
     g_MatrixMap->Takt(step);
 
-    CPoint mp = g_MatrixMap->m_Cursor.GetPos();
-
-    if (!g_MatrixMap->GetPlayerSide()->IsArcadeMode()) {
-        if (mp.x >= 0 && mp.x < g_ScreenX && mp.y >= 0 && mp.y < g_ScreenY) {
-            if (mp.x < MOUSE_BORDER)
-                g_MatrixMap->m_Camera.MoveLeft();
-            if (mp.x > (g_ScreenX - MOUSE_BORDER))
-                g_MatrixMap->m_Camera.MoveRight();
-            if (mp.y < MOUSE_BORDER)
-                g_MatrixMap->m_Camera.MoveUp();
-            if (mp.y > (g_ScreenY - MOUSE_BORDER))
-                g_MatrixMap->m_Camera.MoveDown();
-        }
+    if (!IsRobotManualControllEnabled()) {
+        MoveCameraByScreenBorders();
     }
 
     if (g_MatrixMap->m_Console.IsActive())
         return;
 
-    if (!g_MatrixMap->GetPlayerSide()->IsArcadeMode()) {
-        if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_LEFT]) & 0x8000) == 0x8000) ||
-            ((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_LEFT_ALT]) & 0x8000) == 0x8000)) {
+    if (!IsRobotManualControllEnabled()) {
+        MoveCameraByKeyboard();
+    }
+
+    RotateCameraByKeyboard();
+}
+
+bool CNetGameForm::IsRobotManualControllEnabled() const {
+    return g_MatrixMap->GetPlayerSide()->IsArcadeMode();
+}
+
+void CNetGameForm::MoveCameraByScreenBorders() {
+    CPoint mp = g_MatrixMap->m_Cursor.GetPos();
+
+    if (mp.x >= 0 && mp.x < g_ScreenX && mp.y >= 0 && mp.y < g_ScreenY) {
+        if (mp.x < MOUSE_BORDER)
             g_MatrixMap->m_Camera.MoveLeft();
-        }
-        if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_RIGHT]) & 0x8000) == 0x8000) ||
-            ((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_RIGHT_ALT]) & 0x8000) == 0x8000)) {
+        if (mp.x > (g_ScreenX - MOUSE_BORDER))
             g_MatrixMap->m_Camera.MoveRight();
-        }
-        if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_UP]) & 0x8000) == 0x8000) ||
-            ((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_UP_ALT]) & 0x8000) == 0x8000)) {
+        if (mp.y < MOUSE_BORDER)
             g_MatrixMap->m_Camera.MoveUp();
-        }
-        if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_DOWN]) & 0x8000) == 0x8000) ||
-            ((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_DOWN_ALT]) & 0x8000) == 0x8000)) {
+        if (mp.y > (g_ScreenY - MOUSE_BORDER))
             g_MatrixMap->m_Camera.MoveDown();
-        }
-        if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_LEFT]) & 0x8000) == 0x8000) ||
-            ((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_LEFT_ALT]) & 0x8000) == 0x8000)) {
-            g_MatrixMap->m_Camera.RotLeft();
-        }
-        if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_RIGHT]) & 0x8000) == 0x8000) ||
-            ((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_RIGHT_ALT]) & 0x8000) == 0x8000)) {
-            g_MatrixMap->m_Camera.RotRight();
-        }
     }
+}
 
-    {
-        if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_UP]) & 0x8000) == 0x8000)) {
-            g_MatrixMap->m_Camera.RotUp();
-        }
-        if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_DOWN]) & 0x8000) == 0x8000)) {
-            g_MatrixMap->m_Camera.RotDown();
-        }
+void CNetGameForm::RotateCameraByKeyboard() {
+    if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_UP]) & 0x8000) == 0x8000)) {
+        g_MatrixMap->m_Camera.RotUp();
     }
+    if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_DOWN]) & 0x8000) == 0x8000)) {
+        g_MatrixMap->m_Camera.RotDown();
+    }
+}
 
-    if (GetAsyncKeyState(/*VK_SNAPSHOT*/ VK_F9) != 0) {
-        const std::wstring screenshots_dir{PathToOutputFiles(FOLDER_NAME_SCREENSHOTS)};
-
-        static uint16_t index = 0;
-        index++;
-
-        CreateDirectoryW(screenshots_dir.c_str(), NULL);
-
-        time_t cur_time = time(NULL);
-        struct tm tstruct = *localtime(&cur_time);
-        wchar_t time_str[20];
-        wcsftime(time_str, sizeof(time_str), L"%Y-%m-%d-%H-%M-%S", &tstruct);
-
-        std::wstring filename =
-                utils::format(L"%ls\\%ls-%ls-%03d.png", screenshots_dir.c_str(), FILE_NAME_SCREENSHOT, time_str, index);
-
-        DeleteFileW(filename.c_str());
-
-        if (!g_D3Dpp.Windowed) {
-            IDirect3DSurface9 *pTargetSurface = NULL;
-            HRESULT hr = D3D_OK;
-
-            if (!g_D3Dpp.MultiSampleType)
-                hr = g_D3DD->GetRenderTarget(0, &pTargetSurface);
-
-            if (hr == D3D_OK) {
-                D3DSURFACE_DESC desc;
-
-                if (!g_D3Dpp.MultiSampleType) {
-                    hr = pTargetSurface->GetDesc(&desc);
-                }
-                else {
-                    desc.Width = g_ScreenX;
-                    desc.Height = g_ScreenY;
-                    desc.Format = D3DFMT_A8R8G8B8;
-                }
-                if (hr == D3D_OK) {
-                    IDirect3DSurface9 *pSurface = NULL;
-                    hr = g_D3DD->CreateOffscreenPlainSurface(desc.Width, desc.Height, desc.Format, D3DPOOL_SYSTEMMEM,
-                                                             &pSurface, NULL);
-                    if (hr == D3D_OK) {
-                        if (!g_D3Dpp.MultiSampleType) {
-                            hr = g_D3DD->GetRenderTargetData(pTargetSurface, pSurface);
-                        }
-                        else {
-                            hr = g_D3DD->GetFrontBufferData(0, pSurface);
-                        }
-                        if (hr == D3D_OK) {
-                            D3DLOCKED_RECT lockrect;
-                            hr = pSurface->LockRect(&lockrect, NULL, 0);
-                            if (hr == D3D_OK) {
-                                CBitmap bm;
-                                bm.CreateRGB(desc.Width, desc.Height);
-
-                                for (UINT y = 0; y < desc.Height; y++) {
-                                    unsigned char *buf_src = (unsigned char *)lockrect.pBits + lockrect.Pitch * y;
-                                    unsigned char *buf_des = (unsigned char *)bm.Data() + bm.Pitch() * y;
-
-                                    for (UINT x = 0; x < desc.Width; x++) {
-                                        // memcpy(buf_des, buf_src, 3);
-                                        buf_des[0] = buf_src[2];
-                                        buf_des[1] = buf_src[1];
-                                        buf_des[2] = buf_src[0];
-
-                                        buf_src += 4;
-                                        buf_des += 3;
-                                    }
-                                }
-
-                                pSurface->UnlockRect();
-
-                                bm.SaveInPNG(filename.c_str());
-                                g_MatrixMap->m_DI.T((L"Screen shot has been saved into " + filename).c_str(), L"");
-                            }
-                            else {
-                                // LockRect fail
-                                // OutputDebugStringA("LockRect fail\n");
-                            }
-                        }
-                        else {
-                            // GetRenderTargetData fail
-                            // char s[256];
-                            // sprintf_s(s, sizeof(s), "GetRenderTargetData fail - 0x%08X, %u, %d\n", hr, hr, hr);
-                            // OutputDebugStringA(s);
-                        }
-                        pSurface->Release();
-                    }
-                    else {
-                        // CreateOffscreenPlainSurface fail
-                        // OutputDebugStringA("CreateOffscreenPlainSurface fail\n");
-                    }
-                }
-                else {
-                    // GetDesc fail
-                    // OutputDebugStringA("GetDesc fail\n");
-                }
-
-                if (pTargetSurface)
-                    pTargetSurface->Release();
-            }
-            else {
-                // GetRenderTarget fail
-                // OutputDebugStringA("GetRenderTarget fail\n");
-            }
-
-            return;
-        }
-
-        CBitmap bm(g_CacheHeap);
-        CBitmap bmout(g_CacheHeap);
-        bmout.CreateRGB(g_ScreenX, g_ScreenY);
-
-        HDC hdc = GetDC(g_Wnd);
-
-        bm.WBM_Bitmap(CreateCompatibleBitmap(hdc, g_ScreenX, g_ScreenY));
-        bm.WBM_BitmapDC(CreateCompatibleDC(hdc));
-        if (SelectObject(bm.WBM_BitmapDC(), bm.WBM_Bitmap()) == 0) {
-            ReleaseDC(g_Wnd, hdc);
-            return;
-        }
-        BitBlt(bm.WBM_BitmapDC(), 0, 0, g_ScreenX, g_ScreenY, hdc, 0, 0, SRCCOPY);
-
-        ReleaseDC(g_Wnd, hdc);
-
-        bm.WBM_Save(true);
-
-        bmout.Copy(CPoint(0, 0), bm.Size(), bm, CPoint(0, 0));
-        bmout.SaveInPNG(filename.c_str());
-
-        // HFree(data, g_CacheHeap);
-
-        g_MatrixMap->m_DI.T(L"Screen shot has been saved", L"");
+void CNetGameForm::MoveCameraByKeyboard() {
+    if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_LEFT]) & 0x8000) == 0x8000) ||
+        ((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_LEFT_ALT]) & 0x8000) == 0x8000)) {
+        g_MatrixMap->m_Camera.MoveLeft();
+    }
+    if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_RIGHT]) & 0x8000) == 0x8000) ||
+        ((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_RIGHT_ALT]) & 0x8000) == 0x8000)) {
+        g_MatrixMap->m_Camera.MoveRight();
+    }
+    if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_UP]) & 0x8000) == 0x8000) ||
+        ((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_UP_ALT]) & 0x8000) == 0x8000)) {
+        g_MatrixMap->m_Camera.MoveUp();
+    }
+    if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_DOWN]) & 0x8000) == 0x8000) ||
+        ((GetAsyncKeyState(g_Config.m_KeyActions[KA_SCROLL_DOWN_ALT]) & 0x8000) == 0x8000)) {
+        g_MatrixMap->m_Camera.MoveDown();
+    }
+    if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_LEFT]) & 0x8000) == 0x8000) ||
+        ((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_LEFT_ALT]) & 0x8000) == 0x8000)) {
+        g_MatrixMap->m_Camera.RotLeft();
+    }
+    if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_RIGHT]) & 0x8000) == 0x8000) ||
+        ((GetAsyncKeyState(g_Config.m_KeyActions[KA_ROTATE_RIGHT_ALT]) & 0x8000) == 0x8000)) {
+        g_MatrixMap->m_Camera.RotRight();
     }
 }
 
@@ -382,9 +257,7 @@ void CNetGameForm::MouseMove(int x, int y) {
     SETFLAG(g_IFaceList->m_IfListFlags, MINIMAP_ENABLE_DRAG);
 }
 
-void CNetGameForm::MouseKey(ButtonStatus status, int key, int x, int y) {
-    DTRACE();
-
+bool CNetGameForm::ApplyZoomCameraByWheel(ButtonStatus status, int key) {
     if (status == B_WHEEL) {
         while (key > 0) {
             g_MatrixMap->m_Camera.ZoomInStep();
@@ -394,39 +267,24 @@ void CNetGameForm::MouseKey(ButtonStatus status, int key, int x, int y) {
             g_MatrixMap->m_Camera.ZoomOutStep();
             ++key;
         }
-
-        return;
+        return true;
     }
+    return false;
+}
 
-    DCP();
-
+bool CNetGameForm::ApplyMouseCamStatus(ButtonStatus status, int key) {
     if (status == B_UP && key == VK_MBUTTON) {
         g_MatrixMap->MouseCam(false);
-        return;
+        return true;
     }
     if (status == B_DOWN && key == VK_MBUTTON) {
         g_MatrixMap->MouseCam(true);
-        // SetCursorPos(g_ScreenX/2, g_ScreenY/2);
-
-        return;
+        return true;
     }
+    return false;
+}
 
-    DCP();
-
-    m_Action = 0;
-
-    // bool fCtrl=(GetAsyncKeyState(VK_CONTROL) & 0x8000)==0x8000;
-
-    /*
-        if(fCtrl && down && key==VK_RBUTTON){
-            D3DXVECTOR3 vpos,vdir;
-            g_MatrixMap->CalcPickVector(CPoint(x,y), vdir);
-            g_MatrixMap->UnitPickWorld(g_MatrixMap->GetFrustumCenter(),vdir,&m_LastWorldX,&m_LastWorldY);
-            m_Action=1;
-        }
-    */
-    DCP();
-
+void CNetGameForm::CheckSelectionUp(ButtonStatus status, int key) {
     if (status == B_UP && key == VK_LBUTTON) {
         DCP();
         CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
@@ -520,66 +378,101 @@ void CNetGameForm::MouseKey(ButtonStatus status, int key, int x, int y) {
         }
         CMultiSelection::m_GameSelection = NULL;
     }
+}
+
+void CNetGameForm::TryStartSelection() {
+    if (CMultiSelection::m_GameSelection == NULL && !g_MatrixMap->GetPlayerSide()->IsArcadeMode() &&
+        !IS_PREORDERING_NOSELECT && !(g_MatrixMap->GetPlayerSide()->m_CurrentAction == BUILDING_TURRET)) {
+        int dx = 0, dy = 0;
+        if (IS_TRACE_STOP_OBJECT(g_MatrixMap->m_TraceStopObj) && IS_TRACE_UNIT(g_MatrixMap->m_TraceStopObj)) {
+            dx = 2;
+            dy = 2;
+        }
+        CMultiSelection::m_GameSelection = CMultiSelection::Begin(
+                CPoint(g_MatrixMap->m_Cursor.GetPos().x - dx, g_MatrixMap->m_Cursor.GetPos().y - dy));
+        if (CMultiSelection::m_GameSelection) {
+            SCallback cbs;
+            cbs.mp = g_MatrixMap->m_Cursor.GetPos();
+            cbs.calls = 0;
+
+            CMultiSelection::m_GameSelection->Update(g_MatrixMap->m_Cursor.GetPos(), TRACE_ROBOT | TRACE_BUILDING,
+                                                     SideSelectionCallBack, (DWORD)&cbs);
+        }
+    }
+}
+
+void CNetGameForm::DelegateClickToInterface(ButtonStatus status, int key) {
+    if (status == B_UP && key == VK_LBUTTON) {
+        g_IFaceList->OnMouseLBUp();
+    }
+    else if ((status == B_DOWN || status == B_DOUBLE) && key == VK_LBUTTON) {
+        g_IFaceList->OnMouseLBDown();
+    }
+    if (status == B_DOWN && key == VK_RBUTTON) {
+        g_IFaceList->OnMouseRBDown();
+    }
+}
+
+void CNetGameForm::DelegateClickToMap(ButtonStatus status, int key, int x, int y) {
+    if (status == B_DOWN && key == VK_RBUTTON) {
+        DCP();
+        g_MatrixMap->GetPlayerSide()->OnRButtonDown(CPoint(x, y));
+    }
+    else if (status == B_DOWN && key == VK_LBUTTON) {
+        DCP();
+        TryStartSelection();
+
+        g_MatrixMap->GetPlayerSide()->OnLButtonDown(CPoint(x, y));
+    }
+    else if (status == B_UP && key == VK_RBUTTON) {
+        DCP();
+        g_MatrixMap->GetPlayerSide()->OnRButtonUp(CPoint(x, y));
+    }
+    else if (status == B_UP && key == VK_LBUTTON) {
+        DCP();
+        CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
+        ps->OnLButtonUp(CPoint(x, y));
+    }
+    else if (status == B_DOUBLE && key == VK_LBUTTON) {
+        DCP();
+        g_MatrixMap->GetPlayerSide()->OnLButtonDouble(CPoint(x, y));
+    }
+    else if (status == B_DOUBLE && key == VK_RBUTTON) {
+        DCP();
+        g_MatrixMap->GetPlayerSide()->OnRButtonDouble(CPoint(x, y));
+    }
+}
+
+void CNetGameForm::MouseKey(ButtonStatus status, int key, int x, int y) {
+    DTRACE();
+
+    if (ApplyZoomCameraByWheel(status, key)) {
+        return;
+    }
+
+    DCP();
+
+    if (ApplyMouseCamStatus(status, key)) {
+        return;
+    }
+
+    DCP();
+
+    m_Action = 0;
+
+    DCP();
+
+    CheckSelectionUp(status, key);
+
     DCP();
 
     if (g_IFaceList->m_InFocus == INTERFACE) {
         DCP();
-        if (status == B_UP && key == VK_LBUTTON) {
-            g_IFaceList->OnMouseLBUp();
-        }
-        else if ((status == B_DOWN || status == B_DOUBLE) && key == VK_LBUTTON) {
-            g_IFaceList->OnMouseLBDown();
-        }
-        if (status == B_DOWN && key == VK_RBUTTON) {
-            g_IFaceList->OnMouseRBDown();
-        }
+        DelegateClickToInterface(status, key);
     }
     else if (g_IFaceList->m_InFocus == UNKNOWN) {  // or something else
         DCP();
-        if (status == B_DOWN && key == VK_RBUTTON) {
-            DCP();
-            g_MatrixMap->GetPlayerSide()->OnRButtonDown(CPoint(x, y));
-        }
-        else if (status == B_DOWN && key == VK_LBUTTON) {
-            DCP();
-            if (CMultiSelection::m_GameSelection == NULL && !g_MatrixMap->GetPlayerSide()->IsArcadeMode() &&
-                !IS_PREORDERING_NOSELECT && !(g_MatrixMap->GetPlayerSide()->m_CurrentAction == BUILDING_TURRET)) {
-                int dx = 0, dy = 0;
-                if (IS_TRACE_STOP_OBJECT(g_MatrixMap->m_TraceStopObj) && IS_TRACE_UNIT(g_MatrixMap->m_TraceStopObj)) {
-                    dx = 2;
-                    dy = 2;
-                }
-                CMultiSelection::m_GameSelection = CMultiSelection::Begin(
-                        CPoint(g_MatrixMap->m_Cursor.GetPos().x - dx, g_MatrixMap->m_Cursor.GetPos().y - dy));
-                if (CMultiSelection::m_GameSelection) {
-                    SCallback cbs;
-                    cbs.mp = g_MatrixMap->m_Cursor.GetPos();
-                    cbs.calls = 0;
-
-                    CMultiSelection::m_GameSelection->Update(g_MatrixMap->m_Cursor.GetPos(),
-                                                             TRACE_ROBOT | TRACE_BUILDING, SideSelectionCallBack,
-                                                             (DWORD)&cbs);
-                }
-            }
-            g_MatrixMap->GetPlayerSide()->OnLButtonDown(CPoint(x, y));
-        }
-        else if (status == B_UP && key == VK_RBUTTON) {
-            DCP();
-            g_MatrixMap->GetPlayerSide()->OnRButtonUp(CPoint(x, y));
-        }
-        else if (status == B_UP && key == VK_LBUTTON) {
-            DCP();
-            CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
-            ps->OnLButtonUp(CPoint(x, y));
-        }
-        else if (status == B_DOUBLE && key == VK_LBUTTON) {
-            DCP();
-            g_MatrixMap->GetPlayerSide()->OnLButtonDouble(CPoint(x, y));
-        }
-        else if (status == B_DOUBLE && key == VK_RBUTTON) {
-            DCP();
-            g_MatrixMap->GetPlayerSide()->OnRButtonDouble(CPoint(x, y));
-        }
+        DelegateClickToMap(status, key, x, y);
     }
 }
 
