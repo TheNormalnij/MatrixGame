@@ -8,7 +8,7 @@
 class CGetGameInfoPacket : public IPacket {
 public:
     CGetGameInfoPacket() = default;
-    ~CGetGameInfoPacketHandler() = default;
+    ~CGetGameInfoPacket() = default;
 
     void WritePacket(CWriteStream *stream) override;
 };
