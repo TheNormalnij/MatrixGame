@@ -3,7 +3,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "ConnectionPacket.h"
+#include "CConnectionPacket.h"
 #include <shared/net/Protocol.h>
 #include <shared/net/PacketEnums.h>
 

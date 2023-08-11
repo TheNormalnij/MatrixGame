@@ -7,7 +7,7 @@
 
 #include <string_view>
 #include <shared/net/CRequest.h>
-+#include <cstdint>
+#include <cstdint>
 
 class ISession {
 public:
