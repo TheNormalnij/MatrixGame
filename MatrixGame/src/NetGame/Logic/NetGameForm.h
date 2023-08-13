@@ -7,13 +7,14 @@
 
 #include "Form.hpp"
 #include "MatrixKeyScan.hpp"
+#include "INetGameLogic.h"
 
 #include <deque>
 #include <string>
 
 class CNetGameForm : public CForm {
 public:
-    CNetGameForm();
+    CNetGameForm(INetGameLogic *logic);
     ~CNetGameForm();
 
     virtual void Enter(void);
@@ -43,6 +44,7 @@ private:
 
     bool IsInputEqual(std::string str);
 private:
+    INetGameLogic *m_logic;
     bool m_wasReadyClicked;
 
     float m_LastWorldX, m_LastWorldY;

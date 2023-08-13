@@ -5,6 +5,10 @@
 
 #include "ServerSync.h"
 
+CServerSync::CServerSync() {
+    m_currentGameStatus = EGameStatus::WAIT_PLAYERS;
+}
+
 bool CServerSync::NextTick() {
     if (m_currentTick >= GetLastAllowerTick()) {
         return false;

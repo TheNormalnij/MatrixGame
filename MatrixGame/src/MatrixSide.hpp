@@ -71,7 +71,7 @@ enum ESelection {
     ESelection_FORCE_DWORD = 0x7FFFFFFF
 };
 
-enum ESelType {
+enum class ESelType {
     ROBOT = 0,
     FAR_ROBOT = 1,
     FLYER = 2,

@@ -35,5 +35,4 @@ private:
     INetworkClient *m_pClient;
     CServerSync m_serverSync;
     ITransportDataHandler *m_pNetDataHandler;
-    
 };

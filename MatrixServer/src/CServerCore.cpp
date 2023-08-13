@@ -10,12 +10,14 @@
 #include "net/handlers/CGamePacketHandler.h"
 
 CServerCore::CServerCore() {
-    m_game = new CServerMatrixGame();
+    m_pGameNetApi = new CGameNetwork(&m_sessionStore);
+    m_game = new CServerMatrixGame(m_pGameNetApi);
     m_pTransportHandler = new CGamePacketHandler(m_game);
     m_pNetHandler = new CServerTCPTransport(m_mainLoop.GetLoop(), &m_sessionStore, m_pTransportHandler);
 }
 
 CServerCore::~CServerCore() {
+    delete m_pGameNetApi;
     delete m_game;
     delete m_pTransportHandler;
     delete m_pNetHandler;

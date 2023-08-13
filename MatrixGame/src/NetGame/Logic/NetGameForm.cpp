@@ -25,8 +25,9 @@
 #include "MatrixGamePathUtils.hpp"
 
 
-CNetGameForm::CNetGameForm() : CForm() {
+CNetGameForm::CNetGameForm(INetGameLogic *logic) : CForm() {
     DTRACE();
+    m_logic = logic;
     m_Name = L"MatrixNetGame";
 
     m_LastWorldX = 0;
@@ -141,6 +142,8 @@ void CNetGameForm::Draw(void) {
 
 void CNetGameForm::Takt(int step) {
     DTRACE();
+
+    m_logic->Update();
 
     if (g_MatrixMap->CheckLostDevice())
         return;
@@ -320,7 +323,7 @@ void CNetGameForm::CheckSelectionUp(ButtonStatus status, int key) {
                     if (ps->GetCurGroup() && ps->GetCurGroup()->GetRobotsCnt() && ps->GetCurGroup()->GetFlyersCnt()) {
                         ps->GetCurGroup()->SortFlyers();
                     }
-                    ps->Select(GROUP, NULL);
+                    ps->Select(ESelType::GROUP, NULL);
                 }
                 else if (ps->GetCurSelGroup()->GetFlyersCnt() == 1 && !ps->GetCurSelGroup()->GetRobotsCnt()) {
                     DCP();
@@ -336,11 +339,11 @@ void CNetGameForm::CheckSelectionUp(ButtonStatus status, int key) {
                             ps->GetCurGroup()->GetFlyersCnt()) {
                             ps->GetCurGroup()->SortFlyers();
                         }
-                        ps->Select(GROUP, NULL);
+                        ps->Select(ESelType::GROUP, NULL);
                     }
                     else {
                         ps->SetCurGroup(ps->CreateGroupFromCurrent());
-                        ps->Select(FLYER, NULL);
+                        ps->Select(ESelType::FLYER, NULL);
                     }
                 }
                 else if (ps->GetCurSelGroup()->GetRobotsCnt() == 1 && !ps->GetCurSelGroup()->GetFlyersCnt()) {
@@ -358,17 +361,17 @@ void CNetGameForm::CheckSelectionUp(ButtonStatus status, int key) {
                             ps->GetCurGroup()->GetFlyersCnt()) {
                             ps->GetCurGroup()->SortFlyers();
                         }
-                        ps->Select(GROUP, NULL);
+                        ps->Select(ESelType::GROUP, NULL);
                     }
                     else {
                         ps->SetCurGroup(ps->CreateGroupFromCurrent());
-                        ps->Select(ROBOT, NULL);
+                        ps->Select(ESelType::ROBOT, NULL);
                     }
                 }
                 else if (ps->GetCurSelGroup()->GetBuildingsCnt() && !ps->GetCurSelGroup()->GetRobotsCnt() &&
                          !ps->GetCurSelGroup()->GetFlyersCnt()) {
                     DCP();
-                    ps->Select(BUILDING, ps->GetCurSelGroup()->m_FirstObject->GetObject());
+                    ps->Select(ESelType::BUILDING, ps->GetCurSelGroup()->m_FirstObject->GetObject());
                     ps->GroupsUnselectSoft();
                     ps->GetCurSelGroup()->RemoveAll();
                     ps->SetCurGroup(NULL);
@@ -901,7 +904,7 @@ void CNetGameForm::Keyboard(bool down, int scan) {
                         if (obj->IsLiveRobot() && obj->GetSide() == PLAYER_SIDE) {
                             ps->GetCurSelGroup()->RemoveAll();
                             ps->CreateGroupFromCurrent(obj);
-                            ps->Select(ROBOT, obj);
+                            ps->Select(ESelType::ROBOT, obj);
                             g_MatrixMap->m_Camera.SetXYStrategy(
                                     D3DXVECTOR2(obj->GetGeoCenter().x, obj->GetGeoCenter().y));
                             return;
@@ -930,7 +933,7 @@ void CNetGameForm::Keyboard(bool down, int scan) {
                         if (obj->IsLiveRobot() && obj->GetSide() == PLAYER_SIDE) {
                             ps->GetCurSelGroup()->RemoveAll();
                             ps->CreateGroupFromCurrent(obj);
-                            ps->Select(ROBOT, obj);
+                            ps->Select(ESelType::ROBOT, obj);
                             g_MatrixMap->m_Camera.SetXYStrategy(
                                     D3DXVECTOR2(obj->GetGeoCenter().x, obj->GetGeoCenter().y));
                             return;
@@ -1038,15 +1041,15 @@ void CNetGameForm::Keyboard(bool down, int scan) {
                     if (ps->GetCurGroup() && ps->GetCurGroup()->GetRobotsCnt() && ps->GetCurGroup()->GetFlyersCnt()) {
                         ps->GetCurGroup()->SortFlyers();
                     }
-                    ps->Select(GROUP, NULL);
+                    ps->Select(ESelType::GROUP, NULL);
                 }
                 else if (ps->GetCurSelGroup()->GetFlyersCnt() == 1 && !ps->GetCurSelGroup()->GetRobotsCnt()) {
                     ps->CreateGroupFromCurrent();
-                    ps->Select(FLYER, NULL);
+                    ps->Select(ESelType::FLYER, NULL);
                 }
                 else if (ps->GetCurSelGroup()->GetRobotsCnt() == 1 && !ps->GetCurSelGroup()->GetFlyersCnt()) {
                     ps->CreateGroupFromCurrent();
-                    ps->Select(ROBOT, NULL);
+                    ps->Select(ESelType::ROBOT, NULL);
                 }
             }
         }

@@ -5,7 +5,7 @@
 
 #include "ServerConnection.h"
 #include "Clients/ClientTCP.h"
-#include "Handlers/InitialPacketHandler.h"
+#include "Handlers/CInitialPacketHandler.h"
 
 CServerConnection::CServerConnection(std::string_view host, INetworkClient *pTransport, CServerAPI *pServerApi,
                                      ITransportDataHandler *pTargetHandler) {

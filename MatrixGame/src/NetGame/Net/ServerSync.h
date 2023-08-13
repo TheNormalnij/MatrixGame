@@ -10,7 +10,7 @@
 
 class CServerSync : public INetGameHandler {
 public:
-    CServerSync() = default;
+    CServerSync();
     ~CServerSync() = default;
 
     bool NextTick();
@@ -19,15 +19,19 @@ public:
     std::string_view GetMapName() const noexcept { return m_mapName; };
     uint32_t GetGameSeed() const noexcept { return m_seed; };
 
+    EGameStatus GetGameStatus() const noexcept { return m_currentGameStatus; };
+
     auto GetCommands() { return m_commandLog.GetTickCommands(m_currentTick); };
 
     // Inherited via INetGameHanlder
     virtual void OnGetGameInfo(std::string_view mapName, uint32_t seed) override;
+    virtual void OnChangeGameState(EGameStatus status) override { m_currentGameStatus = status; };
 
 private:
     size_t GetLastAllowerTick() const noexcept { return m_lastAllowedTick; };
 
 private:
+    EGameStatus m_currentGameStatus;
     size_t m_currentTick;
     size_t m_lastAllowedTick;
     CCommandLog m_commandLog;

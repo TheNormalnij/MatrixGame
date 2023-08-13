@@ -326,7 +326,7 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
     g_MatrixMap->CreatePoolDefaultResources(true);
     g_MatrixMap->InitObjectsLights();
 
-    g_MatrixMap->GetPlayerSide()->Select(BUILDING, g_MatrixMap->GetPlayerSide()->m_ActiveObject);
+    g_MatrixMap->GetPlayerSide()->Select(ESelType::BUILDING, g_MatrixMap->GetPlayerSide()->m_ActiveObject);
     g_MatrixMap->m_Cursor.Select(CURSOR_ARROW);
 
     if (!FLAG(g_MatrixMap->m_Flags, MMFLAG_FULLAUTO))

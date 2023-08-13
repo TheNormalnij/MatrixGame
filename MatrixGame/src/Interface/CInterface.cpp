@@ -1143,12 +1143,12 @@ bool CInterface::OnMouseLBDown() {
                                 if (ps->GetCurSelObject() &&
                                     ps->GetCurSelObject()->GetObjectType() == OBJECT_TYPE_ROBOTAI) {
                                     ps->CreateGroupFromCurrent(ps->GetCurSelObject());
-                                    ps->Select(ROBOT, NULL);
+                                    ps->Select(ESelType::ROBOT, NULL);
                                 }
                                 else if (ps->GetCurSelObject() &&
                                          ps->GetCurSelObject()->GetObjectType() == OBJECT_TYPE_FLYER) {
                                     ps->CreateGroupFromCurrent(ps->GetCurSelObject());
-                                    ps->Select(FLYER, NULL);
+                                    ps->Select(ESelType::FLYER, NULL);
                                 }
                             }
                             else {
@@ -3917,13 +3917,13 @@ void CIFaceList::LiveRobot(void) {
     CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
     if (ps->IsArcadeMode()) {
         CMatrixMapStatic *obj = ps->GetArcadedObject();
-        ESelType type = NOTHING;
+        ESelType type = ESelType::NOTHING;
 
         if (obj && obj->GetObjectType() == OBJECT_TYPE_ROBOTAI) {
-            type = ROBOT;
+            type = ESelType::ROBOT;
         }
         else if (obj && obj->GetObjectType() == OBJECT_TYPE_FLYER) {
-            type = FLYER;
+            type = ESelType::FLYER;
         }
 
         ps->SetArcadedObject(NULL);

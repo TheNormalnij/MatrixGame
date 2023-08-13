@@ -15,7 +15,7 @@
 
 class CGameNetwork {
 public:
-    CGameNetwork() = default;
+    CGameNetwork(CSessionStore *sessionStore) : m_sessionStore(sessionStore){};
     ~CGameNetwork() = default;
 
     void SendTickCommands(size_t tick, std::list<IGameCommand *> &commands);

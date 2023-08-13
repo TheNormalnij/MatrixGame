@@ -108,7 +108,7 @@ void CClientTCP::DoUpdate() {
     FD_SET(m_hSocket, &readSet);
 
     timeval timeout;
-    timeout.tv_sec = 1;
+    timeout.tv_sec = 0;
     timeout.tv_usec = 0;
 
     int iResult = select(0, &readSet, NULL, NULL, &timeout);

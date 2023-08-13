@@ -1,10 +1,10 @@
 add_library(MatrixShared STATIC)
 
-file(GLOB MATRIX_SHARED_HEADERS shared/*/*.h)
-file(GLOB MATRIX_SHARED_SOURCES shared/*/*.cpp)
+file(GLOB_RECURSE MATRIX_SHARED_HEADERS shared/*.h)
+file(GLOB_RECURSE MATRIX_SHARED_SOURCES shared/*.cpp)
 
 source_group ("MatrixShared\\Header Files" FILES ${MATRIX_SHARED_HEADERS})
-source_group ("MatrixShared\\Header Files" FILES ${MATRIX_SHARED_SOURCES})
+source_group ("MatrixShared\\Source Files" FILES ${MATRIX_SHARED_SOURCES})
 
 target_compile_options(
     MatrixShared

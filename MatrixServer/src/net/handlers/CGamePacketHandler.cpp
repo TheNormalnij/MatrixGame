@@ -7,6 +7,7 @@
 #include <shared/net/CReadStream.h>
 #include <cstdint>
 #include <ctime>
+#include <cstdio>
 
 void CGamePacketHandler::HandlePacket(ISession *session, char *data, size_t len) {
     session->SetLastClientUpdateTimestamp(std::time(nullptr));
@@ -19,9 +20,9 @@ void CGamePacketHandler::HandlePacket(ISession *session, char *data, size_t len)
     IPacketHandler* handler = m_handlerFactory.CreateHandler((EGamePacketType)packetId);
 
     if (!handler) {
-        printf("Got unsupported packet id: %d", packetId);
+        std::printf("Got unsupported packet id: %d", packetId);
         return;
-    }
+    } 
 
     handler->Handle(stream, session, m_game);
 

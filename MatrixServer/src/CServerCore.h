@@ -11,6 +11,7 @@
 #include "net/transports/ITransportHandler.h"
 #include "net/sessions/CSessionStore.h"
 #include "game/IGame.h"
+#include "game/CGameNetwork.h"
 
 // Application main class
 class CServerCore {
@@ -22,9 +23,11 @@ public:
     void StopServer();
 
 private:
+    CGameNetwork *m_pGameNetApi;
     CSessionStore m_sessionStore;
     CServerMainLoop m_mainLoop;
     IServerTransport *m_pNetHandler;
     IGame *m_game;
     ITransportHandler *m_pTransportHandler;
+
 };

@@ -482,7 +482,7 @@ void CMatrixSideUnit::LogicTakt(int ms) {
         DCP();
         if ((!GetCurGroup() || !GetCurGroup()->GetObjectsCnt()) &&
             (m_CurrSel == GROUP_SELECTED || m_CurrSel == ROBOT_SELECTED || m_CurrSel == FLYER_SELECTED)) {
-            Select(NOTHING, NULL);
+            Select(ESelType::NOTHING, NULL);
         }
         DCP();
         //        dword t1=timeGetTime();
@@ -786,10 +786,10 @@ void CMatrixSideUnit::OnLButtonDouble(const CPoint &mouse) {
     }
     CreateGroupFromCurrent();
     if (GetCurGroup() && GetCurGroup()->GetObjectsCnt() == 1) {
-        Select(ROBOT, NULL);
+        Select(ESelType::ROBOT, NULL);
     }
     else if (GetCurGroup() && GetCurGroup()->GetObjectsCnt() > 1) {
-        Select(GROUP, NULL);
+        Select(ESelType::GROUP, NULL);
     }
 }
 
@@ -971,7 +971,7 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
     m_ActiveObject = pObject;
 
     if ((m_CurrSel == FLYER_SELECTED || m_CurrSel == ROBOT_SELECTED || m_CurrSel == ARCADE_SELECTED) &&
-        type != ARCADE) {
+        type != ESelType::ARCADE) {
         RESETFLAG(g_IFaceList->m_IfListFlags, SINGLE_MODE);
         g_IFaceList->DeleteWeaponDynamicStatics();
         g_IFaceList->DeletePersonal();
@@ -985,7 +985,7 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
         g_IFaceList->ResetOrderingMode();
     }
 
-    if (type == GROUP || type == FLYER || type == ROBOT) {
+    if (type == ESelType::GROUP || type == ESelType::FLYER || type == ESelType::ROBOT) {
         if (m_Id == PLAYER_SIDE) {
             int rnd = g_MatrixMap->Rnd(0, 6);
             if (!rnd) {
@@ -1012,7 +1012,7 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
         }
     }
 
-    if (type == BUILDING && pObject) {
+    if (type == ESelType::BUILDING && pObject) {
         m_nCurrRobotPos = -1;
         m_CurrSel = BUILDING_SELECTED;
 
@@ -1032,7 +1032,7 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
             CSound::Play(S_BUILDING_SEL, SL_SELECTION);
         }
     }
-    else if (type == GROUP) {
+    else if (type == ESelType::GROUP) {
         m_CurrSel = GROUP_SELECTED;
 
         SetCurSelNum(0);
@@ -1040,9 +1040,9 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
 
         ShowOrderState();
     }
-    else if ((type == FLYER || type == ROBOT)) {
+    else if ((type == ESelType::FLYER || type == ESelType::ROBOT)) {
         SETFLAG(g_IFaceList->m_IfListFlags, SINGLE_MODE);
-        if (type == FLYER) {
+        if (type == ESelType::FLYER) {
             m_CurrSel = FLYER_SELECTED;
         }
         else {
@@ -1053,7 +1053,7 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
 
         ShowOrderState();
     }
-    else if (type == ARCADE) {
+    else if (type == ESelType::ARCADE) {
     }
     else {
         m_nCurrRobotPos = -1;
@@ -1351,7 +1351,7 @@ void CMatrixSideUnit::SetArcadedObject(CMatrixMapStatic *o) {
         m_Arcaded->AsRobot()->UnSelect();
         if (g_IFaceList)
             g_IFaceList->DeleteWeaponDynamicStatics();
-        Select(NOTHING, NULL);
+        Select(ESelType::NOTHING, NULL);
     }
     else if (IsRobotMode() && o->GetObjectType() == OBJECT_TYPE_ROBOTAI) {
         if (g_IFaceList)
@@ -1393,7 +1393,7 @@ void CMatrixSideUnit::SetArcadedObject(CMatrixMapStatic *o) {
 
         m_Arcaded->AsRobot()->SetMaxSpeed(m_Arcaded->AsRobot()->GetMaxSpeed() * SPEED_BOOST);
         robot->SetWeaponToArcadedCoeff();
-        Select(ARCADE, o);
+        Select(ESelType::ARCADE, o);
         m_Arcaded->AsRobot()->SelectArcade();
         if (g_IFaceList)
             g_IFaceList->CreateWeaponDynamicStatics();
@@ -1724,7 +1724,7 @@ void CMatrixSideUnit::PLDropAllActions() {
     if (m_ActiveObject && m_ActiveObject->IsBuilding()) {
         m_ActiveObject->AsBuilding()->m_BS.KillBar();
     }
-    Select(NOTHING, NULL);
+    Select(ESelType::NOTHING, NULL);
     RESETFLAG(g_IFaceList->m_IfListFlags, POPUP_MENU_ACTIVE);
     m_ConstructPanel->ResetGroupNClose();
     g_MatrixMap->m_Cursor.SetVisible(true);

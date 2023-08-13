@@ -6,19 +6,18 @@
 #include "CServerMatrixGame.h"
 #include "players/CNetPlayer.h"
 
-CServerMatrixGame::CServerMatrixGame() {
+CServerMatrixGame::CServerMatrixGame(CGameNetwork *netApi) {
     m_currentStatus = EGameStatus::WAIT_PLAYERS;
     m_currentTick = 0;
-    m_net = CGameNetwork();
+    m_pNet = netApi;
 }
 
 void CServerMatrixGame::GameStart(){
-    if (m_currentStatus != EGameStatus::WAIT_PLAYERS_READY) {
+    if (m_currentStatus != EGameStatus::WAIT_PLAYERS) {
         return;
     }
 
-    m_currentStatus = EGameStatus::RUNNING;
-    m_net.SendGameStatusChanged(m_currentStatus);
+    UpdateStatus(EGameStatus::RUNNING);
 };
 
 void CServerMatrixGame::GameStop(){
@@ -26,7 +25,7 @@ void CServerMatrixGame::GameStop(){
         return;
     }
 
-    m_net.SendGameStatusChanged(m_currentStatus);
+    m_pNet->SendGameStatusChanged(m_currentStatus);
 }
 
 IPlayer *CServerMatrixGame::GetSessionPlayer(ISession *session) const noexcept {
@@ -42,6 +41,12 @@ bool CServerMatrixGame::IsAllPlayersReady() const noexcept {
     return true;
 }
 
+void CServerMatrixGame::UpdateStatus(EGameStatus newStatus) {
+    m_currentStatus = newStatus;
+
+    m_pNet->SendGameStatusChanged(newStatus);
+}
+
 void CServerMatrixGame::DoTick() {
     // Skip if not running
     if (m_currentStatus != EGameStatus::RUNNING) {
@@ -52,7 +57,10 @@ void CServerMatrixGame::DoTick() {
     m_currentTick++;
 
     // Send current tick commands
-    m_net.SendTickCommands(m_currentTick, *m_commandLog.GetTickCommands(m_currentTick));
+    auto commands = m_commandLog.GetTickCommands(m_currentTick);
+    if (commands) {
+        m_pNet->SendTickCommands(m_currentTick, *commands);
+    }
 }
 
 void CServerMatrixGame::HandleCommand(IGameCommand *command) {
@@ -79,10 +87,10 @@ void CServerMatrixGame::OnRequestSessionStart(ISession *session) {
 
     m_playersStore.AddPlayer(player);
 
-    m_net.SendConnect(session);
+    m_pNet->SendConnect(session);
 
     if (m_playersStore.GetCount() >= m_settings.maxPlayersCount) {
-        m_currentStatus == EGameStatus::WAIT_PLAYERS_READY;
+        UpdateStatus(EGameStatus::WAIT_PLAYERS_READY);
     }
 }
 
@@ -102,7 +110,7 @@ void CServerMatrixGame::OnRequestSessionQuit(ISession *session) {
 }
 
 void CServerMatrixGame::OnAskGameInfo(ISession *source) {
-    m_net.SendGameInfo(source, m_settings.mapName);
+    m_pNet->SendGameInfo(source, m_settings.mapName);
 }
 
 void CServerMatrixGame::OnSessionReady(ISession *session) {
@@ -113,7 +121,7 @@ void CServerMatrixGame::OnSessionReady(ISession *session) {
 
     player->SetReady(true);
 
-    if (m_currentStatus == EGameStatus::WAIT_PLAYERS_READY && IsAllPlayersReady()) {
+    if (m_currentStatus == EGameStatus::WAIT_PLAYERS && IsAllPlayersReady()) {
         GameStart();
     }
 }

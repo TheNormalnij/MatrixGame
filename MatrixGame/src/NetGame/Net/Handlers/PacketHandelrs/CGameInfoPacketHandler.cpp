@@ -3,7 +3,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "GameInfoPacketHandler.h"
+#include "CGameInfoPacketHandler.h"
 #include <cstdint>
 #include <string>
 

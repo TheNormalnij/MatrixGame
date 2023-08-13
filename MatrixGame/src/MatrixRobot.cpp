@@ -1261,7 +1261,7 @@ void CMatrixRobotAI::LogicTakt(int ms) {
                     if (ps->m_CurrSel == BUILDING_SELECTED || ps->m_CurrSel == BASE_SELECTED) {
                         CMatrixBuilding *bld = ((CMatrixBuilding *)ps->m_ActiveObject);
                         if (bld == factory) {
-                            ps->Select(NOTHING, NULL);
+                            ps->Select(ESelType::NOTHING, NULL);
                             ps->PLDropAllActions();
                         }
                     }

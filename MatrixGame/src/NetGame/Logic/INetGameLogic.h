@@ -3,8 +3,9 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "ConnectPacketHandler.h"
+#pragma once
 
-void CConnectPacketHandler::Handle(CReadStream *stream, INetGameHandler *game) {
-
-}
+class INetGameLogic {
+public:
+    virtual void Update() = 0;
+};

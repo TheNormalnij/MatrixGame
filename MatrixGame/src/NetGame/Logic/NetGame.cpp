@@ -7,6 +7,7 @@
 #include "NetGameForm.h"
 #include "../Net/Clients/ClientTCP.h"
 #include "../Net/Handlers/CGameNetDataHandler.h"
+#include "CNetGameLogic.h"
 #include "utils.hpp"
 
 constexpr time_t SERVER_TIMEOUT_SEC = 30;
@@ -81,7 +82,9 @@ void CNetGame::StartGame() {
 
     m_currentGame.Init(m_hAppInstance, NULL, wstrMapName.data(), seed, m_pMatrixSettings, &textReplace);
 
-    CNetGameForm formgame;
+    CNetGameLogic logic = CNetGameLogic(m_pClient, m_pServerApi, &m_serverSync, g_MatrixMap);
+
+    CNetGameForm formgame = CNetGameForm(&logic);
 
     m_currentGame.RunGameLoop(&formgame);
 

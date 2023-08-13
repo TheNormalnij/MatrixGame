@@ -15,7 +15,7 @@
 
 class CServerMatrixGame : public IGame {
 public:
-    CServerMatrixGame();
+    CServerMatrixGame(CGameNetwork *netApi);
     ~CServerMatrixGame() = default;
 
     // IGame interface
@@ -36,11 +36,14 @@ private:
     IPlayer *GetSessionPlayer(ISession *session) const noexcept;
     bool IsAllPlayersReady() const noexcept;
 
+    // Update status and sync with clients
+    void UpdateStatus(EGameStatus newStatus);
+
 private:
     EGameStatus m_currentStatus;
     size_t m_currentTick;
     CCommandLog m_commandLog;
-    CGameNetwork m_net;
+    CGameNetwork *m_pNet;
     SMatrixGameSettings m_settings;
     CPlayersStore m_playersStore;
 };

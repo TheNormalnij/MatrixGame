@@ -11,7 +11,7 @@ void CCommandLog::PushCommand(size_t tick, IGameCommand *command) {
 }
 
 std::list<IGameCommand *> *CCommandLog::GetTickCommands(size_t tick) {
-    if (m_commandsByTick.size() <= tick) {
+    if (m_commandsByTick.size() >= tick) {
         return &m_commandsByTick[tick];
     }
     return nullptr;
