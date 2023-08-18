@@ -12,7 +12,7 @@ class CSessionCleaner : public IServerJob {
 public:
     CSessionCleaner(CSessionStore *store) : m_sessionStore(store){};
     ~CSessionCleaner() = default;
-    void DoTick() override;
+    void Update() override;
 
 private:
     CSessionStore *m_sessionStore;

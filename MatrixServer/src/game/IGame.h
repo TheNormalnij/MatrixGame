@@ -6,7 +6,7 @@
 #pragma once
 
 #include "players/IPlayer.h"
-#include <shared/game/IGameCommand.h>
+#include <shared/game/ICommandFactory.h>
 #include "../jobs/IServerJob.h"
 
 class IGame : public IServerJob {
@@ -19,4 +19,6 @@ public:
 
     virtual void OnSessionReady(ISession *source) = 0;
     virtual void OnAskGameInfo(ISession *source) = 0;
+
+    virtual ICommandFactory *GetCommandFactory() const noexcept = 0;
 };

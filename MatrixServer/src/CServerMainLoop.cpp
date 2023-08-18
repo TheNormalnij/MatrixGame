@@ -31,7 +31,7 @@ void CServerMainLoop::Stop() {
 
 void CServerMainLoop::DoTick() {
     for (IServerJob* job : m_jobs) {
-        job->DoTick();
+        job->Update();
     }
 }
 

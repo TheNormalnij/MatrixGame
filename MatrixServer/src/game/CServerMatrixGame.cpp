@@ -5,6 +5,7 @@
 
 #include "CServerMatrixGame.h"
 #include "players/CNetPlayer.h"
+#include <ctime>
 
 CServerMatrixGame::CServerMatrixGame(CGameNetwork *netApi) {
     m_currentStatus = EGameStatus::WAIT_PLAYERS;
@@ -17,6 +18,8 @@ void CServerMatrixGame::GameStart(){
         return;
     }
 
+    m_startTime = std::time(nullptr);
+
     UpdateStatus(EGameStatus::RUNNING);
 };
 
@@ -26,6 +29,16 @@ void CServerMatrixGame::GameStop(){
     }
 
     m_pNet->SendGameStatusChanged(m_currentStatus);
+}
+
+void CServerMatrixGame::DoTick() {
+    // Increase tick counter
+    m_currentTick++;
+
+    // Send current tick commands
+    auto commands = m_commandLog.GetTickCommands(m_currentTick);
+
+    m_pNet->SendTickCommands(m_currentTick, *commands);
 }
 
 IPlayer *CServerMatrixGame::GetSessionPlayer(ISession *session) const noexcept {
@@ -47,19 +60,15 @@ void CServerMatrixGame::UpdateStatus(EGameStatus newStatus) {
     m_pNet->SendGameStatusChanged(newStatus);
 }
 
-void CServerMatrixGame::DoTick() {
+void CServerMatrixGame::Update() {
     // Skip if not running
     if (m_currentStatus != EGameStatus::RUNNING) {
         return;
     }
 
-    // Increase tick counter
-    m_currentTick++;
-
-    // Send current tick commands
-    auto commands = m_commandLog.GetTickCommands(m_currentTick);
-    if (commands) {
-        m_pNet->SendTickCommands(m_currentTick, *commands);
+    const uint64_t currentTime = std::time(nullptr);
+    if (m_startTime + TICK_DURATION_MS * (m_currentTick + 1) > currentTime) {
+        DoTick();
     }
 }
 

@@ -244,6 +244,8 @@ struct SGroupVisibility {
 
 #define MMFLAG_SPECIAL_BROKEN SETBIT(28)
 
+#define MMFLAG_LOGIC_DISABLED SETBIT(29)
+
 struct SSkyTex {
     CTextureManaged *tex;
     float u0, v0, u1, v1;
@@ -654,6 +656,9 @@ public:
 
     inline void MouseCam(bool p) { INITFLAG(m_Flags, MMFLAG_MOUSECAM, p); }
     inline bool IsMouseCam(void) { return FLAG(m_Flags, MMFLAG_MOUSECAM); }
+
+    void SetLogicEnabed(bool state){INITFLAG(m_Flags, MMFLAG_LOGIC_DISABLED, !state)};
+    bool IsLogicEnabled() const { return !FLAG(m_Flags, MMFLAG_LOGIC_DISABLED); }
 
     // draw functions
 

@@ -9,13 +9,14 @@
 #include <list>
 #include <shared/game/IGameCommand.h>
 
-class CCommandsPacket : public IPacket {
+class CGameTickPacket : public IPacket {
 public:
-    CCommandsPacket(std::list<IGameCommand *> &commands) : m_commands(commands){};
-    ~CCommandsPacket() = default;
+    CGameTickPacket(size_t tick, std::list<IGameCommand *> &commands) : m_tick(tick), m_commands(commands){};
+    ~CGameTickPacket() = default;
 
      void WritePacket(CWriteStream *stream) override;
 
 private:
+    size_t m_tick;
     std::list<IGameCommand *> &m_commands;
 };

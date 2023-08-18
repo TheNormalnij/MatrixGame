@@ -6,7 +6,7 @@
 #include "CGameNetwork.h"
 #include <shared/net/CWriteStream.h>
 #include <shared/net/PacketEnums.h>
-#include "net/packets/CCommandsPacket.h"
+#include "net/packets/CGameTickPacket.h"
 #include "net/packets/CChangeGameStatePacket.h"
 #include "net/packets/CGameInfoPacket.h"
 #include "net/packets/CConnectPacket.h"
@@ -18,7 +18,7 @@ struct SMiltictasRequestSendStatus {
 };
 
 void CGameNetwork::SendTickCommands(size_t tick, std::list<IGameCommand *> &commands) {
-    CCommandsPacket packet = CCommandsPacket(commands);
+    CGameTickPacket packet = CGameTickPacket(tick, commands);
     Broadcast(packet);
 }
 

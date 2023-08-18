@@ -3,8 +3,8 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "NetGame.h"
-#include "NetGameForm.h"
+#include "CNetGame.h"
+#include "CNetGameForm.h"
 #include "../Net/Clients/ClientTCP.h"
 #include "../Net/Handlers/CGameNetDataHandler.h"
 #include "CNetGameLogic.h"

@@ -7,5 +7,5 @@
 
 class IServerJob {
 public:
-    virtual void DoTick() = 0;
+    virtual void Update() = 0;
 };

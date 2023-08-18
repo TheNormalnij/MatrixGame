@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "NetGameForm.h"
+#include "CNetGameForm.h"
 #include "MatrixMap.hpp"
 #include "MatrixRobot.hpp"
 #include "MatrixFlyer.hpp"

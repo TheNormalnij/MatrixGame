@@ -5,6 +5,8 @@
 
 #pragma once
 
+constexpr const int TICK_DURATION_MS = 100;  // 10 ms per second
+
 enum class EGameStatus {
     WAIT_PLAYERS,
     WAIT_PLAYERS_READY,

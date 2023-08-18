@@ -2930,43 +2930,6 @@ void CMatrixMapLogic::Takt(int step) {
 
     DCP();
 
-    // if (m_ShadeOn)
-    //{
-    //    m_ShadeTime -= step;
-    //    m_ShadeTimeCurrent += step;
-    //    if (m_ShadeTime < 0)
-    //    {
-    //        m_ShadeTime = 0;
-    //    }
-
-    //    float k = (float(m_ShadeTime)/SHADER_TIME);
-    //    m_Minimap.SetColor(LIC(0x00000000, m_ShadeInterfaceColor, k));
-
-    //    double xx1 = (0.05 * double(m_ShadeTimeCurrent));
-    //    double xx2 = (double(m_ShadeTimeCurrent) - 1500.0);
-    //    float speed = float((xx1 * xx1 + xx2 * xx2) / 2000000.0);
-
-    //    float nt =  float(step) * speed;
-
-    //    m_Camera.RotateZ(GRAD2RAD(step * 0.05f));
-    //
-    //    if (m_ShadeTimeCurrent > 1000 && m_ShadeTimeCurrent < 5000)
-    //    {
-    //        m_Camera.RotateX(GRAD2RAD(-step * 0.00001f * (m_ShadeTimeCurrent - 1000)));
-    //        //m_Camera.RotateZ(step * 0.001f * (m_ShadeTimeCurrent - 1000));
-    //    } else
-    //    {
-
-    //    }
-
-    //    for (int i = 0; i<m_EffectsCnt; ++i)
-    //        m_Effects[i]->Takt(nt);
-
-    //    return;
-    //}
-
-    DCP();
-
     // TODO : 10 time per second
     g_IFaceList->LogicTakt(step);
 
@@ -2981,26 +2944,28 @@ void CMatrixMapLogic::Takt(int step) {
     }
     DCP();
 
-    int portions = step / LOGIC_TAKT_PERIOD;
+    if (IsLogicEnabled()) {
+        int portions = step / LOGIC_TAKT_PERIOD;
 
-    for (int cnt = 0; cnt < portions; cnt++) {
-        CMatrixMapStatic::ProceedLogic(LOGIC_TAKT_PERIOD);
-    }
+        for (int cnt = 0; cnt < portions; cnt++) {
+            CMatrixMapStatic::ProceedLogic(LOGIC_TAKT_PERIOD);
+        }
 
-    DCP();
+        DCP();
 
-    portions = step - portions * LOGIC_TAKT_PERIOD;
-    if (portions) {
-        CMatrixMapStatic::ProceedLogic(portions);
-    }
-    DCP();
+        portions = step - portions * LOGIC_TAKT_PERIOD;
+        if (portions) {
+            CMatrixMapStatic::ProceedLogic(portions);
+        }
+        DCP();
 
-    while (GetTime() > m_TaktNext) {
-        m_TaktNext += LOGIC_TAKT_PERIOD;
-        // CMatrixMapStatic::ProceedLogic(LOGIC_TAKT_PERIOD);
+        while (GetTime() > m_TaktNext) {
+            m_TaktNext += LOGIC_TAKT_PERIOD;
+            // CMatrixMapStatic::ProceedLogic(LOGIC_TAKT_PERIOD);
 
-        for (int i = 0; i < m_SideCnt; i++) {
-            m_Side[i].LogicTakt(LOGIC_TAKT_PERIOD);
+            for (int i = 0; i < m_SideCnt; i++) {
+                m_Side[i].LogicTakt(LOGIC_TAKT_PERIOD);
+            }
         }
     }
 

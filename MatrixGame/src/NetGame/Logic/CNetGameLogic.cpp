@@ -25,9 +25,24 @@ void CNetGameLogic::Update() {
         }
     }
 
-    if (m_pServerSync->GetGameStatus() == EGameStatus::RUNNING) {
-        if (m_pLocalLogic->IsPaused()) {
-            m_pLocalLogic->Pause(false);
+    if (m_pServerSync->GetGameStatus() != EGameStatus::RUNNING) {
+        return;
+    }
+
+    if (m_pLocalLogic->IsPaused()) {
+        m_pLocalLogic->Pause(false);
+    }
+
+    if (m_pServerSync->NextTick()) {
+        m_pLocalLogic->SetLogicEnabed(true);
+
+        const auto commands = m_pServerSync->GetCommands();
+        for (IGameCommand* command : *commands) {
+
         }
+  
+    }
+    else {
+        m_pLocalLogic->SetLogicEnabed(false);
     }
 }

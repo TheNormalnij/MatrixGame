@@ -7,6 +7,8 @@
 
 CServerSync::CServerSync() {
     m_currentGameStatus = EGameStatus::WAIT_PLAYERS;
+    m_currentTick = 0;
+    m_lastAllowedTick = 0;
 }
 
 bool CServerSync::NextTick() {
@@ -22,5 +24,9 @@ bool CServerSync::NextTick() {
 void CServerSync::OnGetGameInfo(std::string_view mapName, uint32_t seed) {
     m_mapName = mapName;
     m_seed = seed;
+}
+
+void CServerSync::OnGetTickCommands(size_t tick, std::vector<IGameCommand *> commands) {
+    
 }
 

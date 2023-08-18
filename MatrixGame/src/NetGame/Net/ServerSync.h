@@ -7,6 +7,7 @@
 
 #include <shared/game/CCommandLog.h>
 #include "Handlers/INetGameHandler.h"
+#include <shared/game/CCommandFactory.h>
 
 class CServerSync : public INetGameHandler {
 public:
@@ -24,13 +25,16 @@ public:
     auto GetCommands() { return m_commandLog.GetTickCommands(m_currentTick); };
 
     // Inherited via INetGameHanlder
-    virtual void OnGetGameInfo(std::string_view mapName, uint32_t seed) override;
-    virtual void OnChangeGameState(EGameStatus status) override { m_currentGameStatus = status; };
+    void OnGetGameInfo(std::string_view mapName, uint32_t seed) override;
+    void OnChangeGameState(EGameStatus status) override { m_currentGameStatus = status; };
+    void OnGetTickCommands(size_t tick, std::vector<IGameCommand *> commands) override;
+    ICommandFactory *GetCommandFactory() const noexcept override { return (ICommandFactory*)&m_commandFactory; };
 
 private:
     size_t GetLastAllowerTick() const noexcept { return m_lastAllowedTick; };
 
 private:
+    CCommandFactory m_commandFactory;
     EGameStatus m_currentGameStatus;
     size_t m_currentTick;
     size_t m_lastAllowedTick;

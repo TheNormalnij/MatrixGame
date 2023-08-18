@@ -5,6 +5,10 @@
 
 #pragma once
 
-enum class EGmaeCommandType {
-	ANONYMOUS,
+enum class EGameCommandType {
+	BUILD_ROBOT,
+	BUILD_TUREL,
+	ROBOTS_MOVE,
+	ROBOTS_ATTACK,
+	ROBOTS_CAPTURE,
 };
