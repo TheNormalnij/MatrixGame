@@ -12,7 +12,7 @@ void CCommandPacketHandler::Handle(CReadStream &stream, ISession *session, IGame
 
     stream.Read(commandsCount);
 
-    for (size_t i; i < commandsCount; i++) {
+    for (size_t i = 0; i < commandsCount; i++) {
         ICommandFactory *factory = game->GetCommandFactory();
 
         IGameCommand *command = factory->CreateCommand(stream);

@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "../Net/ServerApi.h"
-#include "../Net/ServerSync.h"
+#include "../Net/CServerApi.h"
+#include "../Net/CServerSync.h"
 #include "INetGameLogic.h"
 #include "MatrixLogic.hpp"
 

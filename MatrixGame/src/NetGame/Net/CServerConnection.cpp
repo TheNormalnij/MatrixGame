@@ -3,7 +3,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "ServerConnection.h"
+#include "CServerConnection.h"
 #include "Clients/ClientTCP.h"
 #include "Handlers/CInitialPacketHandler.h"
 

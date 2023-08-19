@@ -9,9 +9,9 @@
 #include "MatrixGame.h"
 #include <string_view>
 #include "../Net/Clients/IClient.h"
-#include "../Net/ServerApi.h"
-#include "../Net/ServerConnection.h"
-#include "../Net/ServerSync.h"
+#include "../Net/CServerApi.h"
+#include "../Net/CServerConnection.h"
+#include "../Net/CServerSync.h"
 #include "../Net/Handlers/INetGameHandler.h"
 
 class CNetGame {

@@ -8,7 +8,7 @@
 #include <string>
 #include <string_view>
 #include "Clients/IClient.h"
-#include "ServerApi.h"
+#include "CServerApi.h"
 
 enum class EServerConnectionStatus {
     CONNECTING,

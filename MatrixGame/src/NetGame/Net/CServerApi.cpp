@@ -3,7 +3,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "ServerApi.h"
+#include "CServerApi.h"
 
 #include "Packets/CConnectionPacket.h"
 #include "Packets/CGetGameInfoPacket.h"

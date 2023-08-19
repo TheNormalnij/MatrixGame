@@ -3,12 +3,13 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "ServerSync.h"
+#include "CServerSync.h"
 
 CServerSync::CServerSync() {
     m_currentGameStatus = EGameStatus::WAIT_PLAYERS;
     m_currentTick = 0;
     m_lastAllowedTick = 0;
+    m_seed = 0;
 }
 
 bool CServerSync::NextTick() {
