@@ -38,6 +38,7 @@ set(BASE_SOURCES
     Base/CHeap.cpp
     Base/CMain.cpp
     Base/Compression.cpp
+    Base/CRandom.cpp
     Base/CRC32.cpp
     Base/CReminder.cpp
     Base/CStorage.cpp
@@ -58,6 +59,7 @@ set(BASE_HEADERS
     Base/CHeap.hpp
     Base/CMain.hpp
     Base/Compression.hpp
+    Base/CRandom.hpp
     Base/CRC32.hpp
     Base/CReminder.hpp
     Base/CStorage.hpp

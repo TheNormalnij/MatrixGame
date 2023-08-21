@@ -8,6 +8,7 @@
 #include "PacketHandelrs/CConnectPacketHandler.h"
 #include "PacketHandelrs/CGameInfoPacketHandler.h"
 #include "PacketHandelrs/CGameStatusChangePacketHandler.h"
+#include "PacketHandelrs/CGameTickPacketHandler.h"
 
 #include <cstdint>
 
@@ -32,7 +33,8 @@ void CGameNetDataHandler::Handle(CReadStream *stream) {
             break;
         }
         case EGamePacketType::COMMANDS: {
-            
+            CGameTickPacketHandler handler;
+            handler.Handle(stream, m_pGame);
             break;
         }
         default:

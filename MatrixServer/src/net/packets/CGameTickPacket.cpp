@@ -9,9 +9,15 @@
 void CGameTickPacket::WritePacket(CWriteStream *stream) {
     stream->Write((uint8_t)EGamePacketType::COMMANDS);
     stream->Write((uint64_t)m_tick);
-    stream->Write((uint16_t)m_commands.size());
 
-    for (IGameCommand *command : m_commands) {
-        command->Write(*stream);
+    if (m_pCommands) {
+        stream->Write((uint16_t)m_pCommands->size());
+
+        for (IGameCommand *command : *m_pCommands) {
+            command->Write(*stream);
+        }
+    }
+    else {
+        stream->Write((uint16_t)0);
     }
 }

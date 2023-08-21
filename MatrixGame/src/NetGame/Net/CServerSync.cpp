@@ -4,6 +4,7 @@
 // Refer to the LICENSE file included
 
 #include "CServerSync.h"
+#include <list>
 
 CServerSync::CServerSync() {
     m_currentGameStatus = EGameStatus::WAIT_PLAYERS;
@@ -13,7 +14,7 @@ CServerSync::CServerSync() {
 }
 
 bool CServerSync::NextTick() {
-    if (m_currentTick >= GetLastAllowerTick()) {
+    if (m_currentTick >= GetLastAllowedTick()) {
         return false;
     }
 
@@ -27,7 +28,18 @@ void CServerSync::OnGetGameInfo(std::string_view mapName, uint32_t seed) {
     m_seed = seed;
 }
 
-void CServerSync::OnGetTickCommands(size_t tick, std::vector<IGameCommand *> commands) {
-    
+void CServerSync::OnGetTickCommands(size_t tick, std::vector<IGameCommand *> &commands) {
+    m_commandLog.CopyTickCommands(tick, commands);
+
+    TryAppendLastAllowedTick();
+}
+
+void CServerSync::TryAppendLastAllowedTick() {
+    while (true) {
+        if (!m_commandLog.HasTickCommands(m_lastAllowedTick + 1)) {
+            return;
+        }
+        m_lastAllowedTick++;
+    }
 }
 

@@ -57,17 +57,23 @@ bool CServerTCPTransport::Listen(std::string_view host, uint16_t port) {
 }
 
 void CServerTCPTransport::SendData(ISession *session, CRequest *req) {
+    uv_stream_t *handler = (uv_stream_t *)session->GetHandler();
+
+    if (!uv_is_writable(handler)) {
+        fprintf(stderr, "[TCP] SendData error: socket is not writable\n");
+        req->CallCallback(false);
+        return;
+    }
+
     uv_write_t *uvreq = new uv_write_t();
 
     const uv_buf_t wrbuf = uv_buf_init(req->GetData(), req->GetSize());
     uvreq->data = req;
 
-    const uv_tcp_t *handler = (uv_tcp_t*)session->GetHandler();
-
-    uv_write(uvreq, (uv_stream_t *)handler, &wrbuf, 1, [](uv_write_t *uvreq, int status) {
+    uv_write(uvreq, handler, &wrbuf, 1, [](uv_write_t *uvreq, int status) {
         // Write callback
         if (status) {
-            fprintf(stderr, "[TCP] Write error %s\n", uv_strerror(status));
+            fprintf(stderr, "[TCP] Write error: %s\n", uv_strerror(status));
         }
 
         CRequest *req = (CRequest *)uvreq->data;

@@ -14,10 +14,10 @@
 struct SMiltictasRequestSendStatus {
     size_t sendetCount = 0;
     size_t targetCount = 0;
-    CWriteStream *stream;
+    CWriteStream *stream = nullptr;
 };
 
-void CGameNetwork::SendTickCommands(size_t tick, std::list<IGameCommand *> &commands) {
+void CGameNetwork::SendTickCommands(size_t tick, std::list<IGameCommand *> *commands) {
     CGameTickPacket packet = CGameTickPacket(tick, commands);
     Broadcast(packet);
 }

@@ -82,6 +82,8 @@ void CNetGame::StartGame() {
 
     m_currentGame.Init(m_hAppInstance, NULL, wstrMapName.data(), seed, m_pMatrixSettings, &textReplace);
 
+    g_MatrixMap->GetRandom().Reset(seed);
+
     CNetGameLogic logic = CNetGameLogic(m_pClient, m_pServerApi, &m_serverSync, g_MatrixMap);
 
     CNetGameForm formgame = CNetGameForm(&logic);

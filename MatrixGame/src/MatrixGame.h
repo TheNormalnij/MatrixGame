@@ -46,4 +46,5 @@ public:
 private:
     void ApplyVideoParams(SMatrixSettings *settings, bool autodetectFullscreen);
     void ApplyTextsReplaces(SMatrixTextParams *textParams);
+    void ApplySceneColors();
 };

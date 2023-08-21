@@ -18,7 +18,7 @@ public:
     CGameNetwork(CSessionStore *sessionStore) : m_sessionStore(sessionStore){};
     ~CGameNetwork() = default;
 
-    void SendTickCommands(size_t tick, std::list<IGameCommand *> &commands);
+    void SendTickCommands(size_t tick, std::list<IGameCommand *> *commands);
     void SendGameStatusChanged(EGameStatus status);
     void SendGameInfo(ISession *session, std::string_view mapName);
     void SendConnect(ISession *session);

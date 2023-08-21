@@ -11,12 +11,12 @@
 
 class CGameTickPacket : public IPacket {
 public:
-    CGameTickPacket(size_t tick, std::list<IGameCommand *> &commands) : m_tick(tick), m_commands(commands){};
+    CGameTickPacket(size_t tick, std::list<IGameCommand *> *commands) : m_tick(tick), m_pCommands(commands){};
     ~CGameTickPacket() = default;
 
      void WritePacket(CWriteStream *stream) override;
 
 private:
     size_t m_tick;
-    std::list<IGameCommand *> &m_commands;
+    std::list<IGameCommand *> *m_pCommands;
 };

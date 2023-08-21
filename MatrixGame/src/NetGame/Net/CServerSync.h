@@ -27,11 +27,12 @@ public:
     // Inherited via INetGameHanlder
     void OnGetGameInfo(std::string_view mapName, uint32_t seed) override;
     void OnChangeGameState(EGameStatus status) override { m_currentGameStatus = status; };
-    void OnGetTickCommands(size_t tick, std::vector<IGameCommand *> commands) override;
+    void OnGetTickCommands(size_t tick, std::vector<IGameCommand *> &commands) override;
     ICommandFactory *GetCommandFactory() const noexcept override { return (ICommandFactory*)&m_commandFactory; };
 
 private:
-    size_t GetLastAllowerTick() const noexcept { return m_lastAllowedTick; };
+    size_t GetLastAllowedTick() const noexcept { return m_lastAllowedTick; };
+    void TryAppendLastAllowedTick();
 
 private:
     CCommandFactory m_commandFactory;

@@ -16,7 +16,16 @@ public:
 
     void PushCommand(size_t tick, IGameCommand *commad);
     std::list<IGameCommand*> *GetTickCommands(size_t tick);
+    
+    void SetTickCommands(size_t tick, std::list<IGameCommand *> *commads);
+
+    // TODO: template ?
+    void CopyTickCommands(size_t tick, std::vector<IGameCommand *> &commads);
+    bool HasTickCommands(size_t tick) const noexcept;
 
 private:
-    std::vector<std::list<IGameCommand *>> m_commandsByTick;
+    void ExtendLogTo(size_t tick);
+
+private:
+    std::vector<std::list<IGameCommand *>*> m_commandsByTick;
 };
