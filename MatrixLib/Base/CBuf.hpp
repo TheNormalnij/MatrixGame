@@ -5,12 +5,8 @@
 
 #pragma once
 
-#include "CMain.hpp"
-#include "Mem.hpp"
-#include "Tracer.hpp"
 #include "CException.hpp"
-#include "CHeap.hpp"
-#include <windows.h>
+
 #include <vector>
 #include <cstdint>
 #include <cstring> // for memset

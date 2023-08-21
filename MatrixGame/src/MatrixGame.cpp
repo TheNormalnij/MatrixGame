@@ -163,7 +163,7 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
 
     ApplyVideoParams(set, wnd != NULL);
 
-    CStorage stor(g_CacheHeap);
+    CStorage stor;
     DCP();
 
     std::wstring mapname;

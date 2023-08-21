@@ -11,6 +11,9 @@
 #include "CHeap.hpp"
 #include "CBlockPar.hpp"
 
+#include "CHeap.hpp"
+#include "CBlockPar.hpp"
+
 class CMatrixMapLogic;
 class CIFaceList;
 class CRenderPipeline;
