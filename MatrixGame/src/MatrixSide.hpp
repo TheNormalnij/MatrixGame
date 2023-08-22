@@ -487,9 +487,6 @@ public:
     void SelectedGroupUnselect();
     void GroupsUnselectSoft();
     void SelectedGroupBreakOrders();
-    void SelectedGroupMoveTo(const D3DXVECTOR2 &pos);
-    void SelectedGroupAttack(CMatrixMapStatic *victim);
-    void SelectedGroupCapture(CMatrixMapStatic *building);
     void PumpGroups();
 
     CMatrixGroup *GetFirstGroup() { return m_FirstGroup; }

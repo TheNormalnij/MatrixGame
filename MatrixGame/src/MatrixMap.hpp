@@ -610,7 +610,6 @@ public:
     void EnterDialogMode(const wchar *hint);
     void LeaveDialogMode(void);
 
-    void BeginDieSequence(void);
     bool DieSequenceInProgress(void) { return m_ShadeOn; }
 
     CTextureManaged *GetReflectionTexture(void) { return m_Reflection; };

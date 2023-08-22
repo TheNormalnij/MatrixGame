@@ -10,7 +10,6 @@
 #include "MatrixObjectRobot.hpp"
 #include "MatrixObjectBuilding.hpp"
 #include "Logic/MatrixEnvironment.h"
-#include "Logic/MatrixTactics.h"
 #include "Logic/MatrixAIGroup.h"
 #include "Effects/MatrixEffectWeapon.hpp"
 
@@ -386,12 +385,6 @@ public:
 
     bool CanBreakOrder(); // TODO const
 
-    void OBBToAABBCollision(int nHeight, int nWidth);
-    D3DXVECTOR3 LineToAABBIntersection(const D3DXVECTOR2 &s, const D3DXVECTOR2 &e, const D3DXVECTOR2 &vLu,
-                                       const D3DXVECTOR2 &vLd, const D3DXVECTOR2 &vRu, const D3DXVECTOR2 &vRd,
-                                       bool revers_x, bool revers_y);
-    D3DXVECTOR3 CornerLineToAABBIntersection(const D3DXVECTOR2 &s, const D3DXVECTOR2 &e, const D3DXVECTOR2 &vLu,
-                                             const D3DXVECTOR2 &vLd, const D3DXVECTOR2 &vRu, const D3DXVECTOR2 &vRd);
     D3DXVECTOR3 SphereRobotToAABBObstacleCollision(D3DXVECTOR3 &corr, const D3DXVECTOR3 &vel);
     // D3DXVECTOR3 SphereToAABBIntersection(const D3DXVECTOR2 &pos,float r, const D3DXVECTOR2 &vLu,const D3DXVECTOR2
     // &vLd,const D3DXVECTOR2 &vRu,const D3DXVECTOR2 &vRd, bool revers_x, bool revers_y);
@@ -410,7 +403,6 @@ public:
     // void ZoneMoveCalcTo(void);	                // Рассчитать путь в нутрии текущей зоны до точки назначения (In:
     // m_DesX,m_DesY) (Out: m_MovePathCnt,m_MovePathCur,m_MovePath)
     void MoveByMovePath(int ms);  // Двигаться по пути движения
-    void MoveToRndBuilding();
 
     void CalcRobotMass();  // вычисляет массу, скорость, силу робота
     bool Seek(const D3DXVECTOR3 &dest, bool &rotate, bool end_path,

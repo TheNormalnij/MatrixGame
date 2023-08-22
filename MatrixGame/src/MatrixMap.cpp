@@ -25,7 +25,6 @@
 #include "MatrixInstantDraw.hpp"
 
 #include "Interface/CInterface.h"
-#include "Logic/MatrixTactics.h"
 #include "MatrixGameDll.hpp"
 #include "MatrixSampleStateManager.hpp"
 #include "MatrixMultiSelection.hpp"

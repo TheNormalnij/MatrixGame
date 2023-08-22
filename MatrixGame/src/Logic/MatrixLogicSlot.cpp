@@ -4,7 +4,6 @@
 // Refer to the LICENSE file included
 
 #include "MatrixLogicSlot.h"
-#include "MatrixState.h"
 #include "../MatrixMap.hpp"
 #include "../MatrixRobot.hpp"
 

@@ -5,8 +5,6 @@
 
 #include "MatrixRule.h"
 #include "MatrixLogicSlot.h"
-#include "MatrixState.h"
-#include "MatrixTactics.h"
 #include "../MatrixMap.hpp"
 #include "../MatrixRobot.hpp"
 

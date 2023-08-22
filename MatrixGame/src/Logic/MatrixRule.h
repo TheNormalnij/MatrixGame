@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "MatrixTactics.h"
-
 #include <cstdint>
 
 class CMatrixRobotAI;
@@ -99,33 +97,3 @@ typedef struct _act {
         m_Capture = CAPTURE_UNDEF;
     }
 } Action;
-
-// class CMatrixRule : public CBaseTactics
-//{
-//    CMatrixMapStatic*       m_ContextEnemy;
-// public:
-//    int                     m_AroundPeriod;
-//    CMatrixRule*            m_PrevRule;
-//    CMatrixRule*            m_NextRule;
-//
-//    Condition               m_Condition;
-//    Action                  m_Action;
-//
-//    bool If(CMatrixRobotAI *robot, CMatrixGroup* group);
-//    void Do(CMatrixRobotAI *robot, CMatrixGroup* group);
-//
-//    //Actions
-//
-//    void Load(CBlockPar &bp);
-//    void LogicTakt();
-//
-//    CMatrixRule()
-//    {
-//        m_PrevRule      = nullptr;
-//        m_NextRule      = nullptr;
-//        m_ContextEnemy  = nullptr;
-//
-//        m_AroundPeriod  = AROUNDENEMY_PERIOD + 10;
-//    }
-//    ~CMatrixRule();
-//};

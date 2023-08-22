@@ -5496,21 +5496,3 @@ bool CMatrixRobotAI::CheckFireDist(const D3DXVECTOR3 &point) {
     }
     return false;
 }
-
-// void SOrder::LogicTakt()
-//{
-////    CDText::T("orders", m_OrdersInPool);
-//    switch(m_OrderType){
-//        case ROT_MOVE_TO:
-//            if(m_OrderPhase != ROBOT_MOVING)
-//                m_OrderPhase = ROBOT_MOVING;
-//            break;
-//        case ROBOT_FIRE:
-//            break;
-//        case ROT_CAPTURE_FACTORY:
-//            break;
-//        default:
-//            break;
-//    }
-//
-//}

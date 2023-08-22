@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "MatrixTactics.h"
 #include "3g.hpp"
 
 // Groups
@@ -17,6 +16,7 @@ class CMatrixRobotAI;
 class CMatrixSideUnit;
 class CMatrixGroup;
 class CMatrixTactics;
+class CMatrixMapStatic;
 
 /*enum Team
 {
@@ -55,7 +55,7 @@ public:
         m_ParentGroup = NULL;
         m_Team = -1;
     }
-    ~CMatrixGroupObject();
+    ~CMatrixGroupObject() = default;
 };
 
 class CMatrixGroup : public CMain {
