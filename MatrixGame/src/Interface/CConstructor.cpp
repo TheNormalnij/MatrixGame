@@ -189,11 +189,6 @@ void CConstructor::StackRobot(void *pObject, int team) {
 
         m_Build->m_HullForward = m_Build->m_Forward;
 
-        if (m_Base->m_Side == PLAYER_SIDE) {
-            CMatrixSideUnit *si = g_MatrixMap->GetPlayerSide();
-            int cfg_num = si->m_ConstructPanel->m_CurrentConfig;
-        }
-
         m_Build->SetTeam(team);
 
         // robot sozdan
@@ -204,13 +199,8 @@ void CConstructor::StackRobot(void *pObject, int team) {
 
         m_Build->RNeed(MR_Graph);
 
-        // if (!FLAG(g_Flags, SETBIT(22)))
-        //{
-        //    for(;;) ;
 
-        //}
-
-        if (m_Base->m_Side == PLAYER_SIDE)
+        if (m_Base->m_Side == g_MatrixMap->GetPlayerSide()->GetId())
             m_Build->CreateTextures();
         m_Build->SetBase(m_Base);
         GetConstructionName((CMatrixRobotAI *)m_Build);
@@ -220,10 +210,11 @@ void CConstructor::StackRobot(void *pObject, int team) {
 
 void __stdcall CConstructor::RemoteBuild(void *pObj) {
     DTRACE();
-    if (m_Base->m_Side != PLAYER_SIDE) {
+    CMatrixSideUnit *player_side = g_MatrixMap->GetPlayerSide();
+
+    if (m_Base->m_Side != player_side->GetId()) {
         return;
     }
-    CMatrixSideUnit *player_side = g_MatrixMap->GetPlayerSide();
 
     int cfg_num = player_side->m_ConstructPanel->m_CurrentConfig;
     g_ConfigHistory->AddConfig(&player_side->m_ConstructPanel->m_Configs[cfg_num]);

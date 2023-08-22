@@ -712,7 +712,7 @@ void CNetGameForm::Keyboard(bool down, int scan) {
                             CMatrixMapStatic *ms = CMatrixMapStatic::GetFirstLogic();
                             for (; ms; ms = ms->GetNextLogic()) {
                                 if (ms == ps->m_ActiveObject && ms->IsLiveBuilding() &&
-                                    ms->AsBuilding()->m_Side == PLAYER_SIDE) {
+                                    ms->AsBuilding()->m_Side == ps->GetId()) {
                                     ms->AsBuilding()->CreatePlacesShow();
                                     break;
                                 }
@@ -868,7 +868,7 @@ void CNetGameForm::Keyboard(bool down, int scan) {
                 int cnt = 0;
                 while (1) {
                     if (obj) {
-                        if (obj->IsLiveRobot() && obj->GetSide() == PLAYER_SIDE) {
+                        if (obj->IsLiveRobot() && obj->GetSide() == ps->GetId()) {
                             ps->GetCurSelGroup()->RemoveAll();
                             ps->CreateGroupFromCurrent(obj);
                             ps->Select(ESelType::ROBOT, obj);
@@ -897,7 +897,7 @@ void CNetGameForm::Keyboard(bool down, int scan) {
                 int cnt = 0;
                 while (1) {
                     if (obj) {
-                        if (obj->IsLiveRobot() && obj->GetSide() == PLAYER_SIDE) {
+                        if (obj->IsLiveRobot() && obj->GetSide() == ps->GetId()) {
                             ps->GetCurSelGroup()->RemoveAll();
                             ps->CreateGroupFromCurrent(obj);
                             ps->Select(ESelType::ROBOT, obj);
@@ -989,7 +989,7 @@ void CNetGameForm::Keyboard(bool down, int scan) {
                 }
 
                 while (o) {
-                    if (o->GetSide() == PLAYER_SIDE) {
+                    if (o->GetSide() == ps->GetId()) {
                         if (o->IsLiveRobot() && o->AsRobot()->GetCtrlGroup() == scan) {
                             if (!prev_unselected) {
                                 prev_unselected = true;

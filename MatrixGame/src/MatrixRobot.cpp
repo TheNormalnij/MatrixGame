@@ -5448,6 +5448,31 @@ void CMatrixRobotAI::SetWeaponToDefaultCoeff() {
     }
 }
 
+bool CMatrixRobotAI::CanBreakOrder() {
+    int playerSideId = g_MatrixMap->GetPlayerSide()->GetId();
+
+    if (m_Side != playerSideId || FLAG(g_MatrixMap->m_Flags, MMFLAG_FULLAUTO)) {
+        CMatrixBuilding *cf = GetCaptureFactory();
+        if (cf) {
+            return false;  // DO NOT BREAK CAPTURING!!!!!!!!!!!!!!!!!!!!!!!! NEVER!!!!!!!!!!
+            // if (cf->IsBase()) return false;
+            // if (cf->GetSide()!=robot->GetSide())
+            //{
+            //    if(
+            //        (float(cf->m_TrueColor.m_ColoredCnt)/MAX_ZAHVAT_POINTS)
+            //        >
+            //        (1.0-(robot->AsRobot()->GetHitPoint()*1.1f)/robot->AsRobot()->GetMaxHitPoint())
+            //    ) return false;
+            //}
+
+            // upd 21.08.2003 Why?
+        }
+    }
+
+    return !IsAutomaticMode() &&
+           ((m_Side != playerSideId) || (g_MatrixMap->GetPlayerSide()->GetArcadedObject() != this));
+}
+
 bool CMatrixRobotAI::CheckFireDist(const D3DXVECTOR3 &point) {
     // CHelper::DestroyByGroup(0);
     for (int i = 0; i < m_WeaponsCnt; ++i) {

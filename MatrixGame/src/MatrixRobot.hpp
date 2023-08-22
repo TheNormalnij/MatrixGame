@@ -383,26 +383,8 @@ public:
     bool IsAutomaticMode(void) const {
         return m_CurrState == ROBOT_IN_SPAWN || m_CurrState == ROBOT_BASE_MOVEOUT || m_CurrState == ROBOT_BASE_CAPTURE;
     }
-    bool CanBreakOrder(void) {
-        if (m_Side != PLAYER_SIDE || FLAG(g_MatrixMap->m_Flags, MMFLAG_FULLAUTO)) {
-            CMatrixBuilding *cf = GetCaptureFactory();
-            if (cf) {
-                return false;  // DO NOT BREAK CAPTURING!!!!!!!!!!!!!!!!!!!!!!!! NEVER!!!!!!!!!!
-                // if (cf->IsBase()) return false;
-                // if (cf->GetSide()!=robot->GetSide())
-                //{
-                //    if(
-                //        (float(cf->m_TrueColor.m_ColoredCnt)/MAX_ZAHVAT_POINTS)
-                //        >
-                //        (1.0-(robot->AsRobot()->GetHitPoint()*1.1f)/robot->AsRobot()->GetMaxHitPoint())
-                //    ) return false;
-                //}
-            }
-        }
 
-        return !IsAutomaticMode() &&
-               ((m_Side != PLAYER_SIDE) || (g_MatrixMap->GetPlayerSide()->GetArcadedObject() != this));
-    }
+    bool CanBreakOrder(); // TODO const
 
     void OBBToAABBCollision(int nHeight, int nWidth);
     D3DXVECTOR3 LineToAABBIntersection(const D3DXVECTOR2 &s, const D3DXVECTOR2 &e, const D3DXVECTOR2 &vLu,

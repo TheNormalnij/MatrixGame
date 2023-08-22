@@ -1014,17 +1014,28 @@ void CMatrixMap::LoadSide(CBlockPar &bp) {
         m_Side[idx].m_Constructor->SetSide(id);
         m_Side[idx].m_Color = color;
         m_Side[idx].m_ColorMM = colorMM;
-        m_Side[idx].m_ColorTexture = NULL;
+        m_Side[idx].m_ColorTexture = nullptr;
         m_Side[idx].m_Name = name.GetStrPar(0, L",");
-        ++idx;
 
-        if (id == PLAYER_SIDE) {
-            m_PlayerSide = m_Side;
-            m_Side->InitPlayerSide();
+        // TODO: set player side later
+        if (id == DEFAULT_PLAYER_SIDE) {
+            m_PlayerSide = &m_Side[idx];
+            m_PlayerSide->InitPlayerSide();
+        }
+
+        ++idx;
+    }
+}
+
+void CMatrixMap::SetPlayerSide(int id) {
+    for (int i = 0; i < m_SideCnt; i++) {
+        if (m_Side[i].m_Id == id) {
+            m_PlayerSide = &m_Side[i];
+            m_PlayerSide->InitPlayerSide();
+
+            return;
         }
     }
-
-    /*m_PlayerSide = GetSideById(PLAYER_SIDE);*/
 }
 
 void CMatrixMap::WaterClear() {

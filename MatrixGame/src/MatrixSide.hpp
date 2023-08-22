@@ -14,7 +14,10 @@
 //#define MAX_ROBOTS_BUILD        10
 #define MAX_ROBOTS      60
 #define MAX_FACTORIES   10
-#define PLAYER_SIDE     1
+#define DEFAULT_PLAYER_SIDE 1
+
+// Dirty hack. All usages should be refactored
+#define PLAYER_SIDE     g_MatrixMap->GetPlayerSide()->GetId()
 #define MAX_LOGIC_GROUP (MAX_ROBOTS + 1)
 
 #define MAX_TEAM_CNT         3
@@ -394,6 +397,7 @@ public:
     SMatrixTeam m_Team[MAX_TEAM_CNT];
 
 public:
+    int GetId() { return m_Id; };
     void BufPrepare(void);
 
     void SetStatus(ESideStatus s) { m_SideStatus = s; }

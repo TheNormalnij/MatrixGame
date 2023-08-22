@@ -1397,7 +1397,7 @@ void CInterface::Init(void) {
             }
 
             if (work_group) {
-                g_MatrixMap->GetSideById(PLAYER_SIDE)->ShowOrderState();
+                g_MatrixMap->GetPlayerSide()->ShowOrderState();
                 if (gsel) {
                     int bombers_cnt = 0;
                     int repairers_cnt = 0;
@@ -3565,7 +3565,7 @@ void CIFaceList::LogicTakt(int ms) {
                 if (/*под прицелом находится не игроковское здание*/ IS_TRACE_STOP_OBJECT(
                             g_MatrixMap->m_TraceStopObj) &&
                     g_MatrixMap->m_TraceStopObj->GetObjectType() == OBJECT_TYPE_BUILDING &&
-                    g_MatrixMap->m_TraceStopObj->GetSide() != PLAYER_SIDE) {
+                    g_MatrixMap->m_TraceStopObj->GetSide() != ps->GetId()) {
                     //устанавливаем курсор CROSS_RED
                     g_MatrixMap->m_Cursor.Select(CURSOR_CROSS_RED);
                 }
@@ -5263,7 +5263,7 @@ void CIFaceList::BeginBuildTurret(int no) {
     CMatrixCannon *cannon = HNew(g_MatrixHeap) CMatrixCannon;
     cannon->m_Pos.x = g_MatrixMap->m_TraceStopPos.x;
     cannon->m_Pos.y = g_MatrixMap->m_TraceStopPos.y;
-    cannon->SetSide(PLAYER_SIDE);
+    cannon->SetSide(ps->GetId());
     cannon->UnitInit(no);
     cannon->m_Angle = 0;
 

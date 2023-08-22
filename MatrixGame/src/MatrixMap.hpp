@@ -564,6 +564,7 @@ public:
     void ClearSide(void);
 
     void LoadSide(CBlockPar &bp);
+    void SetPlayerSide(int id);
     // void LoadTactics(CBlockPar & bp);
 
     CMatrixSideUnit *GetSideById(int id);
