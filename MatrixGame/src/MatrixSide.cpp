@@ -985,7 +985,7 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
 
     if (type == ESelType::GROUP || type == ESelType::FLYER || type == ESelType::ROBOT) {
         if (m_Id == PLAYER_SIDE) {
-            int rnd = g_MatrixMap->Rnd(0, 6);
+            int rnd = rand() % 7;
             if (!rnd) {
                 CSound::Play(S_SELECTION_1, SL_SELECTION);
             }
