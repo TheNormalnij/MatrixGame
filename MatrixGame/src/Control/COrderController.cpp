@@ -9,9 +9,9 @@
 #include "MatrixObjectCannon.hpp"
 #include "MatrixMapUtils.h"
 
-// Этот код полный кусок говна
-// Функционал нужно пораскидывать по соответствующим классам
-// Является уменьшенной частью MatrixSide.cpp
+// Р­С‚РѕС‚ РєРѕРґ РїРѕР»РЅС‹Р№ РєСѓСЃРѕРє РіРѕРІРЅР°
+// Р¤СѓРЅРєС†РёРѕРЅР°Р» РЅСѓР¶РЅРѕ РїРѕСЂР°СЃРєРёРґС‹РІР°С‚СЊ РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРј РєР»Р°СЃСЃР°Рј
+// РЇРІР»СЏРµС‚СЃСЏ СѓРјРµРЅСЊС€РµРЅРЅРѕР№ С‡Р°СЃС‚СЊСЋ MatrixSide.cpp
 
 COrderController::COrderController(IOrderProcessor *processor, CMatrixSideUnit *playerSide) {
     m_pOrderProcessor = processor;

@@ -7,7 +7,7 @@
 
 #include "MatrixObjectBuilding.hpp"
 
-// Сериализует и десериализует объекты для передачи по сети
+// РЎРµСЂРёР°Р»РёР·СѓРµС‚ Рё РґРµСЃРµСЂРёР°Р»РёР·СѓРµС‚ РѕР±СЉРµРєС‚С‹ РґР»СЏ РїРµСЂРµРґР°С‡Рё РїРѕ СЃРµС‚Рё
 class CObjectSerializer {
 public:
     CObjectSerializer() = default;

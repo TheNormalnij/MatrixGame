@@ -9,7 +9,7 @@
 #include "MatrixRobot.hpp"
 #include "MatrixObjectCannon.hpp"
 
-// TODO: разбросать функции в cpp
+// TODO: СЂР°Р·Р±СЂРѕСЃР°С‚СЊ С„СѓРЅРєС†РёРё РІ cpp
 
 inline bool PrepareBreakOrder(CMatrixMapStatic *robot) {
     return !(((CMatrixRobotAI *)robot)->GetEnv()->m_OrderNoBreak = !robot->AsRobot()->CanBreakOrder());
@@ -62,7 +62,7 @@ inline int RobotPlace(CMatrixRobotAI *robot) {
     //    else return -1;
 }
 
-// Движется ли робот к назначенному месту
+// Р”РІРёР¶РµС‚СЃСЏ Р»Рё СЂРѕР±РѕС‚ Рє РЅР°Р·РЅР°С‡РµРЅРЅРѕРјСѓ РјРµСЃС‚Сѓ
 inline bool IsToPlace(CMatrixRobotAI *robot, int place) {
     if (place < 0)
         return false;
@@ -90,7 +90,7 @@ inline bool IsToPlace(CMatrixRobotAI *robot, int place) {
     }
 }
 
-// Если робот стоит на месте
+// Р•СЃР»Рё СЂРѕР±РѕС‚ СЃС‚РѕРёС‚ РЅР° РјРµСЃС‚Рµ
 inline bool IsInPlace(CMatrixRobotAI *robot, int place) {
     SMatrixPlace *pl = GetPlacePtr(place);
 
@@ -103,7 +103,7 @@ inline bool IsInPlace(CMatrixRobotAI *robot, int place) {
     return (robot->GetMapPosX() == pl->m_Pos.x) && (robot->GetMapPosY() == pl->m_Pos.y);
 }
 
-// Если робот стоит на месте
+// Р•СЃР»Рё СЂРѕР±РѕС‚ СЃС‚РѕРёС‚ РЅР° РјРµСЃС‚Рµ
 inline bool IsInPlace(CMatrixRobotAI *robot) {
     return IsInPlace(robot, RobotPlace(robot));
 }
