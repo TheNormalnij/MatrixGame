@@ -65,6 +65,7 @@ if(MATRIXGAME_CHEATS)
             COMPILE_DEFINITIONS CHEATS_ON)
 endif()
 
+add_matrix_directory(src/Control)
 add_matrix_directory(src/Effects)
 add_matrix_directory(src/Interface)
 add_matrix_directory(src/Logic)

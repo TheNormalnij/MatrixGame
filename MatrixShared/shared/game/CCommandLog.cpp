@@ -8,17 +8,17 @@
 constexpr const size_t ADDENUM_SIZE = 10000;
 
 void CCommandLog::PushCommand(size_t tick, IGameCommand *command) {
+    ExtendLogTo(tick);
     std::list<IGameCommand *> *targetList = m_commandsByTick.at(tick);
     if (!targetList) {
         targetList = new std::list<IGameCommand *>();
-        ExtendLogTo(tick);
         m_commandsByTick[tick] = targetList;
     }
     targetList->push_back(command);
 }
 
 std::list<IGameCommand *> *CCommandLog::GetTickCommands(size_t tick) {
-    if (m_commandsByTick.size() >= tick) {
+    if (m_commandsByTick.size() > tick) {
         return m_commandsByTick[tick];
     }
     return nullptr;

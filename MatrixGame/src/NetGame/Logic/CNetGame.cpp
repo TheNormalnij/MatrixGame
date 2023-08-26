@@ -8,6 +8,7 @@
 #include "../Net/Clients/ClientTCP.h"
 #include "../Net/Handlers/CGameNetDataHandler.h"
 #include "CNetGameLogic.h"
+#include "CNetOrderProcessor.h"
 #include "utils.hpp"
 
 constexpr time_t SERVER_TIMEOUT_SEC = 30;
@@ -86,7 +87,12 @@ void CNetGame::StartGame() {
 
     CNetGameLogic logic = CNetGameLogic(m_pClient, m_pServerApi, &m_serverSync, g_MatrixMap);
 
-    CNetGameForm formgame = CNetGameForm(&logic);
+    auto side = g_MatrixMap->GetSideById(m_serverSync.GetPlayerSide());
+
+    CNetOrderProcessor orderProcessor(side, m_pServerApi);
+    COrderController orderController(&orderProcessor, side);
+
+    CNetGameForm formgame = CNetGameForm(&logic, &orderController);
 
     m_currentGame.RunGameLoop(&formgame);
 

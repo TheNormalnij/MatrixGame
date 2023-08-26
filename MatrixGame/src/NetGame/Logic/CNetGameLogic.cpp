@@ -5,6 +5,8 @@
 
 #include "CNetGameLogic.h"
 
+#include "CCommandHandler.h"
+
 CNetGameLogic::CNetGameLogic(INetworkClient *client, CServerAPI *api, CServerSync *serverSync, CMatrixMapLogic *localLogic) {
     m_pClient = client;
     m_pLocalLogic = localLogic;
@@ -35,14 +37,20 @@ void CNetGameLogic::Update() {
 
     if (m_pServerSync->NextTick()) {
         m_pLocalLogic->SetLogicEnabed(true);
-
-        const auto commands = m_pServerSync->GetCommands();
-        for (IGameCommand* command : *commands) {
-
-        }
-  
+        HandleThisTickCommands();
     }
     else {
         m_pLocalLogic->SetLogicEnabed(false);
+    }
+}
+
+void CNetGameLogic::HandleThisTickCommands() {
+    CCommandHandler handler(m_pLocalLogic->m_Side, m_pLocalLogic->m_SideCnt);
+
+    const auto commands = m_pServerSync->GetCommands();
+    if (commands) {
+        for (IGameCommand *command : *commands) {
+            handler.Handle(command);
+        }
     }
 }

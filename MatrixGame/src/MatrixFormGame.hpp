@@ -7,6 +7,8 @@
 
 #include "Form.hpp"
 #include "MatrixKeyScan.hpp"
+#include "Control/COrderController.h"
+#include "Control/CLocalOrderProcessor.h"
 
 #include <deque>
 #include <string>
@@ -34,4 +36,10 @@ public:
 
     virtual void Keyboard(bool down, int scan);
     virtual void SystemEvent(ESysEvent se);
+
+    void MinimapClick(int key);
+
+private:
+    CLocalOrderProcessor *m_pOrderProcessor;
+    COrderController *m_pOrderController;
 };

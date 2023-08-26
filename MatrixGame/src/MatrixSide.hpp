@@ -49,6 +49,7 @@ class CMatrixCannon;
 class CMatrixEffectLandscapeSpot;
 class CMatrixFlyer;
 class CConstructorPanel;
+class COrderController; // shitcode remove after refactor
 
 #define MAX_STATISTICS 6
 enum EStat {
@@ -334,6 +335,8 @@ struct SMatrixLogicRegion {
 };
 
 class CMatrixSideUnit : public CMain {
+    friend class COrderController; // shitcode remove after refactor
+
 public:
     // In map options
     int m_TimeNextBomb;
@@ -504,17 +507,6 @@ public:
     void ShowOrderState(void);
     bool MouseToLand(const CPoint &mouse, float *pWorldX, float *pWorldY, int *pMapX, int *pMapY);
     CMatrixMapStatic *MouseToLand();
-    void OnRButtonDown(const CPoint &mouse);
-    void OnRButtonDouble(const CPoint &mouse);
-    void OnLButtonDown(const CPoint &mouse);
-    void OnLButtonDouble(const CPoint &mouse);
-    void OnRButtonUp(const CPoint &mouse);
-    void OnLButtonUp(const CPoint &mouse);
-    void OnForward(bool down);
-    void OnBackward(bool down);
-    void OnLeft(bool down);
-    void OnRight(bool down);
-    void OnMouseMove();
 
     // Tactics
     // void GiveRandomOrder();

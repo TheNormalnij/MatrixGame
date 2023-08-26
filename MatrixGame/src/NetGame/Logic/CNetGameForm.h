@@ -8,26 +8,29 @@
 #include "Form.hpp"
 #include "MatrixKeyScan.hpp"
 #include "INetGameLogic.h"
+#include "Control/COrderController.h"
 
 #include <deque>
 #include <string>
 
 class CNetGameForm : public CForm {
 public:
-    CNetGameForm(INetGameLogic *logic);
+    CNetGameForm(INetGameLogic *logic, COrderController *orderController);
     ~CNetGameForm();
 
-    virtual void Enter(void);
-    virtual void Leave(void);
-    virtual void Draw(void);
+    // CForm interface
+    void Enter() override;
+    void Leave() override;
+    void Draw() override;
 
-    virtual void Takt(int step);
+    void Takt(int step) override;
 
-    virtual void MouseMove(int x, int y);
-    virtual void MouseKey(ButtonStatus status, int key, int x, int y);
+    void MouseMove(int x, int y) override;
+    void MouseKey(ButtonStatus status, int key, int x, int y) override;
 
-    virtual void Keyboard(bool down, int scan);
-    virtual void SystemEvent(ESysEvent se);
+    void Keyboard(bool down, int scan) override;
+    void SystemEvent(ESysEvent se) override;
+    void MinimapClick(int key);
 
 private:
     bool IsRobotManualControllEnabled() const;
@@ -44,6 +47,7 @@ private:
 
     bool IsInputEqual(std::string str);
 private:
+    COrderController *m_pOrderController;
     INetGameLogic *m_logic;
     bool m_wasReadyClicked;
 

@@ -46,10 +46,16 @@ CFormMatrixGame::~CFormMatrixGame() {
 void CFormMatrixGame::Enter(void) {
     DTRACE();
     g_MatrixMap->m_Cursor.SetVisible(true);
+
+    auto side = g_MatrixMap->GetPlayerSide();
+    m_pOrderProcessor = new CLocalOrderProcessor(side);
+    m_pOrderController = new COrderController(m_pOrderProcessor, side);
 }
 
 void CFormMatrixGame::Leave(void) {
     DTRACE();
+    delete m_pOrderController;
+    delete m_pOrderProcessor;
 }
 
 void CFormMatrixGame::Draw(void) {
@@ -434,7 +440,7 @@ void CFormMatrixGame::MouseMove(int x, int y) {
     }
 
     g_MatrixMap->m_Cursor.SetPos(x, y);
-    p_side->OnMouseMove();
+    m_pOrderController->OnMouseMove();
 
     if (CMultiSelection::m_GameSelection) {
         SCallback cbs;
@@ -637,7 +643,7 @@ void CFormMatrixGame::MouseKey(ButtonStatus status, int key, int x, int y) {
         DCP();
         if (status == B_DOWN && key == VK_RBUTTON) {
             DCP();
-            g_MatrixMap->GetPlayerSide()->OnRButtonDown(CPoint(x, y));
+            m_pOrderController->OnRButtonDown(CPoint(x, y));
         }
         else if (status == B_DOWN && key == VK_LBUTTON) {
             DCP();
@@ -659,24 +665,23 @@ void CFormMatrixGame::MouseKey(ButtonStatus status, int key, int x, int y) {
                                                              TRACE_ROBOT | TRACE_BUILDING, selcallback, (DWORD)&cbs);
                 }
             }
-            g_MatrixMap->GetPlayerSide()->OnLButtonDown(CPoint(x, y));
+            m_pOrderController->OnLButtonDown(CPoint(x, y));
         }
         else if (status == B_UP && key == VK_RBUTTON) {
             DCP();
-            g_MatrixMap->GetPlayerSide()->OnRButtonUp(CPoint(x, y));
+            m_pOrderController->OnRButtonUp(CPoint(x, y));
         }
         else if (status == B_UP && key == VK_LBUTTON) {
             DCP();
-            CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
-            ps->OnLButtonUp(CPoint(x, y));
+            m_pOrderController->OnLButtonUp(CPoint(x, y));
         }
         else if (status == B_DOUBLE && key == VK_LBUTTON) {
             DCP();
-            g_MatrixMap->GetPlayerSide()->OnLButtonDouble(CPoint(x, y));
+            m_pOrderController->OnLButtonDouble(CPoint(x, y));
         }
         else if (status == B_DOUBLE && key == VK_RBUTTON) {
             DCP();
-            g_MatrixMap->GetPlayerSide()->OnRButtonDouble(CPoint(x, y));
+            m_pOrderController->OnRButtonDouble(CPoint(x, y));
         }
     }
 }
@@ -1087,11 +1092,11 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
 
     if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_FORWARD]) & 0x8000) == 0x8000) ||
         ((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_FORWARD_ALT]) & 0x8000) == 0x8000)) {
-        g_MatrixMap->GetPlayerSide()->OnForward(true);
+        m_pOrderController->OnForward(true);
     }
     if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_BACKWARD]) & 0x8000) == 0x8000) ||
         ((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_BACKWARD_ALT]) & 0x8000) == 0x8000)) {
-        g_MatrixMap->GetPlayerSide()->OnBackward(true);
+        m_pOrderController->OnBackward(true);
     }
 
     if (down) {
@@ -1923,5 +1928,14 @@ void CFormMatrixGame::SystemEvent(ESysEvent se) {
             GetWindowRect(g_Wnd, &r);
             ClipCursor(&r);
         }
+    }
+}
+
+void CFormMatrixGame::MinimapClick(int key) {
+    if (key == VK_RBUTTON) {
+        m_pOrderController->OnRButtonDown(CPoint(0, 0));
+    }
+    else if (key == VK_LBUTTON) {
+        m_pOrderController->OnLButtonDown(CPoint(0, 0));
     }
 }

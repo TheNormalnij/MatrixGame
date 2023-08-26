@@ -7,6 +7,7 @@
 
 #include "Comands.h"
 #include "commands/CCommandBuildRobot.h"
+#include "commands/CCommandBuildCannon.h"
 
 IGameCommand *CCommandFactory::CreateCommand(CReadStream &stream) {
     uint16_t commandId;
@@ -25,6 +26,9 @@ IGameCommand *CCommandFactory::CreateCommand(uint16_t commandId) noexcept {
     switch ((EGameCommandType)commandId) {
         case EGameCommandType::BUILD_ROBOT: {
             return new CCommandBuildRobot();
+        }
+        case EGameCommandType::BUILD_CANNON: {
+            return new CCommandBuildCannon();
         }
         default:
             return nullptr;

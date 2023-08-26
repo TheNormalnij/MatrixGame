@@ -14,6 +14,7 @@ void CGameTickPacket::WritePacket(CWriteStream *stream) {
         stream->Write((uint16_t)m_pCommands->size());
 
         for (IGameCommand *command : *m_pCommands) {
+            stream->Write((uint16_t)command->GetType());
             command->Write(*stream);
         }
     }

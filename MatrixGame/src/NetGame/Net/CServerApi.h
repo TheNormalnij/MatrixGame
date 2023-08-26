@@ -7,6 +7,7 @@
 
 #include <shared/net/IPacket.h>
 #include "Clients/IClient.h"
+#include <shared/game/IGameCommand.h>
 
 class CServerAPI {
 public:
@@ -19,6 +20,8 @@ public:
 
     template<class T>
     void SendCommands(T commands);
+
+    void SendCommand(IGameCommand &command);
 
 private:
     void Send(IPacket &stream);

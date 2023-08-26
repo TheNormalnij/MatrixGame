@@ -3,6 +3,8 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
+#pragma once
+
 #include <shared/net/IPacket.h>
 
 class CReadyPacket : public IPacket {

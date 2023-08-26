@@ -8,14 +8,17 @@
 #include "../net/CWriteStream.h"
 #include "../net/CReadStream.h"
 
-enum class ECommandSourceType {
-    SERVER,
-    PLAYER,
-};
+#include "Comands.h"
 
 class IGameCommand {
 public:
+    IGameCommand(EGameCommandType type) : m_Type(type){};
     virtual ~IGameCommand() = default;
     virtual void Write(CWriteStream &stream) = 0;
     virtual void Read(CReadStream &stream) = 0;
+
+    EGameCommandType GetType() const noexcept { return m_Type; };
+
+private:
+    EGameCommandType m_Type;
 };

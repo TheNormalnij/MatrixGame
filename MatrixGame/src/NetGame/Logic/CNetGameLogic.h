@@ -18,6 +18,9 @@ public:
     void Update() override;
 
 private:
+    void HandleThisTickCommands();
+
+private:
     CMatrixMapLogic *m_pLocalLogic;
     CServerAPI *m_pNetApi;
     CServerSync *m_pServerSync;

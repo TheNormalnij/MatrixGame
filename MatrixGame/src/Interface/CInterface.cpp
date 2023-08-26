@@ -1168,7 +1168,7 @@ bool CInterface::OnMouseLBDown() {
                     else if (pObjectsList->m_strName == IF_MAP_PANEL) {
                         if (IS_PREORDERING_NOSELECT) {
                             RESETFLAG(g_IFaceList->m_IfListFlags, MINIMAP_BUTTON_DOWN);
-                            g_MatrixMap->GetPlayerSide()->OnLButtonDown(CPoint(0, 0));
+                            g_FormCur->MinimapClick(VK_LBUTTON);
                         }
                         else {
                             SETFLAG(g_IFaceList->m_IfListFlags, MINIMAP_BUTTON_DOWN);
@@ -1205,7 +1205,7 @@ bool CInterface::OnMouseRBDown() {
             if (pObjectsList->GetVisibility()) {
                 if (pObjectsList->ElementCatch(g_MatrixMap->m_Cursor.GetPos())) {
                     if (pObjectsList->m_strName == IF_MAP_PANEL) {
-                        g_MatrixMap->GetPlayerSide()->OnRButtonDown(CPoint(0, 0));
+                        g_FormCur->MinimapClick(VK_RBUTTON);
                         if (IS_PREORDERING_NOSELECT) {
                             SETFLAG(g_IFaceList->m_IfListFlags, MINIMAP_BUTTON_DOWN);
                         }

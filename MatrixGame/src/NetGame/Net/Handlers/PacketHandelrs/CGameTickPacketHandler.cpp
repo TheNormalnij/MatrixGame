@@ -20,7 +20,8 @@ void CGameTickPacketHandler::Handle(CReadStream *stream, INetGameHandler *game) 
     ICommandFactory *factory = game->GetCommandFactory();
 
     for (size_t i = 0; i < commandsCount; i++) {
-        factory->CreateCommand(*stream);
+        auto cmd = factory->CreateCommand(*stream);
+        commands.push_back(cmd);
     }
 
     game->OnGetTickCommands(tick, commands);

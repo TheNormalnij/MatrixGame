@@ -8,6 +8,7 @@
 #include "Packets/CConnectionPacket.h"
 #include "Packets/CGetGameInfoPacket.h"
 #include "Packets/CReadyPacket.h"
+#include "Packets/CCommandPacket.h"
 
 void CServerAPI::SendConnect() {
     CConnectionPacket packet;
@@ -28,6 +29,11 @@ template <class T>
 void CServerAPI::SendCommands(T commands){
 
 };
+
+void CServerAPI::SendCommand(IGameCommand &command) {
+    CCommandPacket packet(&command);
+    Send(packet);
+}
 
 void CServerAPI::Send(IPacket &packet) {
     CWriteStream stream = CWriteStream();

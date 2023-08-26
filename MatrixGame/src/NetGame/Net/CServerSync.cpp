@@ -11,6 +11,7 @@ CServerSync::CServerSync() {
     m_currentTick = 0;
     m_lastAllowedTick = 0;
     m_seed = 0;
+    m_side = 1;
 }
 
 bool CServerSync::NextTick() {

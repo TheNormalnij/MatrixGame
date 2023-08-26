@@ -4,6 +4,7 @@
 // Refer to the LICENSE file included
 
 #include "CConnectionPacket.h"
+
 #include <shared/net/Protocol.h>
 #include <shared/net/PacketEnums.h>
 

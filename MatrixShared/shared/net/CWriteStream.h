@@ -4,6 +4,7 @@
 // Refer to the LICENSE file included
 
 #pragma once
+
 #include <vector>
 #include <cstring>
 #include <cstdint>

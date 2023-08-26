@@ -6,11 +6,15 @@
 #pragma once
 
 #include <shared/net/IPacket.h>
+#include <shared/game/IGameCommand.h>
 
-class CGetGameInfoPacket : public IPacket {
+class CCommandPacket : public IPacket {
 public:
-    CGetGameInfoPacket() = default;
-    ~CGetGameInfoPacket() = default;
+    CCommandPacket(IGameCommand *command) : m_command(command){};
+    ~CCommandPacket() = default;
 
     void WritePacket(CWriteStream *stream) override;
+
+private:
+    IGameCommand *m_command;
 };

@@ -48,6 +48,9 @@ public:
     virtual void Keyboard(bool, int) = 0;
 
     virtual void SystemEvent(ESysEvent se) = 0;
+
+    // For CInterface hack. TODO: Avoid this
+    virtual void MinimapClick(int key) = 0;
 };
 
 extern CForm *g_FormFirst;

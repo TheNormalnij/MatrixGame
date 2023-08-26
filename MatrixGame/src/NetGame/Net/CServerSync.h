@@ -19,6 +19,7 @@ public:
     bool IsGameInfoReady() const noexcept { return !m_mapName.empty(); };
     std::string_view GetMapName() const noexcept { return m_mapName; };
     uint32_t GetGameSeed() const noexcept { return m_seed; };
+    int GetPlayerSide() const noexcept { return m_side; };
 
     EGameStatus GetGameStatus() const noexcept { return m_currentGameStatus; };
 
@@ -43,4 +44,5 @@ private:
 
     std::string m_mapName;
     uint32_t m_seed;
+    int m_side;
 };

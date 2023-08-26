@@ -25,7 +25,7 @@
 #include "MatrixGamePathUtils.hpp"
 
 
-CNetGameForm::CNetGameForm(INetGameLogic *logic) : CForm() {
+CNetGameForm::CNetGameForm(INetGameLogic *logic, COrderController *orderController) : CForm() {
     DTRACE();
     m_logic = logic;
     m_Name = L"MatrixNetGame";
@@ -33,6 +33,7 @@ CNetGameForm::CNetGameForm(INetGameLogic *logic) : CForm() {
     m_LastWorldX = 0;
     m_LastWorldY = 0;
     m_Action = 0;
+    m_pOrderController = orderController;
 }
 
 CNetGameForm::~CNetGameForm() {
@@ -200,11 +201,13 @@ void CNetGameForm::MouseMove(int x, int y) {
         // SetCursorPos(p.x, p.y);
 
         if (p_side->GetArcadedObject()) {
-            int dx = x - g_MatrixMap->m_Cursor.GetPosX();
-            if (dx < 0)
-                p_side->GetArcadedObject()->AsRobot()->RotateRobotLeft();
-            if (dx > 0)
-                p_side->GetArcadedObject()->AsRobot()->RotateRobotRight();
+            // TODO:
+            // Robot controll later
+            //int dx = x - g_MatrixMap->m_Cursor.GetPosX();
+            //if (dx < 0)
+            //    p_side->GetArcadedObject()->AsRobot()->RotateRobotLeft();
+            //if (dx > 0)
+            //    p_side->GetArcadedObject()->AsRobot()->RotateRobotRight();
         }
 
         g_MatrixMap->m_Cursor.SetPos(x, y);
@@ -213,7 +216,7 @@ void CNetGameForm::MouseMove(int x, int y) {
     }
 
     g_MatrixMap->m_Cursor.SetPos(x, y);
-    p_side->OnMouseMove();
+    m_pOrderController->OnMouseMove();
 
     if (CMultiSelection::m_GameSelection) {
         SCallback cbs;
@@ -386,30 +389,29 @@ void CNetGameForm::DelegateClickToInterface(ButtonStatus status, int key) {
 void CNetGameForm::DelegateClickToMap(ButtonStatus status, int key, int x, int y) {
     if (status == B_DOWN && key == VK_RBUTTON) {
         DCP();
-        g_MatrixMap->GetPlayerSide()->OnRButtonDown(CPoint(x, y));
+        m_pOrderController->OnRButtonDown(CPoint(x, y));
     }
     else if (status == B_DOWN && key == VK_LBUTTON) {
         DCP();
         TryStartSelection();
 
-        g_MatrixMap->GetPlayerSide()->OnLButtonDown(CPoint(x, y));
+       m_pOrderController->OnLButtonDown(CPoint(x, y));
     }
     else if (status == B_UP && key == VK_RBUTTON) {
         DCP();
-        g_MatrixMap->GetPlayerSide()->OnRButtonUp(CPoint(x, y));
+       m_pOrderController->OnRButtonUp(CPoint(x, y));
     }
     else if (status == B_UP && key == VK_LBUTTON) {
         DCP();
-        CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
-        ps->OnLButtonUp(CPoint(x, y));
+        m_pOrderController->OnLButtonUp(CPoint(x, y));
     }
     else if (status == B_DOUBLE && key == VK_LBUTTON) {
         DCP();
-        g_MatrixMap->GetPlayerSide()->OnLButtonDouble(CPoint(x, y));
+        m_pOrderController->OnLButtonDouble(CPoint(x, y));
     }
     else if (status == B_DOUBLE && key == VK_RBUTTON) {
         DCP();
-        g_MatrixMap->GetPlayerSide()->OnRButtonDouble(CPoint(x, y));
+        m_pOrderController->OnRButtonDouble(CPoint(x, y));
     }
 }
 
@@ -561,11 +563,11 @@ void CNetGameForm::Keyboard(bool down, int scan) {
 
     if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_FORWARD]) & 0x8000) == 0x8000) ||
         ((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_FORWARD_ALT]) & 0x8000) == 0x8000)) {
-        g_MatrixMap->GetPlayerSide()->OnForward(true);
+        m_pOrderController->OnForward(true);
     }
     if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_BACKWARD]) & 0x8000) == 0x8000) ||
         ((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_BACKWARD_ALT]) & 0x8000) == 0x8000)) {
-        g_MatrixMap->GetPlayerSide()->OnBackward(true);
+        m_pOrderController->OnBackward(true);
     }
 
     if (down) {
@@ -1041,5 +1043,14 @@ void CNetGameForm::SystemEvent(ESysEvent se) {
             GetWindowRect(g_Wnd, &r);
             ClipCursor(&r);
         }
+    }
+}
+
+void CNetGameForm::MinimapClick(int key) {
+    if (key == VK_RBUTTON) {
+        m_pOrderController->OnRButtonDown(CPoint(0, 0));
+    }
+    else if (key == VK_LBUTTON) {
+        m_pOrderController->OnLButtonDown(CPoint(0, 0));
     }
 }

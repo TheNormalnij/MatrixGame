@@ -7,12 +7,21 @@
 
 #include "../IGameCommand.h"
 
-class CCommandBuildRobot : public IGameCommand {
+class CCommandBuildCannon : public IGameCommand {
 public:
-    CCommandBuildRobot() : IGameCommand(EGameCommandType::BUILD_ROBOT){};
-    ~CCommandBuildRobot() = default; 
+    CCommandBuildCannon() : IGameCommand(EGameCommandType::BUILD_CANNON){};
+    ~CCommandBuildCannon() = default; 
 
     // Inherited via IGameCommand
     void Write(CWriteStream &stream) override;
     void Read(CReadStream &stream) override;
+
+    uint8_t side;
+    float baseX;
+    float baseY;
+    float x;
+    float y;
+    float angle;
+    uint16_t place;
+    uint8_t cannonId;
 };
