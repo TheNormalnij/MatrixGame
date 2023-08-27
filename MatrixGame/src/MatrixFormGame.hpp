@@ -38,6 +38,7 @@ public:
     virtual void SystemEvent(ESysEvent se);
 
     void MinimapClick(int key);
+    COrderController *GetOrderController() const noexcept override { return m_pOrderController; };
 
 private:
     CLocalOrderProcessor *m_pOrderProcessor;

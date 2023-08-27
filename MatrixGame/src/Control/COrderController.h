@@ -26,6 +26,9 @@ public:
     void OnRight(bool down);
     void OnMouseMove();
 
+    // From GUI
+    void BuildRobot(CMatrixBuilding *pBase, SRobotCostructInfo &info, int count);
+
 private:
     bool IsArcadeMode() const noexcept { return m_pPlayerSide->IsArcadeMode(); };
 

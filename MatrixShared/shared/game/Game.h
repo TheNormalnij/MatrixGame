@@ -7,6 +7,8 @@
 
 constexpr const int TICK_DURATION_MS = 100;  // 10 ticks per second
 
+constexpr const int ROBOT_MAX_WEAPONS = 5;
+
 enum class EGameStatus {
     WAIT_PLAYERS,
     WAIT_PLAYERS_READY,

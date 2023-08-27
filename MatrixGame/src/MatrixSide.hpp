@@ -576,6 +576,8 @@ public:
 
     bool CanMoveNoEnemy(byte mm, int r1, int r2);
 
+    CConstructor *GetConstructor() const noexcept { return m_Constructor; };
+
     // Player logic
 
     void SoundCapture(int pg);

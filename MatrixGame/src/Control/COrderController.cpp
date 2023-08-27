@@ -317,3 +317,7 @@ void COrderController::OnLeft(bool down) {
 void COrderController::OnRight(bool down) {
     // Do nothing
 }
+
+void COrderController::BuildRobot(CMatrixBuilding *pBase, SRobotCostructInfo &info, int count) {
+    m_pOrderProcessor->BuildRobot(pBase, info, count);
+}

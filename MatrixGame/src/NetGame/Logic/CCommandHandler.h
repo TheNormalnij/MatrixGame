@@ -9,6 +9,7 @@
 #include "Control/CLocalOrderProcessor.h"
 
 #include <shared/game/commands/CCommandBuildCannon.h>
+#include <shared/game/commands/CCommandBuildRobot.h>
 
 class CCommandHandler {
 public:
@@ -19,6 +20,7 @@ public:
 
 private:
     void BuildCannonHandle(CCommandBuildCannon *cmd);
+    void BuildRobotHandle(CCommandBuildRobot *cmd);
 
     CLocalOrderProcessor GetSideOrderProcessor(int sideId);
 

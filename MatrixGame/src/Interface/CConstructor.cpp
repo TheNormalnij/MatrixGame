@@ -13,6 +13,8 @@
 #include "CHistory.h"
 #include "../Effects/MatrixEffectWeapon.hpp"
 
+#include "Control/COrderController.h"
+
 CConstructor::CConstructor() {
     m_ViewPosX = 0;
     m_ViewPosY = 0;
@@ -219,16 +221,19 @@ void __stdcall CConstructor::RemoteBuild(void *pObj) {
     int cfg_num = player_side->m_ConstructPanel->m_CurrentConfig;
     g_ConfigHistory->AddConfig(&player_side->m_ConstructPanel->m_Configs[cfg_num]);
 
-    for (int i = 0; i < g_IFaceList->m_RCountControl->GetCounter(); i++) {
-        StackRobot(pObj);
+    SRobotCostructInfo info;
+
+    info.head = m_Head.m_nKind;
+    info.armour = m_Armor.m_Unit.m_nKind;
+    info.chassis = m_Chassis.m_nKind;
+
+    for (int i = 0; i < MAX_WEAPON_CNT; i++) {
+        info.weapon[i] = m_Weapon[i].m_Unit.m_nKind;
     }
 
-    int res[MAX_RESOURCES];
-    GetConstructionPrice(res);
-    player_side->AddResourceAmount(TITAN, -res[TITAN] * g_IFaceList->m_RCountControl->GetCounter());
-    player_side->AddResourceAmount(ELECTRONICS, -res[ELECTRONICS] * g_IFaceList->m_RCountControl->GetCounter());
-    player_side->AddResourceAmount(ENERGY, -res[ENERGY] * g_IFaceList->m_RCountControl->GetCounter());
-    player_side->AddResourceAmount(PLASMA, -res[PLASMA] * g_IFaceList->m_RCountControl->GetCounter());
+    int count = g_IFaceList->m_RCountControl->GetCounter();
+
+    g_FormCur->GetOrderController()->BuildRobot(m_Base, info, count);
 
     if (player_side && player_side->m_ConstructPanel) {
         player_side->m_ConstructPanel->ResetGroupNClose();

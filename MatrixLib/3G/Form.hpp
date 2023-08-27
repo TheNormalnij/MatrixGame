@@ -9,6 +9,8 @@
 
 #include "CMain.hpp"
 
+class COrderController;
+
 enum ButtonStatus {
     B_DOWN,
     B_UP,
@@ -51,6 +53,8 @@ public:
 
     // For CInterface hack. TODO: Avoid this
     virtual void MinimapClick(int key) = 0;
+
+    virtual COrderController *GetOrderController() const noexcept = 0;
 };
 
 extern CForm *g_FormFirst;

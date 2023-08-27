@@ -16,6 +16,7 @@ public:
     void Write(CWriteStream &stream) override;
     void Read(CReadStream &stream) override;
 
+public:
     uint8_t side;
     float baseX;
     float baseY;

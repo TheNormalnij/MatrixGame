@@ -22,6 +22,8 @@ public:
     void BuildTurret(CMatrixBuilding *pParentBase, float posX, float posY, float angle, int place,
                      int m_cannonId) override;
 
+    
+    void BuildRobot(CMatrixBuilding *pParentBase, SRobotCostructInfo &info, int count) override;
 
 private:
     CMatrixSideUnit *m_pSide;

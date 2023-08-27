@@ -30,7 +30,9 @@ public:
 
     void Keyboard(bool down, int scan) override;
     void SystemEvent(ESysEvent se) override;
-    void MinimapClick(int key);
+    void MinimapClick(int key) override;
+
+    COrderController *GetOrderController() const noexcept override { return m_pOrderController; };
 
 private:
     bool IsRobotManualControllEnabled() const;
