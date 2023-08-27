@@ -11,33 +11,36 @@
 #include "PacketHandelrs/CGameTickPacketHandler.h"
 
 #include <cstdint>
+#include <cassert>
 
 void CGameNetDataHandler::Handle(CReadStream *stream) {
-    uint8_t packetType;
-    stream->Read(packetType);
-    switch ((EGamePacketType)packetType)
-	{
-        case EGamePacketType::CONNECT: {
-            CConnectPacketHandler handler;
-            handler.Handle(stream, m_pGame);
-            break;
+    while (stream->HasData()) {
+        uint8_t packetType;
+        stream->Read(packetType);
+        switch ((EGamePacketType)packetType) {
+            case EGamePacketType::CONNECT: {
+                CConnectPacketHandler handler;
+                handler.Handle(stream, m_pGame);
+                break;
+            }
+            case EGamePacketType::GAME_INFO: {
+                CGameInfoPacketHandler handler;
+                handler.Handle(stream, m_pGame);
+                break;
+            }
+            case EGamePacketType::GAME_STATUS_CHANGED: {
+                CGameStatusChangePacketHandler handler;
+                handler.Handle(stream, m_pGame);
+                break;
+            }
+            case EGamePacketType::COMMANDS: {
+                CGameTickPacketHandler handler;
+                handler.Handle(stream, m_pGame);
+                break;
+            }
+            default:
+                assert("Got invalid data");
+                break;
         }
-        case EGamePacketType::GAME_INFO: {
-            CGameInfoPacketHandler handler;
-            handler.Handle(stream, m_pGame);
-            break;
-        }
-        case EGamePacketType::GAME_STATUS_CHANGED: {
-            CGameStatusChangePacketHandler handler;
-            handler.Handle(stream, m_pGame);
-            break;
-        }
-        case EGamePacketType::COMMANDS: {
-            CGameTickPacketHandler handler;
-            handler.Handle(stream, m_pGame);
-            break;
-        }
-        default:
-            break;
-	}
+    }
 }
