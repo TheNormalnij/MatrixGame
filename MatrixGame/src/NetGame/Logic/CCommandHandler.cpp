@@ -11,12 +11,15 @@
 void CCommandHandler::Handle(IGameCommand *cmd) {
     switch (cmd->GetType()) {
         case EGameCommandType::BUILD_CANNON: {
-            BuildCannonHandle((CCommandBuildCannon*)cmd);
+            BuildCannonHandle((CCommandBuildCannon *)cmd);
             break;
         }
         case EGameCommandType::BUILD_ROBOT: {
             BuildRobotHandle((CCommandBuildRobot *)cmd);
             break;
+        }
+        case EGameCommandType::ROBOTS_MOVE: {
+            MoveRobotsHandle((CCommandMoveRobots *)cmd);
         }
         default:
             break;
@@ -51,6 +54,21 @@ void CCommandHandler::BuildRobotHandle(CCommandBuildRobot *cmd) {
 
     CLocalOrderProcessor orderProcessor = GetSideOrderProcessor(cmd->side);
     orderProcessor.BuildRobot(pBase, info, cmd->count);
+}
+
+void CCommandHandler::MoveRobotsHandle(CCommandMoveRobots *cmd) {
+    CObjectSerializer serializer;
+
+    std::list<CMatrixRobotAI*> moveInfo;
+    for (int i = 0; i < cmd->count; i++) {
+        auto robot = serializer.GetObjectById(cmd->robots[i]);
+        if (robot) {
+            moveInfo.push_back(robot->AsRobot());
+        }
+    }
+
+    CLocalOrderProcessor orderProcessor = GetSideOrderProcessor(cmd->side);
+    orderProcessor.MoveRobots(cmd->x, cmd->y, moveInfo);
 }
 
 CLocalOrderProcessor CCommandHandler::GetSideOrderProcessor(int sideId) {

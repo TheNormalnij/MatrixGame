@@ -15,4 +15,5 @@ public:
 
 	void SerializeBaseToPos(CMatrixBuilding *pBase, float &x, float &y) const noexcept;
     void DeserializeBaseFromPos(CMatrixBuilding **pBase, float x, float y) const noexcept;
+    CMatrixMapStatic *GetObjectById(unsigned int id) const noexcept;
 };

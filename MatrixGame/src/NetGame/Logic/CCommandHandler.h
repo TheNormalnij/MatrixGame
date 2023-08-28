@@ -10,6 +10,7 @@
 
 #include <shared/game/commands/CCommandBuildCannon.h>
 #include <shared/game/commands/CCommandBuildRobot.h>
+#include <shared/game/commands/CCommandMoveRobots.h>
 
 class CCommandHandler {
 public:
@@ -21,6 +22,7 @@ public:
 private:
     void BuildCannonHandle(CCommandBuildCannon *cmd);
     void BuildRobotHandle(CCommandBuildRobot *cmd);
+    void MoveRobotsHandle(CCommandMoveRobots *cmd);
 
     CLocalOrderProcessor GetSideOrderProcessor(int sideId);
 

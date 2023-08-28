@@ -8355,14 +8355,11 @@ void CMatrixSideUnit::WarPL(int group) {
     }
 }
 
-int CMatrixSideUnit::SelGroupToLogicGroup() {
-    CMatrixMapStatic *obj;
-    int i, no;
-
-    for (i = 0; i < MAX_LOGIC_GROUP; i++)
+void CMatrixSideUnit::RecalculateLogicGroups() {
+    for (int i = 0; i < MAX_LOGIC_GROUP; i++)
         m_PlayerGroup[i].m_RobotCnt = 0;
 
-    obj = CMatrixMapStatic::GetFirstLogic();
+    CMatrixMapStatic *obj = CMatrixMapStatic::GetFirstLogic();
     while (obj) {
         if (obj->IsLiveRobot() && obj->GetSide() == m_Id) {
             if (obj->AsRobot()->GetGroupLogic() >= 0 && obj->AsRobot()->GetGroupLogic() < MAX_LOGIC_GROUP) {
@@ -8371,17 +8368,29 @@ int CMatrixSideUnit::SelGroupToLogicGroup() {
         }
         obj = obj->GetNextLogic();
     }
+}
 
-    for (no = 0; no < MAX_LOGIC_GROUP; no++) {
+int CMatrixSideUnit::GetFreeLogicGroup() {
+    RecalculateLogicGroups();
+
+    for (int no = 0; no < MAX_LOGIC_GROUP; no++) {
         if (m_PlayerGroup[no].m_RobotCnt <= 0)
-            break;
+            return no;
     }
-    ASSERT(no < MAX_LOGIC_GROUP);
+    ASSERT(false, "Logic group overflow");
+    return 0;
+}
 
-    m_PlayerGroup[no].Order(mpo_Stop);
-    m_PlayerGroup[no].m_Obj = NULL;
-    m_PlayerGroup[no].SetWar(false);
-    m_PlayerGroup[no].m_RoadPath->Clear();
+void CMatrixSideUnit::ResetLogicGroup(int id) {
+    m_PlayerGroup[id].Order(mpo_Stop);
+    m_PlayerGroup[id].m_Obj = nullptr;
+    m_PlayerGroup[id].SetWar(false);
+    m_PlayerGroup[id].m_RoadPath->Clear();
+}
+
+int CMatrixSideUnit::SelGroupToLogicGroup() {
+    int no = GetFreeLogicGroup();
+    ResetLogicGroup(no);
 
     CMatrixGroupObject *objs = GetCurGroup()->m_FirstObject;
     while (objs) {
@@ -8395,37 +8404,15 @@ int CMatrixSideUnit::SelGroupToLogicGroup() {
     return no;
 }
 
+void CMatrixSideUnit::AddRobotToLogicGroup(int id, CMatrixRobotAI *robot) {
+    m_PlayerGroup[id].m_RobotCnt = 1;
+    robot->SetGroupLogic(id);
+}
+
 int CMatrixSideUnit::RobotToLogicGroup(CMatrixRobotAI *robot) {
-    CMatrixMapStatic *obj;
-    int i, no;
-
-    for (i = 0; i < MAX_LOGIC_GROUP; i++)
-        m_PlayerGroup[i].m_RobotCnt = 0;
-
-    obj = CMatrixMapStatic::GetFirstLogic();
-    while (obj) {
-        if (obj->IsLiveRobot() && obj->GetSide() == m_Id) {
-            if (obj->AsRobot()->GetGroupLogic() >= 0 && obj->AsRobot()->GetGroupLogic() < MAX_LOGIC_GROUP) {
-                m_PlayerGroup[obj->AsRobot()->GetGroupLogic()].m_RobotCnt++;
-            }
-        }
-        obj = obj->GetNextLogic();
-    }
-
-    for (no = 0; no < MAX_LOGIC_GROUP; no++) {
-        if (m_PlayerGroup[no].m_RobotCnt <= 0)
-            break;
-    }
-    ASSERT(no < MAX_LOGIC_GROUP);
-
-    m_PlayerGroup[no].Order(mpo_Stop);
-    m_PlayerGroup[no].m_Obj = NULL;
-    m_PlayerGroup[no].SetWar(false);
-    m_PlayerGroup[no].m_RoadPath->Clear();
-
-    m_PlayerGroup[no].m_RobotCnt++;
-    robot->SetGroupLogic(no);
-
+    int no = GetFreeLogicGroup();
+    ResetLogicGroup(no);
+    AddRobotToLogicGroup(no, robot);
     return no;
 }
 

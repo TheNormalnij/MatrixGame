@@ -70,6 +70,16 @@ void CLocalOrderProcessor::BuildRobot(CMatrixBuilding *pParentBase, SRobotCostru
     TakeResources(res);
 }
 
+void CLocalOrderProcessor::MoveRobots(int mx, int my, std::list<CMatrixRobotAI*> &list) {
+    const int logicId = m_pSide->GetFreeLogicGroup();
+
+    for (const auto& robot : list) {
+        m_pSide->AddRobotToLogicGroup(logicId, robot);
+    }
+
+    m_pSide->PGOrderMoveTo(logicId, CPoint(mx - ROBOT_MOVECELLS_PER_SIZE / 2, my - ROBOT_MOVECELLS_PER_SIZE / 2));
+}
+
 void CLocalOrderProcessor::TakeResources(int *res) {
     m_pSide->AddResourceAmount(TITAN, -res[TITAN]);
     m_pSide->AddResourceAmount(ELECTRONICS, -res[ELECTRONICS]);

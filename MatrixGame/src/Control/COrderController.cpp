@@ -73,25 +73,9 @@ void COrderController::OnLButtonDown(const CPoint &) {
             // Move
             RESETFLAG(g_IFaceList->m_IfListFlags, PREORDER_MOVE | ORDERING_MODE);
 
-            m_pPlayerSide->PGOrderMoveTo(m_pPlayerSide->SelGroupToLogicGroup(),
-                          CPoint(mx - ROBOT_MOVECELLS_PER_SIZE / 2, my - ROBOT_MOVECELLS_PER_SIZE / 2));
-
-            CMatrixGroup *group = m_pPlayerSide->GetCurGroup();
-            CMatrixGroupObject *objs = group->m_FirstObject;
-            while (objs) {
-                if (objs->GetObject() && objs->GetObject()->GetObjectType() == OBJECT_TYPE_FLYER) {
-                    int param = (group->GetObjectsCnt() - group->GetRobotsCnt()) - 1;
-                    if (param > 4)
-                        param = 4;
-                    float x = (float)g_MatrixMap->RndFloat(g_MatrixMap->m_TraceStopPos.x - param * GLOBAL_SCALE_MOVE,
-                                                           g_MatrixMap->m_TraceStopPos.x + param * GLOBAL_SCALE_MOVE);
-                    float y = (float)g_MatrixMap->RndFloat(g_MatrixMap->m_TraceStopPos.y - param * GLOBAL_SCALE_MOVE,
-                                                           g_MatrixMap->m_TraceStopPos.y + param * GLOBAL_SCALE_MOVE);
-                    ((CMatrixFlyer *)objs->GetObject())->SetTarget(D3DXVECTOR2(x, y));
-                }
-                objs = objs->m_NextObject;
-            }
+            MoveSelectedRobots(mx, my);
         }
+
         else if (FLAG(g_IFaceList->m_IfListFlags, PREORDER_FIRE)) {
             // Fire
             if (IS_TRACE_STOP_OBJECT(pObject) && (pObject->IsLive() || pObject->IsSpecial())) {
@@ -110,7 +94,9 @@ void COrderController::OnLButtonDown(const CPoint &) {
         }
         else if (FLAG(g_IFaceList->m_IfListFlags, PREORDER_CAPTURE)) {
             // Capture
-            if (IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLiveBuilding() && pObject->GetSide() != PLAYER_SIDE) {
+            if (IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLiveBuilding() &&
+                pObject->GetSide() != m_pPlayerSide->GetId()) {
+
                 RESETFLAG(g_IFaceList->m_IfListFlags, PREORDER_CAPTURE | ORDERING_MODE);
 
                 m_pPlayerSide->PGOrderCapture(m_pPlayerSide->SelGroupToLogicGroup(), (CMatrixBuilding *)pObject);
@@ -138,7 +124,7 @@ void COrderController::OnLButtonDown(const CPoint &) {
         }
         else if (FLAG(g_IFaceList->m_IfListFlags, PREORDER_REPAIR)) {
             // Repair our robots please
-            if (IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLive() && pObject->GetSide() == PLAYER_SIDE) {
+            if (IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLive() && pObject->GetSide() == m_pPlayerSide->GetId()) {
                 RESETFLAG(g_IFaceList->m_IfListFlags, PREORDER_REPAIR | ORDERING_MODE);
 
                 m_pPlayerSide->PGOrderRepair(m_pPlayerSide->SelGroupToLogicGroup(), (CMatrixBuilding *)pObject);
@@ -155,10 +141,10 @@ void COrderController::OnLButtonDouble(const CPoint &mouse) {
     CMatrixMapStatic *pObject = m_pPlayerSide->MouseToLand();
 
     if (pObject == TRACE_STOP_NONE ||
-        !(IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLiveRobot() && pObject->GetSide() == PLAYER_SIDE))
+        !(IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLiveRobot() && pObject->GetSide() == m_pPlayerSide->GetId()))
         return;
 
-    if (IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLiveRobot() && pObject->GetSide() == PLAYER_SIDE) {
+    if (IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLiveRobot() && pObject->GetSide() == m_pPlayerSide->GetId()) {
         D3DXVECTOR3 o_pos = pObject->GetGeoCenter();
         CMatrixMapStatic *st = CMatrixMapStatic::GetFirstLogic();
 
@@ -168,7 +154,7 @@ void COrderController::OnLButtonDouble(const CPoint &mouse) {
         }
 
         while (st) {
-            if (st->GetSide() == PLAYER_SIDE && st->IsLiveRobot()) {
+            if (st->GetSide() == m_pPlayerSide->GetId() && st->IsLiveRobot()) {
                 auto tmp = o_pos - st->GetGeoCenter();
                 if (D3DXVec3LengthSq(&tmp) <= FRIENDLY_SEARCH_RADIUS * FRIENDLY_SEARCH_RADIUS) {
                     m_pPlayerSide->GetCurSelGroup()->AddObject(st, -4);
@@ -241,25 +227,7 @@ void COrderController::OnRButtonDown(const CPoint &) {
         }
         else if (pObject == TRACE_STOP_LANDSCAPE || pObject == TRACE_STOP_WATER || (IS_TRACE_STOP_OBJECT(pObject))) {
             // MoveTo
-            m_pPlayerSide->PGOrderMoveTo(m_pPlayerSide->SelGroupToLogicGroup(),
-                          CPoint(mx - ROBOT_MOVECELLS_PER_SIZE / 2, my - ROBOT_MOVECELLS_PER_SIZE / 2));
-
-            CMatrixGroupObject *objs = m_pPlayerSide->GetCurGroup()->m_FirstObject;
-            while (objs) {
-                if (objs->GetObject() && objs->GetObject()->GetObjectType() == OBJECT_TYPE_FLYER) {
-                    int param = (m_pPlayerSide->GetCurGroup()->GetObjectsCnt() -
-                                 m_pPlayerSide->GetCurGroup()->GetRobotsCnt()) -
-                                1;
-                    if (param > 4)
-                        param = 4;
-                    float x = (float)g_MatrixMap->RndFloat(g_MatrixMap->m_TraceStopPos.x - param * GLOBAL_SCALE_MOVE,
-                                                           g_MatrixMap->m_TraceStopPos.x + param * GLOBAL_SCALE_MOVE);
-                    float y = (float)g_MatrixMap->RndFloat(g_MatrixMap->m_TraceStopPos.y - param * GLOBAL_SCALE_MOVE,
-                                                           g_MatrixMap->m_TraceStopPos.y + param * GLOBAL_SCALE_MOVE);
-                    ((CMatrixFlyer *)objs->GetObject())->SetTarget(D3DXVECTOR2(x, y));
-                }
-                objs = objs->m_NextObject;
-            }
+            MoveSelectedRobots(mx, my);
         }
     }
 }
@@ -320,4 +288,38 @@ void COrderController::OnRight(bool down) {
 
 void COrderController::BuildRobot(CMatrixBuilding *pBase, SRobotCostructInfo &info, int count) {
     m_pOrderProcessor->BuildRobot(pBase, info, count);
+}
+
+void COrderController::MoveSelectedRobots(int mx, int my) {
+    std::list<CMatrixRobotAI *> moveInfo;
+
+    CMatrixGroup *group = m_pPlayerSide->GetCurGroup();
+    CMatrixGroupObject *objs = group->m_FirstObject;
+
+    while (objs) {
+        if (objs->GetObject() && objs->GetObject()->GetObjectType() == OBJECT_TYPE_ROBOTAI) {
+            moveInfo.push_back(objs->GetObject()->AsRobot());
+        }
+        objs = objs->m_NextObject;
+    }
+
+    // Это логика для управления самолетом???
+    // wtf? в игре не видел такого
+    // 28.08.2023 В ходе разработки сеевого кода отключено из-за неясности
+    // 
+    //while (objs) {
+    //    if (objs->GetObject() && objs->GetObject()->GetObjectType() == OBJECT_TYPE_FLYER) {
+    //        int param = (group->GetObjectsCnt() - group->GetRobotsCnt()) - 1;
+    //        if (param > 4)
+    //            param = 4;
+    //        float x = (float)g_MatrixMap->RndFloat(g_MatrixMap->m_TraceStopPos.x - param * GLOBAL_SCALE_MOVE,
+    //                                               g_MatrixMap->m_TraceStopPos.x + param * GLOBAL_SCALE_MOVE);
+    //        float y = (float)g_MatrixMap->RndFloat(g_MatrixMap->m_TraceStopPos.y - param * GLOBAL_SCALE_MOVE,
+    //                                               g_MatrixMap->m_TraceStopPos.y + param * GLOBAL_SCALE_MOVE);
+    //        ((CMatrixFlyer *)objs->GetObject())->SetTarget(D3DXVECTOR2(x, y));
+    //    }
+    //    objs = objs->m_NextObject;
+    //}
+
+    m_pOrderProcessor->MoveRobots(mx, my, moveInfo);
 }

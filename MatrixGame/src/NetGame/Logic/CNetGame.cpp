@@ -83,6 +83,8 @@ void CNetGame::StartGame() {
 
     m_currentGame.Init(m_hAppInstance, NULL, wstrMapName.data(), seed, m_pMatrixSettings, &textReplace);
 
+    SETFLAG(g_Flags, GFLAG_KEEPALIVE);
+
     g_MatrixMap->GetRandom().Reset(seed);
 
     CNetGameLogic logic = CNetGameLogic(m_pClient, m_pServerApi, &m_serverSync, g_MatrixMap);

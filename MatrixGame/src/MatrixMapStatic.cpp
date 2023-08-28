@@ -55,6 +55,8 @@ void UnloadObject(CVectorObjectAnim *o, CHeap *heap) {
 CMatrixMapStatic *CMatrixMapStatic::m_FirstLogicTemp;
 CMatrixMapStatic *CMatrixMapStatic::m_LastLogicTemp;
 
+unsigned int CMatrixMapStatic::m_lastId;
+
 #ifdef _DEBUG
 SObjectCore *CMatrixMapStatic::GetCore(const SDebugCallInfo &dci) {
     m_Core->m_dci = dci;

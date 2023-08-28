@@ -9,8 +9,8 @@
 #include "CObjectSerializer.h"
 #include "../Net/CServerApi.h"
 
-// Класс для обработки приказов игрока и отправки на сервер
-// для синхронизации всеми игроками
+// РљР»Р°СЃСЃ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РїСЂРёРєР°Р·РѕРІ РёРіСЂРѕРєР° Рё РѕС‚РїСЂР°РІРєРё РЅР° СЃРµСЂРІРµСЂ
+// РґР»СЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё РІСЃРµРјРё РёРіСЂРѕРєР°РјРё
 
 class CNetOrderProcessor : public IOrderProcessor {
 public:
@@ -21,9 +21,8 @@ public:
 
     void BuildTurret(CMatrixBuilding *pParentBase, float posX, float posY, float angle, int place,
                      int m_cannonId) override;
-
-    
     void BuildRobot(CMatrixBuilding *pParentBase, SRobotCostructInfo &info, int count) override;
+    void MoveRobots(int x, int y, std::list<CMatrixRobotAI*> &list) override;
 
 private:
     CMatrixSideUnit *m_pSide;

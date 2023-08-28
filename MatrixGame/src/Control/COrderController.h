@@ -30,6 +30,8 @@ public:
     void BuildRobot(CMatrixBuilding *pBase, SRobotCostructInfo &info, int count);
 
 private:
+    void MoveSelectedRobots(int mx, int my);
+
     bool IsArcadeMode() const noexcept { return m_pPlayerSide->IsArcadeMode(); };
 
 private:

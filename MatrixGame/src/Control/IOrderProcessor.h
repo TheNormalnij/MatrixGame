@@ -6,6 +6,7 @@
 #pragma once
 
 #include "MatrixObjectBuilding.hpp"
+#include <list>
 
 struct SRobotCostructInfo {
     char head = 0;
@@ -14,11 +15,19 @@ struct SRobotCostructInfo {
     char weapon[5] = {0};
 };
 
+struct SRobotMoveInfo {
+    CMatrixRobotAI *robot;
+    float x;
+    float y;
+};
+
 class IOrderProcessor {
 public:
     virtual ~IOrderProcessor() = default;
+    
     virtual void BuildTurret(CMatrixBuilding *pParentBase, float posX, float posY, float angle, int place,
                              int cannonId) = 0;
 
     virtual void BuildRobot(CMatrixBuilding *pParentBase, SRobotCostructInfo &info, int count) = 0;
+    virtual void MoveRobots(int x, int y, std::list<CMatrixRobotAI*> &list) = 0;
 };

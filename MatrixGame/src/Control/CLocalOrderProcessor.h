@@ -18,6 +18,7 @@ public:
 
     void BuildTurret(CMatrixBuilding *pParentBase, float posX, float posY, float angle, int place, int m_cannonId) override;
     void BuildRobot(CMatrixBuilding *pParentBase, SRobotCostructInfo &info, int count) override;
+    void MoveRobots(int x, int y, std::list<CMatrixRobotAI*> &list) override;
 
 private:
     // TODO: use resource class and resource struct

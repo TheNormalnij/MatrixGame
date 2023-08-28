@@ -24,3 +24,14 @@ void CObjectSerializer::DeserializeBaseFromPos(CMatrixBuilding **pBase, float x,
     }
     *pBase = nullptr;
 }
+
+CMatrixMapStatic *CObjectSerializer::GetObjectById(unsigned int id) const noexcept {
+    CMatrixMapStatic *ms = CMatrixMapStatic::GetFirstLogic();
+
+    for (; ms; ms = ms->GetNextLogic()) {
+        if (ms->GetId() == id) {
+            return ms;
+        }
+    }
+    return nullptr;
+}

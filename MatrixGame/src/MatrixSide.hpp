@@ -586,7 +586,11 @@ public:
     bool FirePL(int group);
     void RepairPL(int group);
     void WarPL(int group);
+    void RecalculateLogicGroups();
+    int GetFreeLogicGroup();
+    void ResetLogicGroup(int id);
     int SelGroupToLogicGroup(void);
+    void AddRobotToLogicGroup(int id, CMatrixRobotAI *robot);
     int RobotToLogicGroup(CMatrixRobotAI *robot);
     void PGOrderStop(int no);
     void PGOrderMoveTo(int no, const CPoint &tp);

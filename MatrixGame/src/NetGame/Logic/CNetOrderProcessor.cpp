@@ -6,6 +6,8 @@
 #include "CNetOrderProcessor.h"
 #include <shared/game/commands/CCommandBuildCannon.h>
 #include <shared/game/commands/CCommandBuildRobot.h>
+#include <shared/game/commands/CCommandMoveRobots.h>
+#include "MatrixRobot.hpp"
 
 void CNetOrderProcessor::BuildTurret(CMatrixBuilding* pParentBase, float posX, float posY, float angle, int place,
     int cannonId) {
@@ -36,6 +38,22 @@ void CNetOrderProcessor::BuildRobot(CMatrixBuilding *pParentBase, SRobotCostruct
     cmd.count = count;
 
     m_serializer.SerializeBaseToPos(pParentBase, cmd.baseX, cmd.baseY);
+
+    m_pServerApi->SendCommand(cmd);
+}
+
+void CNetOrderProcessor::MoveRobots(int x, int y, std::list<CMatrixRobotAI *> &list) {
+    CCommandMoveRobots cmd;
+    cmd.side = m_pSide->GetId();
+    cmd.x = x;
+    cmd.y = y;
+    cmd.count = list.size();
+    cmd.robots = new unsigned int[cmd.count]{};
+    size_t i = 0;
+    for (const auto &robot : list) {
+        cmd.robots[i] = robot->GetId();
+        i++;
+    }
 
     m_pServerApi->SendCommand(cmd);
 }

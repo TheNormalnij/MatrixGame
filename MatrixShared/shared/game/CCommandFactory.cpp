@@ -8,6 +8,7 @@
 #include "Comands.h"
 #include "commands/CCommandBuildRobot.h"
 #include "commands/CCommandBuildCannon.h"
+#include "commands/CCommandMoveRobots.h"
 
 IGameCommand *CCommandFactory::CreateCommand(CReadStream &stream) {
     uint16_t commandId;
@@ -29,6 +30,9 @@ IGameCommand *CCommandFactory::CreateCommand(uint16_t commandId) noexcept {
         }
         case EGameCommandType::BUILD_CANNON: {
             return new CCommandBuildCannon();
+        }
+        case EGameCommandType::ROBOTS_MOVE: {
+            return new CCommandMoveRobots();
         }
         default:
             return nullptr;
