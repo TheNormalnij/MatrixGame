@@ -20,13 +20,14 @@ public:
     std::string_view GetMapName() const noexcept { return m_mapName; };
     uint32_t GetGameSeed() const noexcept { return m_seed; };
     int GetPlayerSide() const noexcept { return m_side; };
+    bool IsAiEnabled(int side) const noexcept { return m_sideAiStatus >> side & 1; };
 
     EGameStatus GetGameStatus() const noexcept { return m_currentGameStatus; };
 
     auto GetCommands() { return m_commandLog.GetTickCommands(m_currentTick); };
 
     // Inherited via INetGameHanlder
-    void OnGetGameInfo(std::string_view mapName, uint32_t seed) override;
+    void OnGetGameInfo(std::string_view mapName, uint32_t seed, uint8_t side, uint8_t sideAiStatus) override;
     void OnChangeGameState(EGameStatus status) override { m_currentGameStatus = status; };
     void OnGetTickCommands(size_t tick, std::vector<IGameCommand *> &commands) override;
     ICommandFactory *GetCommandFactory() const noexcept override { return (ICommandFactory*)&m_commandFactory; };
@@ -45,4 +46,5 @@ private:
     std::string m_mapName;
     uint32_t m_seed;
     int m_side;
+    unsigned char m_sideAiStatus;
 };

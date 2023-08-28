@@ -13,6 +13,7 @@
 #include <shared/game/CCommandFactory.h>
 #include "SMatrixGameSettings.h"
 #include "CPlayersStore.h"
+#include "CSidesLogic.h"
 
 class CServerMatrixGame : public IGame {
 public:
@@ -54,4 +55,5 @@ private:
     CGameNetwork *m_pNet;
     SMatrixGameSettings m_settings;
     CPlayersStore m_playersStore;
+    CSidesLogic m_sides;
 };

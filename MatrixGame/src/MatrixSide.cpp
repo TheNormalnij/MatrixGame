@@ -132,6 +132,7 @@ CMatrixSideUnit::CMatrixSideUnit()
     m_ArcadedP_available = 0;
 
     m_Id = 0;
+    m_Ai = true;
     // m_Color=0;
     m_ColorTexture = NULL;
 
@@ -399,7 +400,7 @@ void CMatrixSideUnit::LogicTakt(int ms) {
     }
 
     DCP();
-    if (g_MatrixMap->GetPlayerSide() != this || FLAG(g_MatrixMap->m_Flags, MMFLAG_AUTOMATIC_MODE)) {
+    if (m_Ai || FLAG(g_MatrixMap->m_Flags, MMFLAG_AUTOMATIC_MODE)) {
         if (m_Id == PLAYER_SIDE) {
             if (!g_MatrixMap->MaintenanceDisabled()) {
                 if (g_MatrixMap->BeforeMaintenanceTime() == 0 && (FRND(1) < 0.05f)) {
@@ -1148,6 +1149,8 @@ void CMatrixSideUnit::InitPlayerSide() {
     m_CurrentGroup = NULL;  // SetCurGroup(NULL);
 
     m_CurSelGroup = HNew(g_MatrixHeap) CMatrixGroup;
+
+    m_Ai = false;
 }
 
 int CMatrixSideUnit::IsInPlaces(const CPoint *places, int placescnt, int x, int y) {

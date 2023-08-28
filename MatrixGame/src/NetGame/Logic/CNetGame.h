@@ -25,6 +25,10 @@ private:
     bool ConnectGame(std::string_view host);
     void StartGame();
     bool WaitForGameInfoReady();
+    
+    void InitGame();
+    void ApplySides();
+    void Run();
 
 private:
     HINSTANCE m_hAppInstance;

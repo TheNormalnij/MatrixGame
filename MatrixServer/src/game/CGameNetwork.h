@@ -13,6 +13,8 @@
 #include <shared/game/Game.h>
 #include <shared/net/IPacket.h>
 
+#include "CSidesLogic.h"
+
 class CGameNetwork {
 public:
     CGameNetwork(CSessionStore *sessionStore) : m_sessionStore(sessionStore){};
@@ -20,7 +22,7 @@ public:
 
     void SendTickCommands(size_t tick, std::list<IGameCommand *> *commands);
     void SendGameStatusChanged(EGameStatus status);
-    void SendGameInfo(ISession *session, std::string_view mapName);
+    void SendGameInfo(ISession *session, std::string_view mapName, char side, CSidesLogic *sides);
     void SendConnect(ISession *session);
 
 private:

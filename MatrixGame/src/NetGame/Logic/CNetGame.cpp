@@ -75,6 +75,14 @@ bool CNetGame::ConnectGame(std::string_view host) {
 }
 
 void CNetGame::StartGame() {
+    InitGame();
+    
+    ApplySides();
+
+    Run();
+}
+
+void CNetGame::InitGame() {
     std::wstring wstrMapName = utils::to_wstring(m_serverSync.GetMapName().data());
     const uint32_t seed = m_serverSync.GetGameSeed();
 
@@ -86,19 +94,27 @@ void CNetGame::StartGame() {
     SETFLAG(g_Flags, GFLAG_KEEPALIVE);
 
     g_MatrixMap->GetRandom().Reset(seed);
+}
 
-    CNetGameLogic logic = CNetGameLogic(m_pClient, m_pServerApi, &m_serverSync, g_MatrixMap);
+void CNetGame::ApplySides() {
+    int playerSide = m_serverSync.GetPlayerSide();
 
+    g_MatrixMap->SetPlayerSide(playerSide);
+    for (int i = 1; i < MAX_SIDES_COUNT; i++) {
+        g_MatrixMap->GetSideById(i)->SetAiEnabled(m_serverSync.IsAiEnabled(i));
+    }
+}
+
+void CNetGame::Run() {
     auto side = g_MatrixMap->GetSideById(m_serverSync.GetPlayerSide());
 
     CNetOrderProcessor orderProcessor(side, m_pServerApi);
     COrderController orderController(&orderProcessor, side);
 
+    CNetGameLogic logic = CNetGameLogic(m_pClient, m_pServerApi, &m_serverSync, g_MatrixMap);
     CNetGameForm formgame = CNetGameForm(&logic, &orderController);
 
     m_currentGame.RunGameLoop(&formgame);
 
-    //m_currentGame.SaveResult(rgs);
     m_currentGame.SafeFree();
-
 }

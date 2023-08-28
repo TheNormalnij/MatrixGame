@@ -8,4 +8,5 @@
 struct SMatrixGameSettings {
     size_t maxPlayersCount = 4;
     const char *mapName = "TRAINING.CMAP";
+    bool aiEnabled = false;
 };

@@ -6,3 +6,5 @@
 #pragma once
 
 constexpr auto DEFAULT_NET_GAME_PORT = 22173;
+
+constexpr const auto PROJECT_NAME = "Matrix game";

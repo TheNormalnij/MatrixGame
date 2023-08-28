@@ -12,4 +12,6 @@ void CGameInfoPacket::WritePacket(CWriteStream *stream) {
     stream->Write(stringLen);
     stream->Write(m_map.data(), stringLen);
     stream->Write(m_seed);
+    stream->Write(m_playerSide);
+    stream->Write(m_sideAiState);
 }

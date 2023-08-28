@@ -11,7 +11,8 @@ CServerSync::CServerSync() {
     m_currentTick = 0;
     m_lastAllowedTick = 0;
     m_seed = 0;
-    m_side = 1;
+    m_side = -1;
+    m_sideAiStatus = 0xFF;
 }
 
 bool CServerSync::NextTick() {
@@ -24,9 +25,11 @@ bool CServerSync::NextTick() {
     return true;
 }
 
-void CServerSync::OnGetGameInfo(std::string_view mapName, uint32_t seed) {
+void CServerSync::OnGetGameInfo(std::string_view mapName, uint32_t seed, uint8_t side, uint8_t sideAiStatus) {
     m_mapName = mapName;
     m_seed = seed;
+    m_side = side;
+    m_sideAiStatus = sideAiStatus;
 }
 
 void CServerSync::OnGetTickCommands(size_t tick, std::vector<IGameCommand *> &commands) {

@@ -10,7 +10,9 @@
 
 class CGameInfoPacket : public IPacket {
 public:
-    CGameInfoPacket(std::string_view &map, uint32_t seed = 0) : m_map(map), m_seed(seed) {};
+    CGameInfoPacket(std::string_view &map, uint32_t seed, uint8_t side, uint8_t aiState)
+      : m_playerSide(side), m_sideAiState(aiState), m_map(map), m_seed(seed){};
+
     ~CGameInfoPacket() = default;
 
     void WritePacket(CWriteStream *stream) override;
@@ -18,4 +20,6 @@ public:
 private:
     std::string_view &m_map;
     uint32_t m_seed;
+    uint8_t m_playerSide;
+    uint8_t m_sideAiState;
 };

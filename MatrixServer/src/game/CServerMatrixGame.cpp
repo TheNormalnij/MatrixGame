@@ -13,6 +13,12 @@ CServerMatrixGame::CServerMatrixGame(CGameNetwork *netApi) {
     m_lastTickTime = 0;
     m_startTime = 0;
     m_pNet = netApi;
+
+    m_sides.SetAiEnabled(false);
+    // For tests
+    m_sides.GetSide(EGameSide::NEUTRAL).SetLocked(true);
+    m_sides.GetSide(EGameSide::RED).SetLocked(true);
+    m_sides.GetSide(EGameSide::BLUE).SetLocked(true);
 }
 
 void CServerMatrixGame::GameStart(){
@@ -98,6 +104,11 @@ void CServerMatrixGame::OnRequestSessionStart(ISession *session) {
 
     m_playersStore.AddPlayer(player);
 
+    CGameSide *sideToAdd = m_sides.GetFreeSide();
+    if (sideToAdd) {
+        sideToAdd->SetPlayer(player);
+    }
+
     m_pNet->SendConnect(session);
 
     if (m_playersStore.GetCount() >= m_settings.maxPlayersCount) {
@@ -120,8 +131,14 @@ void CServerMatrixGame::OnRequestSessionQuit(ISession *session) {
     }
 }
 
-void CServerMatrixGame::OnAskGameInfo(ISession *source) {
-    m_pNet->SendGameInfo(source, m_settings.mapName);
+void CServerMatrixGame::OnAskGameInfo(ISession *session) {
+    IPlayer *player = (IPlayer *)session->GetCustomData();
+
+    EGameSide side = EGameSide::NONE;
+    if (player) {
+        side = m_sides.FindPlayerSide(player);
+    }
+    m_pNet->SendGameInfo(session, m_settings.mapName, (char)side, &m_sides);
 }
 
 void CServerMatrixGame::OnSessionReady(ISession *session) {

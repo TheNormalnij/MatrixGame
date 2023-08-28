@@ -17,5 +17,10 @@ void CGameInfoPacketHandler::Handle(CReadStream *stream, INetGameHandler *game) 
     uint32_t seed;
     stream->Read(seed);
 
-    game->OnGetGameInfo(mapName, seed);
+    uint8_t side;
+    stream->Read(side);
+    uint8_t sideAiStatue;
+    stream->Read(sideAiStatue);
+
+    game->OnGetGameInfo(mapName, seed, side, sideAiStatue);
 }

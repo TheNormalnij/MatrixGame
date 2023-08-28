@@ -442,6 +442,7 @@ public:
     SMatrixTeam *GetTeam(int no) { return m_Team + no; }
 
     int m_Id;
+    bool m_Ai;
     std::wstring m_Name;
 
     DWORD m_Color;
@@ -458,6 +459,8 @@ public:
     int GetMaxSideRobots();
 
     void LogicTakt(int ms);
+
+    void SetAiEnabled(bool state) { m_Ai = state; };
 
     // Player
     CConstructorPanel *m_ConstructPanel;

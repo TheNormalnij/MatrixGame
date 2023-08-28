@@ -9,6 +9,18 @@ constexpr const int TICK_DURATION_MS = 100;  // 10 ticks per second
 
 constexpr const int ROBOT_MAX_WEAPONS = 5;
 
+constexpr const int MAX_SIDES_COUNT = 5;
+
+enum class EGameSide {
+    NONE = -1,
+
+    NEUTRAL,
+    YELLOW,
+    RED,
+    BLUE,
+    GREEN,
+};
+
 enum class EGameStatus {
     WAIT_PLAYERS,
     WAIT_PLAYERS_READY,

@@ -14,7 +14,7 @@
 
 class INetGameHandler {
 public:
-    virtual void OnGetGameInfo(std::string_view mapName, uint32_t seed) = 0;
+    virtual void OnGetGameInfo(std::string_view mapName, uint32_t seed, unsigned char side, unsigned char sideAiStatus) = 0;
     virtual void OnChangeGameState(EGameStatus status) = 0;
     virtual void OnGetTickCommands(size_t tick, std::vector<IGameCommand *> &commands) = 0;
 

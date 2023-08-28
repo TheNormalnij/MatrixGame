@@ -4,12 +4,15 @@
 // Refer to the LICENSE file included
 
 #include "CGameNetwork.h"
+
 #include <shared/net/CWriteStream.h>
 #include <shared/net/PacketEnums.h>
 #include "net/packets/CGameTickPacket.h"
 #include "net/packets/CChangeGameStatePacket.h"
 #include "net/packets/CGameInfoPacket.h"
 #include "net/packets/CConnectPacket.h"
+
+#include <bitset>
 
 struct SMiltictasRequestSendStatus {
     size_t sendetCount = 0;
@@ -27,8 +30,12 @@ void CGameNetwork::SendGameStatusChanged(EGameStatus status) {
     Broadcast(packet);
 }
 
-void CGameNetwork::SendGameInfo(ISession *session, std::string_view mapName) {
-    CGameInfoPacket packet(mapName);
+void CGameNetwork::SendGameInfo(ISession *session, std::string_view mapName, char side, CSidesLogic *sides) {
+    std::bitset<MAX_SIDES_COUNT> aiStatus;
+    for (int i = 0; i < MAX_SIDES_COUNT; i++) {
+        aiStatus.set(i, sides->GetSide((EGameSide)i).IsAiEnabled());
+    }
+    CGameInfoPacket packet(mapName, 0, side, (uint8_t)aiStatus.to_ulong());
     Unicast(session, packet);
 }
 

@@ -294,6 +294,11 @@ void COrderController::MoveSelectedRobots(int mx, int my) {
     std::list<CMatrixRobotAI *> moveInfo;
 
     CMatrixGroup *group = m_pPlayerSide->GetCurGroup();
+
+    if (!group) {
+        return;
+    }
+
     CMatrixGroupObject *objs = group->m_FirstObject;
 
     while (objs) {
