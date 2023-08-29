@@ -118,6 +118,10 @@ void CNetGameForm::Takt(int step) {
 
     g_MatrixMap->Takt(step);
 
+    if (!GetActiveWindow()) {
+        return;
+    }
+
     if (!IsRobotManualControllEnabled()) {
         MoveCameraByScreenBorders();
     }
