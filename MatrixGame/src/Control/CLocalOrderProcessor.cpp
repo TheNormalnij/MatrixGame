@@ -46,13 +46,14 @@ void CLocalOrderProcessor::BuildRobot(CMatrixBuilding *pParentBase, SRobotCostru
 
     constructor->SetBase(pParentBase);
     constructor->SetSide(m_pSide->GetId());
+
     constructor->OperateUnit(MRT_CHASSIS, (ERobotUnitKind)info.chassis);
     constructor->OperateUnit(MRT_ARMOR, (ERobotUnitKind)info.armour);
     constructor->OperateUnit(MRT_HEAD, (ERobotUnitKind)info.head);
 
     for (int i = 0; i < MAX_WEAPON_CNT; i++) {
         if (info.weapon[i] > 0) {
-            constructor->Djeans007(MRT_WEAPON, (ERobotUnitKind)info.weapon[i], i);
+            constructor->OperateUnitNoCheck(MRT_WEAPON, (ERobotUnitKind)info.weapon[i], i);
         }
     }
 

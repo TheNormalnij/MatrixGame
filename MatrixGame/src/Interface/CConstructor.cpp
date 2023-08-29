@@ -55,6 +55,7 @@ CConstructor::~CConstructor() {
         m_Robot = NULL;
     }
 }
+
 SNewBorn *CConstructor::ProduceRobot(void *) {
     DTRACE();
     if (!m_Base || m_Base->m_State != BASE_CLOSED)
@@ -763,14 +764,10 @@ void CConstructor::OperateUnit(ERobotUnitType type, ERobotUnitKind kind) {
         }
     }
 
-    int we_are = 0;
-    CMatrixSideUnit *player_side = g_MatrixMap->GetPlayerSide();
-    int cfg_num = player_side->m_ConstructPanel->m_CurrentConfig;
+    RecalculateModel();
+}
 
-    if (player_side && g_MatrixMap->GetPlayerSide()->m_Constructor == this) {
-        we_are = 1;
-    }
-
+void CConstructor::RecalculateModel() {
     m_nUnitCnt = 0;
     if (m_Chassis.m_nKind != 0) {
         m_nUnitCnt++;
@@ -791,6 +788,19 @@ void CConstructor::OperateUnit(ERobotUnitType type, ERobotUnitKind kind) {
 
     if (m_nUnitCnt > 0)
         InsertUnits();
+}
+
+void CConstructor::OperateUnitNoCheck(ERobotUnitType type, ERobotUnitKind kind, int pos) {
+    if (type == ERobotUnitType::MRT_WEAPON) {
+        m_Weapon[pos].m_Unit.m_nKind = kind;
+        m_Weapon[pos].m_Unit.m_nType = MRT_WEAPON;
+        m_Weapon[pos].m_Pos = pos + 1;
+
+        RecalculateModel();
+    }
+    else {
+        OperateUnit(type, kind);
+    }
 }
 
 int CConstructor::CheckWeaponLegality(SWeaponUnit *weapons, int weaponKind, int armorKind) {
