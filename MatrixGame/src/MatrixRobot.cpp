@@ -2185,7 +2185,7 @@ void CMatrixRobotAI::RobotSpawn(CMatrixBuilding *pBase) {
         RESETFLAG(g_MatrixMap->m_Flags, MMFLAG_SOUND_ORDER_ATTACK_DISABLE);
     }
     else {
-        if (side->m_Id != PLAYER_SIDE) {
+        if (side->IsAiEnabled()) {
             m_Team = side->ClacSpawnTeam(g_MatrixMap->GetRegion(CPoint(Float2Int(pBase->m_Pos.x / GLOBAL_SCALE_MOVE),
                                                                        Float2Int(pBase->m_Pos.x / GLOBAL_SCALE_MOVE))),
                                          m_Unit[0].u1.s1.m_Kind - 1);

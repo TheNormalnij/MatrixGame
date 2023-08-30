@@ -22,9 +22,6 @@
 #include "MatrixMultiSelection.hpp"
 #include "MatrixMapUtils.h"
 
-#include <algorithm>
-#include <time.h>
-
 // robot->GetEnv()->m_Place -   место куда робот идет или где стоит.
 //                              <0 - роботу нужно назначить приказ
 //                              >=0 - должен быть низкоуровневый приказ роботу. есть исключение: роботу не был отдан
@@ -401,7 +398,7 @@ void CMatrixSideUnit::LogicTakt(int ms) {
 
     DCP();
     if (m_Ai || FLAG(g_MatrixMap->m_Flags, MMFLAG_AUTOMATIC_MODE)) {
-        if (m_Id == PLAYER_SIDE) {
+        if (IsPlayerSide()) {
             if (!g_MatrixMap->MaintenanceDisabled()) {
                 if (g_MatrixMap->BeforeMaintenanceTime() == 0 && (FRND(1) < 0.05f)) {
                     CMatrixMapStatic *b = NULL;
@@ -1705,7 +1702,7 @@ void CMatrixSideUnit::EscapeFromBomb() {
         if (ms->GetSide() != m_Id)
             continue;
         CMatrixRobotAI *robot = ms->AsRobot();
-        if (m_Id == PLAYER_SIDE && robot->GetGroupLogic() >= 0 &&
+        if (IsPlayerSide() && robot->GetGroupLogic() >= 0 &&
             m_PlayerGroup[robot->GetGroupLogic()].Order() < mpo_AutoCapture)
             continue;
 
@@ -1758,7 +1755,7 @@ void CMatrixSideUnit::EscapeFromBomb() {
         if (ms == skip_normal || ms == skip_withbomb)
             continue;
         CMatrixRobotAI *robot = ms->AsRobot();
-        if (m_Id == PLAYER_SIDE && robot->GetGroupLogic() >= 0 &&
+        if (IsPlayerSide() && robot->GetGroupLogic() >= 0 &&
             m_PlayerGroup[robot->GetGroupLogic()].Order() < mpo_AutoCapture)
             continue;
 
@@ -1873,7 +1870,7 @@ void CMatrixSideUnit::GroupNoTeamRobot() {
     int g, i, u, cnt, sme;
     float cx, cy;
 
-    if (m_Id == PLAYER_SIDE)
+    if (IsPlayerSide())
         return;
 
     for (i = 0; i < MAX_LOGIC_GROUP; i++)
@@ -1982,10 +1979,12 @@ void CMatrixSideUnit::CalcMaxSpeed() {
         ms->AsRobot()->m_GroupSpeed = ms->AsRobot()->GetMaxSpeed();
     }
 
+    const bool isAiSide = IsAiEnabled();
+
     for (i = 0; i < MAX_LOGIC_GROUP; i++) {
-        if (m_Id == PLAYER_SIDE && m_PlayerGroup[i].m_RobotCnt <= 0)
+        if (!isAiSide && m_PlayerGroup[i].m_RobotCnt <= 0)
             continue;
-        else if (m_Id != PLAYER_SIDE && m_LogicGroup[i].RobotsCnt() <= 0)
+        else if (isAiSide && m_LogicGroup[i].RobotsCnt() <= 0)
             continue;
 
         float cx = 0.0f;

@@ -461,6 +461,9 @@ public:
     void LogicTakt(int ms);
 
     void SetAiEnabled(bool state) { m_Ai = state; };
+    bool IsAiEnabled() const noexcept { return m_Ai; };
+    // Если сторона управляется игроком. Возможно, сетевым
+    bool IsPlayerSide() const noexcept { return !m_Ai; };
 
     // Player
     CConstructorPanel *m_ConstructPanel;

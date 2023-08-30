@@ -1598,8 +1598,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             sb.m_Weapon[4].m_Unit.m_nKind = RUK_WEAPON_MORTAR;
             sb.m_Head.m_nKind = RUK_HEAD_BLOCKER;
 
-            int side_id = PLAYER_SIDE;
-            CMatrixSideUnit *side = g_MatrixMap->GetSideById(side_id);
+            CMatrixSideUnit *side = g_MatrixMap->GetPlayerSide();
 
             if (side->GetRobotsCnt() + side->GetRobotsInStack() >= side->GetMaxSideRobots()) {
                 return;
@@ -1614,10 +1613,11 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                 }
             }
 
+            const int sideId = side->GetId();
             int cnt = side->GetRobotsCnt();
             CMatrixMapStatic *mps = CMatrixMapStatic::GetFirstLogic();
             while (mps) {
-                if (mps->GetSide() == side_id && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
+                if (mps->GetSide() == sideId && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
                     mps->AsBuilding()->IsBase()) {
                     cnt += mps->AsBuilding()->m_BS.GetItemsCnt();
                 }
@@ -1627,7 +1627,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             if (cnt < side->GetMaxSideRobots()) {
                 CMatrixMapStatic *mps = CMatrixMapStatic::GetFirstLogic();
                 while (mps) {
-                    if (mps->GetSide() == side_id && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
+                    if (mps->GetSide() == sideId && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
                         mps->AsBuilding()->IsBase()) {
                         if (mps->AsBuilding()->m_BS.GetItemsCnt() < 6) {
                             side->m_Constructor->SetBase(mps->AsBuilding());

@@ -94,11 +94,16 @@ void CNetGame::InitGame() {
     SETFLAG(g_Flags, GFLAG_KEEPALIVE);
 
     g_MatrixMap->GetRandom().Reset(seed);
+
+    g_MatrixMap->m_Difficulty.k_damage_enemy_to_player = 1.0;
+    g_MatrixMap->m_Difficulty.k_friendly_fire = 1.0;
+    g_MatrixMap->m_Difficulty.k_time_before_maintenance = 1.0;
 }
 
 void CNetGame::ApplySides() {
     int playerSide = m_serverSync.GetPlayerSide();
 
+    // Ломает менюшку постройки
     g_MatrixMap->SetPlayerSide(playerSide);
     for (int i = 1; i < MAX_SIDES_COUNT; i++) {
         g_MatrixMap->GetSideById(i)->SetAiEnabled(m_serverSync.IsAiEnabled(i));
