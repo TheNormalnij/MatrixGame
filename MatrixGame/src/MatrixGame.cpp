@@ -688,7 +688,7 @@ void CGame::RunGameLoop(CForm *formgame) {
     try {
         g_ExitState = 0;
         
-        // Проверить, можно ли в лучшем контексте то запустить
+        //          ,                                         
         ApplySceneColors();
 
         FormChange(formgame);
