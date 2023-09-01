@@ -45,7 +45,7 @@ CMatrixMapLogic::CMatrixMapLogic() : CMatrixMap() {
 
     m_TaktNext = 0;
 
-    m_Random.Reset(rand());
+    m_Random.Reset(1);
 
     m_GatherInfoLast = 0;
     m_MaintenanceTime = 0;
