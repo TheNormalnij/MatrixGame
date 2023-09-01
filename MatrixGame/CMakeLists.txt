@@ -1,16 +1,10 @@
 add_library(MatrixGameInternal STATIC)
 
-macro(add_matrix_directory DIRECTORY)
-    file(GLOB DIR_SOURCES ${DIRECTORY}/*.cpp ${DIRECTORY}/*.c)
-    file(GLOB DIR_HEADERS ${DIRECTORY}/*.hpp ${DIRECTORY}/*.h)
-    target_sources(MatrixGameInternal PRIVATE ${DIR_SOURCES} ${DIR_HEADERS})
-    get_filename_component (GROUP ${DIRECTORY} NAME)
-    source_group ("${GROUP}\\Source Files" FILES ${DIR_SOURCES})
-    source_group ("${GROUP}\\Header Files" FILES ${DIR_HEADERS})
-endmacro()
+file(GLOB_RECURSE MATRIX_SOURCES src/*.cpp src/*.c)
+file(GLOB_RECURSE MATRIX_HEADERS src/*.hpp src/*.h)
 
-file(GLOB MATRIX_SOURCES src/*.cpp src/*.c)
-file(GLOB MATRIX_HEADERS src/*.hpp src/*.h)
+source_group ("MatrixGame\\Source Files" FILES ${MATRIX_SOURCES})
+source_group ("MatrixGame\\Header Files" FILES ${MATRIX_HEADERS})
 
 target_sources(
     MatrixGameInternal
@@ -64,21 +58,6 @@ if(MATRIXGAME_CHEATS)
         PROPERTIES
             COMPILE_DEFINITIONS CHEATS_ON)
 endif()
-
-add_matrix_directory(src/Control)
-add_matrix_directory(src/Effects)
-add_matrix_directory(src/Interface)
-add_matrix_directory(src/Logic)
-add_matrix_directory(src/RangersInterface)
-add_matrix_directory(src/NetGame)
-add_matrix_directory(src/NetGame/Logic)
-add_matrix_directory(src/NetGame/Logic/Commands)
-add_matrix_directory(src/NetGame/Net)
-add_matrix_directory(src/NetGame/Net/Utilits)
-add_matrix_directory(src/NetGame/Net/Clients)
-add_matrix_directory(src/NetGame/Net/Packets)
-add_matrix_directory(src/NetGame/Net/Handlers)
-add_matrix_directory(src/NetGame/Net/Handlers/PacketHandelrs)
 
 add_library(MatrixGame SHARED)
 # remove lib prefix from the DLL name (for GCC build)
