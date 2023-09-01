@@ -41,7 +41,7 @@ LRESULT CWindowsLauncherUI::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam
                     }
                     return TRUE;
                 case ID_BTN_JOIN: {
-                    //Close();
+                    Close();
                     m_pApp->StartNetworkGame((char*)"127.0.0.1");
                     return TRUE;
                 }
