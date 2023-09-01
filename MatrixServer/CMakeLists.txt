@@ -40,14 +40,6 @@ target_link_libraries(
         MatrixShared
 )
 
-if(NOT MSVC)
-    target_link_options(
-        MatrixServer
-        PUBLIC
-            -municode
-    )
-endif()
-
 target_sources(MatrixServer PRIVATE
     src/main.cpp
 )
