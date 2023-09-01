@@ -965,7 +965,7 @@ void CMatrixRobotAI::LogicTakt(int ms) {
     }
     DCP();
 
-    if (FLAG(g_MatrixMap->m_Flags, MMFLAG_AUTOMATIC_MODE) || m_Side != PLAYER_SIDE)
+    if (FLAG(g_MatrixMap->m_Flags, MMFLAG_AUTOMATIC_MODE) || g_MatrixMap->GetSideById(m_Side)->IsAiEnabled())
         TaktCaptureCandidate(ms);
 
     // if(this == g_MatrixMap->GetPlayerSide()->GetArcadedObject()){
@@ -1550,14 +1550,16 @@ void CMatrixRobotAI::ZonePathCalc() {
         m_ZonePath = (int *)HAlloc(g_MatrixMap->m_RN.m_ZoneCnt * sizeof(int), g_MatrixHeap);
     //	m_ZonePathCnt=g_MatrixMap->ZoneFindPath(m_Unit[0].u1.s1.m_Kind-1,m_ZoneCur,m_ZoneDes,m_ZonePath);
 
+    const bool isAiRobot = g_MatrixMap->GetSideById(GetSide())->IsAiEnabled();
+
     CMatrixSideUnit *side = g_MatrixMap->GetSideById(GetSide());
-    if (GetSide() == PLAYER_SIDE && GetGroupLogic() >= 0 &&
+    if (!isAiRobot && GetGroupLogic() >= 0 &&
         side->m_PlayerGroup[GetGroupLogic()].m_RoadPath->m_ListCnt > 0) {
         m_ZonePathCnt = g_MatrixMap->FindPathInZone(m_Unit[0].u1.s1.m_Kind - 1, m_ZoneCur, m_ZoneDes,
                                                     side->m_PlayerGroup[GetGroupLogic()].m_RoadPath, 0, m_ZonePath,
                                                     g_TestRobot == this);
     }
-    else if (GetSide() != PLAYER_SIDE && GetTeam() >= 0 && side->m_Team[GetTeam()].m_RoadPath->m_ListCnt > 0) {
+    else if (isAiRobot && GetTeam() >= 0 && side->m_Team[GetTeam()].m_RoadPath->m_ListCnt > 0) {
         m_ZonePathCnt =
                 g_MatrixMap->FindPathInZone(m_Unit[0].u1.s1.m_Kind - 1, m_ZoneCur, m_ZoneDes,
                                             side->m_Team[GetTeam()].m_RoadPath, 0, m_ZonePath, g_TestRobot == this);
@@ -1573,7 +1575,7 @@ void CMatrixRobotAI::ZonePathCalc() {
     else
         m_ZonePathNext = -1;
 
-    if (GetSide() != PLAYER_SIDE && m_ZoneCur != m_ZoneDes &&
+    if (isAiRobot && m_ZoneCur != m_ZoneDes &&
         m_ZonePathCnt <= 0) {  // Если дойти не можем, то меняем команду
         SetTeam(g_MatrixMap->GetSideById(GetSide())->ClacSpawnTeam(GetRegion(), m_Unit[0].u1.s1.m_Kind - 1));
         SetGroupLogic(-1);
