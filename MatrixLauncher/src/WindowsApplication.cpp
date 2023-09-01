@@ -1,5 +1,5 @@
 // MatrixLauncher - Launcher for SR2 planetary battle engine
-// Copyright (C) 2023, Uladzislau "TheNornalnij" Nikalayevich
+// Copyright (C) 2023, Uladzislau "TheNormalnij" Nikalayevich
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
@@ -32,4 +32,12 @@ void CWindowsApplication::StartLocalGame(wchar_t* map) {
     
     // Takes controll
     RunStandalone(m_hInstance, map, matrixSettings, &texts, &robotGameState);
+}
+
+void CWindowsApplication::StartNetworkGame(char *serverHost) {
+    SMatrixSettings *matrixSettings = m_settings.GetMatrixGameSettings();
+
+    SRobotGameState robotGameState{0};
+
+    ConnectNetGame(m_hInstance, serverHost, matrixSettings, &robotGameState);
 }

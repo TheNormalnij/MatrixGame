@@ -45,45 +45,17 @@ CFormMatrixGame::~CFormMatrixGame() {
 
 void CFormMatrixGame::Enter(void) {
     DTRACE();
-    S3D_Default();
-    D3DMATERIAL9 mtrl;
-    ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
-    mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
-    mtrl.Diffuse.g = mtrl.Ambient.g = 1.0f;
-    mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
-    mtrl.Diffuse.a = mtrl.Ambient.a = 1.0f;
-    mtrl.Specular.r = 0.5f;
-    mtrl.Specular.g = 0.5f;
-    mtrl.Specular.b = 0.5f;
-    mtrl.Specular.a = 0.5f;
-    g_D3DD->SetMaterial(&mtrl);
-    g_D3DD->SetRenderState(D3DRS_SPECULARMATERIALSOURCE, D3DMCS_MATERIAL);
-
-    D3DXVECTOR3 vecDir;
-    D3DLIGHT9 light;
-    ZeroMemory(&light, sizeof(D3DLIGHT9));
-    light.Type = D3DLIGHT_DIRECTIONAL;  // D3DLIGHT_POINT;//D3DLIGHT_DIRECTIONAL;
-    light.Diffuse.r = GetColorR(g_MatrixMap->m_LightMainColorObj);
-    light.Diffuse.g = GetColorG(g_MatrixMap->m_LightMainColorObj);
-    light.Diffuse.b = GetColorB(g_MatrixMap->m_LightMainColorObj);
-    light.Ambient.r = 0.0f;
-    light.Ambient.g = 0.0f;
-    light.Ambient.b = 0.0f;
-    light.Specular.r = GetColorR(g_MatrixMap->m_LightMainColorObj);
-    light.Specular.g = GetColorG(g_MatrixMap->m_LightMainColorObj);
-    light.Specular.b = GetColorB(g_MatrixMap->m_LightMainColorObj);
-    // light.Range       = 0;
-    light.Direction = g_MatrixMap->m_LightMain;
-    //	light.Direction=D3DXVECTOR3(250.0f,-50.0f,-250.0f);
-    //	D3DXVec3Normalize((D3DXVECTOR3 *)(&(light.Direction)),(D3DXVECTOR3 *)(&(light.Direction)));
-    ASSERT_DX(g_D3DD->SetLight(0, &light));
-    ASSERT_DX(g_D3DD->LightEnable(0, TRUE));
-
     g_MatrixMap->m_Cursor.SetVisible(true);
+
+    auto side = g_MatrixMap->GetPlayerSide();
+    m_pOrderProcessor = new CLocalOrderProcessor(side);
+    m_pOrderController = new COrderController(m_pOrderProcessor, side);
 }
 
 void CFormMatrixGame::Leave(void) {
     DTRACE();
+    delete m_pOrderController;
+    delete m_pOrderProcessor;
 }
 
 void CFormMatrixGame::Draw(void) {
@@ -414,9 +386,6 @@ void CFormMatrixGame::Takt(int step) {
     }
 }
 
-static int g_LastPosX;
-static int g_LastPosY;
-
 #if (defined _DEBUG) && !(defined _RELDEBUG)
 static SEffectHandler point(DEBUG_CALL_INFO);
 static CMatrixEffectPath *path = 0;
@@ -471,7 +440,7 @@ void CFormMatrixGame::MouseMove(int x, int y) {
     }
 
     g_MatrixMap->m_Cursor.SetPos(x, y);
-    p_side->OnMouseMove();
+    m_pOrderController->OnMouseMove();
 
     if (CMultiSelection::m_GameSelection) {
         SCallback cbs;
@@ -598,7 +567,7 @@ void CFormMatrixGame::MouseKey(ButtonStatus status, int key, int x, int y) {
                     if (ps->GetCurGroup() && ps->GetCurGroup()->GetRobotsCnt() && ps->GetCurGroup()->GetFlyersCnt()) {
                         ps->GetCurGroup()->SortFlyers();
                     }
-                    ps->Select(GROUP, NULL);
+                    ps->Select(ESelType::GROUP, NULL);
                 }
                 else if (ps->GetCurSelGroup()->GetFlyersCnt() == 1 && !ps->GetCurSelGroup()->GetRobotsCnt()) {
                     DCP();
@@ -614,11 +583,11 @@ void CFormMatrixGame::MouseKey(ButtonStatus status, int key, int x, int y) {
                             ps->GetCurGroup()->GetFlyersCnt()) {
                             ps->GetCurGroup()->SortFlyers();
                         }
-                        ps->Select(GROUP, NULL);
+                        ps->Select(ESelType::GROUP, NULL);
                     }
                     else {
                         ps->SetCurGroup(ps->CreateGroupFromCurrent());
-                        ps->Select(FLYER, NULL);
+                        ps->Select(ESelType::FLYER, NULL);
                     }
                 }
                 else if (ps->GetCurSelGroup()->GetRobotsCnt() == 1 && !ps->GetCurSelGroup()->GetFlyersCnt()) {
@@ -636,17 +605,17 @@ void CFormMatrixGame::MouseKey(ButtonStatus status, int key, int x, int y) {
                             ps->GetCurGroup()->GetFlyersCnt()) {
                             ps->GetCurGroup()->SortFlyers();
                         }
-                        ps->Select(GROUP, NULL);
+                        ps->Select(ESelType::GROUP, NULL);
                     }
                     else {
                         ps->SetCurGroup(ps->CreateGroupFromCurrent());
-                        ps->Select(ROBOT, NULL);
+                        ps->Select(ESelType::ROBOT, NULL);
                     }
                 }
                 else if (ps->GetCurSelGroup()->GetBuildingsCnt() && !ps->GetCurSelGroup()->GetRobotsCnt() &&
                          !ps->GetCurSelGroup()->GetFlyersCnt()) {
                     DCP();
-                    ps->Select(BUILDING, ps->GetCurSelGroup()->m_FirstObject->GetObject());
+                    ps->Select(ESelType::BUILDING, ps->GetCurSelGroup()->m_FirstObject->GetObject());
                     ps->GroupsUnselectSoft();
                     ps->GetCurSelGroup()->RemoveAll();
                     ps->SetCurGroup(NULL);
@@ -674,7 +643,7 @@ void CFormMatrixGame::MouseKey(ButtonStatus status, int key, int x, int y) {
         DCP();
         if (status == B_DOWN && key == VK_RBUTTON) {
             DCP();
-            g_MatrixMap->GetPlayerSide()->OnRButtonDown(CPoint(x, y));
+            m_pOrderController->OnRButtonDown(CPoint(x, y));
         }
         else if (status == B_DOWN && key == VK_LBUTTON) {
             DCP();
@@ -696,24 +665,23 @@ void CFormMatrixGame::MouseKey(ButtonStatus status, int key, int x, int y) {
                                                              TRACE_ROBOT | TRACE_BUILDING, selcallback, (DWORD)&cbs);
                 }
             }
-            g_MatrixMap->GetPlayerSide()->OnLButtonDown(CPoint(x, y));
+            m_pOrderController->OnLButtonDown(CPoint(x, y));
         }
         else if (status == B_UP && key == VK_RBUTTON) {
             DCP();
-            g_MatrixMap->GetPlayerSide()->OnRButtonUp(CPoint(x, y));
+            m_pOrderController->OnRButtonUp(CPoint(x, y));
         }
         else if (status == B_UP && key == VK_LBUTTON) {
             DCP();
-            CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
-            ps->OnLButtonUp(CPoint(x, y));
+            m_pOrderController->OnLButtonUp(CPoint(x, y));
         }
         else if (status == B_DOUBLE && key == VK_LBUTTON) {
             DCP();
-            g_MatrixMap->GetPlayerSide()->OnLButtonDouble(CPoint(x, y));
+            m_pOrderController->OnLButtonDouble(CPoint(x, y));
         }
         else if (status == B_DOUBLE && key == VK_RBUTTON) {
             DCP();
-            g_MatrixMap->GetPlayerSide()->OnRButtonDouble(CPoint(x, y));
+            m_pOrderController->OnRButtonDouble(CPoint(x, y));
         }
     }
 }
@@ -1124,11 +1092,11 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
 
     if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_FORWARD]) & 0x8000) == 0x8000) ||
         ((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_FORWARD_ALT]) & 0x8000) == 0x8000)) {
-        g_MatrixMap->GetPlayerSide()->OnForward(true);
+        m_pOrderController->OnForward(true);
     }
     if (((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_BACKWARD]) & 0x8000) == 0x8000) ||
         ((GetAsyncKeyState(g_Config.m_KeyActions[KA_UNIT_BACKWARD_ALT]) & 0x8000) == 0x8000)) {
-        g_MatrixMap->GetPlayerSide()->OnBackward(true);
+        m_pOrderController->OnBackward(true);
     }
 
     if (down) {
@@ -1434,7 +1402,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                         if (obj->IsLiveRobot() && obj->GetSide() == PLAYER_SIDE) {
                             ps->GetCurSelGroup()->RemoveAll();
                             ps->CreateGroupFromCurrent(obj);
-                            ps->Select(ROBOT, obj);
+                            ps->Select(ESelType::ROBOT, obj);
                             g_MatrixMap->m_Camera.SetXYStrategy(
                                     D3DXVECTOR2(obj->GetGeoCenter().x, obj->GetGeoCenter().y));
                             return;
@@ -1463,7 +1431,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                         if (obj->IsLiveRobot() && obj->GetSide() == PLAYER_SIDE) {
                             ps->GetCurSelGroup()->RemoveAll();
                             ps->CreateGroupFromCurrent(obj);
-                            ps->Select(ROBOT, obj);
+                            ps->Select(ESelType::ROBOT, obj);
                             g_MatrixMap->m_Camera.SetXYStrategy(
                                     D3DXVECTOR2(obj->GetGeoCenter().x, obj->GetGeoCenter().y));
                             return;
@@ -1574,15 +1542,15 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                     if (ps->GetCurGroup() && ps->GetCurGroup()->GetRobotsCnt() && ps->GetCurGroup()->GetFlyersCnt()) {
                         ps->GetCurGroup()->SortFlyers();
                     }
-                    ps->Select(GROUP, NULL);
+                    ps->Select(ESelType::GROUP, NULL);
                 }
                 else if (ps->GetCurSelGroup()->GetFlyersCnt() == 1 && !ps->GetCurSelGroup()->GetRobotsCnt()) {
                     ps->CreateGroupFromCurrent();
-                    ps->Select(FLYER, NULL);
+                    ps->Select(ESelType::FLYER, NULL);
                 }
                 else if (ps->GetCurSelGroup()->GetRobotsCnt() == 1 && !ps->GetCurSelGroup()->GetFlyersCnt()) {
                     ps->CreateGroupFromCurrent();
-                    ps->Select(ROBOT, NULL);
+                    ps->Select(ESelType::ROBOT, NULL);
                 }
             }
         }
@@ -1630,8 +1598,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             sb.m_Weapon[4].m_Unit.m_nKind = RUK_WEAPON_MORTAR;
             sb.m_Head.m_nKind = RUK_HEAD_BLOCKER;
 
-            int side_id = PLAYER_SIDE;
-            CMatrixSideUnit *side = g_MatrixMap->GetSideById(side_id);
+            CMatrixSideUnit *side = g_MatrixMap->GetPlayerSide();
 
             if (side->GetRobotsCnt() + side->GetRobotsInStack() >= side->GetMaxSideRobots()) {
                 return;
@@ -1646,10 +1613,11 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
                 }
             }
 
+            const int sideId = side->GetId();
             int cnt = side->GetRobotsCnt();
             CMatrixMapStatic *mps = CMatrixMapStatic::GetFirstLogic();
             while (mps) {
-                if (mps->GetSide() == side_id && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
+                if (mps->GetSide() == sideId && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
                     mps->AsBuilding()->IsBase()) {
                     cnt += mps->AsBuilding()->m_BS.GetItemsCnt();
                 }
@@ -1659,7 +1627,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             if (cnt < side->GetMaxSideRobots()) {
                 CMatrixMapStatic *mps = CMatrixMapStatic::GetFirstLogic();
                 while (mps) {
-                    if (mps->GetSide() == side_id && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
+                    if (mps->GetSide() == sideId && mps->GetObjectType() == OBJECT_TYPE_BUILDING &&
                         mps->AsBuilding()->IsBase()) {
                         if (mps->AsBuilding()->m_BS.GetItemsCnt() < 6) {
                             side->m_Constructor->SetBase(mps->AsBuilding());
@@ -1960,5 +1928,14 @@ void CFormMatrixGame::SystemEvent(ESysEvent se) {
             GetWindowRect(g_Wnd, &r);
             ClipCursor(&r);
         }
+    }
+}
+
+void CFormMatrixGame::MinimapClick(int key) {
+    if (key == VK_RBUTTON) {
+        m_pOrderController->OnRButtonDown(CPoint(0, 0));
+    }
+    else if (key == VK_LBUTTON) {
+        m_pOrderController->OnLButtonDown(CPoint(0, 0));
     }
 }

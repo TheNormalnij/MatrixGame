@@ -660,6 +660,7 @@ void CMinimap::Draw(void) {
         }
     }
 
+    int playerSide = g_MatrixMap->GetPlayerSide()->GetId();
     CMatrixMapStatic *ms = CMatrixMapStatic::GetFirstLogic();
 
     for (; ms; ms = ms->GetNextLogic()) {
@@ -673,7 +674,7 @@ void CMinimap::Draw(void) {
                 tex = MMT_ROBOT;
                 r = MINIMAP_ROBOT_R;
                 if (ms->AsRobot()->m_MiniMapFlashTime > 0)
-                    flash = (g_MatrixMap->GetTime() & 128) == 0 && ms->AsRobot()->m_Side == PLAYER_SIDE;
+                    flash = (g_MatrixMap->GetTime() & 128) == 0 && ms->AsRobot()->m_Side == playerSide;
                 // flash = true;
                 break;
             case OBJECT_TYPE_FLYER:
@@ -699,7 +700,7 @@ void CMinimap::Draw(void) {
                 r = MINIMAP_CANNON_R;
 
                 if (ms->AsCannon()->m_MiniMapFlashTime > 0)
-                    flash = (g_MatrixMap->GetTime() & 128) == 0 && ms->GetSide() == PLAYER_SIDE;
+                    flash = (g_MatrixMap->GetTime() & 128) == 0 && ms->GetSide() == playerSide;
 
                 break;
             default: {
@@ -1363,8 +1364,9 @@ bool CMinimap::CalcMinimap2World(D3DXVECTOR2 &tgt) {
 
 void __stdcall CMinimap::ShowPlayerBots(void *object) {
     CMatrixMapStatic *objects = CMatrixMapStatic::GetFirstLogic();
+    int playerSide = g_MatrixMap->GetPlayerSide()->GetId();
     while (objects) {
-        if (objects->IsRobot() && objects->GetSide() == PLAYER_SIDE) {
+        if (objects->IsRobot() && objects->GetSide() == playerSide) {
             g_MatrixMap->m_Minimap.AddEvent(objects->GetGeoCenter().x, objects->GetGeoCenter().y, EVENT_SHOWPB_C1,
                                             EVENT_SHOWPB_C2);
         }

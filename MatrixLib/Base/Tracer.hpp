@@ -10,8 +10,6 @@
 #include <utils.hpp>
 #include <windows.h>
 
-#include <windows.h>
-
 #ifdef __GNUC__
 #include <x86intrin.h>
 #endif

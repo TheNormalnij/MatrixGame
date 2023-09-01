@@ -137,6 +137,8 @@ public:
 
     void __stdcall RemoteOperateUnit(void *pObj);
     void OperateUnit(ERobotUnitType type, ERobotUnitKind kind);
+    // Вставляет предмет без проверки на легитимость позиции
+    void OperateUnitNoCheck(ERobotUnitType type, ERobotUnitKind kind, int pos);
     void SuperDjeans(ERobotUnitType type, ERobotUnitKind kind, int pilon, bool ld_from_history = false);
     void Djeans007(ERobotUnitType type, ERobotUnitKind kind, int pilon);
 
@@ -147,26 +149,6 @@ public:
 
     void Render();
 
-    // STUB: FAKE FUNCTIONS MOTHERFUCKERS
-    void BuildRandomBot() {
-        // Chassis
-        int rnd = g_MatrixMap->Rnd(1, 5);  //(int)RND(1, 5);
-        // if(rnd == 2) rnd = 4;
-        // rnd = 4;
-        OperateUnit(MRT_CHASSIS, (ERobotUnitKind)rnd);
-        // ARMOR
-        rnd = g_MatrixMap->Rnd(1, 6);
-
-        OperateUnit(MRT_ARMOR, (ERobotUnitKind)rnd);
-        // WEAPON
-        rnd = (int)RND(1, 5);
-        for (int nC = 0; nC <= rnd; nC++) {
-            OperateUnit(MRT_WEAPON, (ERobotUnitKind) /*6*/ g_MatrixMap->Rnd(1, 9));
-        }
-        // HEAD
-        OperateUnit(MRT_HEAD, (ERobotUnitKind)g_MatrixMap->Rnd(1, 7));
-    }
-
     // STUB:
     void BuildSpecialBot(const SSpecialBot &bot);
 
@@ -175,6 +157,9 @@ public:
 
     CConstructor();
     ~CConstructor();
+
+private:
+    void RecalculateModel();
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 // MatrixLauncher - Launcher for SR2 planetary battle engine
-// Copyright (C) 2023, Uladzislau "TheNornalnij" Nikalayevich
+// Copyright (C) 2023, Uladzislau "TheNormalnij" Nikalayevich
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
@@ -19,6 +19,7 @@ public:
     
     void StartLauncher() override;
     void StartLocalGame(wchar_t *wcBattleMap) override;
+    void StartNetworkGame(char *serverHost) override;
 
 private:
     CSettings m_settings;

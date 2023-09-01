@@ -1143,12 +1143,12 @@ bool CInterface::OnMouseLBDown() {
                                 if (ps->GetCurSelObject() &&
                                     ps->GetCurSelObject()->GetObjectType() == OBJECT_TYPE_ROBOTAI) {
                                     ps->CreateGroupFromCurrent(ps->GetCurSelObject());
-                                    ps->Select(ROBOT, NULL);
+                                    ps->Select(ESelType::ROBOT, NULL);
                                 }
                                 else if (ps->GetCurSelObject() &&
                                          ps->GetCurSelObject()->GetObjectType() == OBJECT_TYPE_FLYER) {
                                     ps->CreateGroupFromCurrent(ps->GetCurSelObject());
-                                    ps->Select(FLYER, NULL);
+                                    ps->Select(ESelType::FLYER, NULL);
                                 }
                             }
                             else {
@@ -1168,7 +1168,7 @@ bool CInterface::OnMouseLBDown() {
                     else if (pObjectsList->m_strName == IF_MAP_PANEL) {
                         if (IS_PREORDERING_NOSELECT) {
                             RESETFLAG(g_IFaceList->m_IfListFlags, MINIMAP_BUTTON_DOWN);
-                            g_MatrixMap->GetPlayerSide()->OnLButtonDown(CPoint(0, 0));
+                            g_FormCur->MinimapClick(VK_LBUTTON);
                         }
                         else {
                             SETFLAG(g_IFaceList->m_IfListFlags, MINIMAP_BUTTON_DOWN);
@@ -1205,7 +1205,7 @@ bool CInterface::OnMouseRBDown() {
             if (pObjectsList->GetVisibility()) {
                 if (pObjectsList->ElementCatch(g_MatrixMap->m_Cursor.GetPos())) {
                     if (pObjectsList->m_strName == IF_MAP_PANEL) {
-                        g_MatrixMap->GetPlayerSide()->OnRButtonDown(CPoint(0, 0));
+                        g_FormCur->MinimapClick(VK_RBUTTON);
                         if (IS_PREORDERING_NOSELECT) {
                             SETFLAG(g_IFaceList->m_IfListFlags, MINIMAP_BUTTON_DOWN);
                         }
@@ -1397,7 +1397,7 @@ void CInterface::Init(void) {
             }
 
             if (work_group) {
-                g_MatrixMap->GetSideById(PLAYER_SIDE)->ShowOrderState();
+                g_MatrixMap->GetPlayerSide()->ShowOrderState();
                 if (gsel) {
                     int bombers_cnt = 0;
                     int repairers_cnt = 0;
@@ -3565,7 +3565,7 @@ void CIFaceList::LogicTakt(int ms) {
                 if (/*под прицелом находится не игроковское здание*/ IS_TRACE_STOP_OBJECT(
                             g_MatrixMap->m_TraceStopObj) &&
                     g_MatrixMap->m_TraceStopObj->GetObjectType() == OBJECT_TYPE_BUILDING &&
-                    g_MatrixMap->m_TraceStopObj->GetSide() != PLAYER_SIDE) {
+                    g_MatrixMap->m_TraceStopObj->GetSide() != ps->GetId()) {
                     //устанавливаем курсор CROSS_RED
                     g_MatrixMap->m_Cursor.Select(CURSOR_CROSS_RED);
                 }
@@ -3917,13 +3917,13 @@ void CIFaceList::LiveRobot(void) {
     CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
     if (ps->IsArcadeMode()) {
         CMatrixMapStatic *obj = ps->GetArcadedObject();
-        ESelType type = NOTHING;
+        ESelType type = ESelType::NOTHING;
 
         if (obj && obj->GetObjectType() == OBJECT_TYPE_ROBOTAI) {
-            type = ROBOT;
+            type = ESelType::ROBOT;
         }
         else if (obj && obj->GetObjectType() == OBJECT_TYPE_FLYER) {
-            type = FLYER;
+            type = ESelType::FLYER;
         }
 
         ps->SetArcadedObject(NULL);
@@ -5263,7 +5263,7 @@ void CIFaceList::BeginBuildTurret(int no) {
     CMatrixCannon *cannon = HNew(g_MatrixHeap) CMatrixCannon;
     cannon->m_Pos.x = g_MatrixMap->m_TraceStopPos.x;
     cannon->m_Pos.y = g_MatrixMap->m_TraceStopPos.y;
-    cannon->SetSide(PLAYER_SIDE);
+    cannon->SetSide(ps->GetId());
     cannon->UnitInit(no);
     cannon->m_Angle = 0;
 

@@ -10,6 +10,8 @@
 #include <string_view>
 #include "RangersInterface/RangersInterfaceInternal.h"
 #include "Pack.hpp"
+#include "NetGame/Logic/CNetGame.h"
+#include "MatrixFormGame.hpp"
 
 // TODO more map info
 MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t *name)) {
@@ -54,6 +56,30 @@ MATRIXGAMEDLL_API int __cdecl RunStandalone(HINSTANCE hinst, wchar *map, SMatrix
     game.SafeFree();
 
     g_RangersInterface = nullptr;
+
+    return g_ExitState;
+}
+
+MATRIXGAMEDLL_API int __cdecl ConnectNetGame(HINSTANCE hinst, char *host, SMatrixSettings *set, SRobotGameState *rgs) {
+    g_RangersInterface = RangersInterfaceInternal::getInstance()->getSMGDIntervace();
+    RangersInterfaceInternal::getInstance()->LoadResources(set->m_Lang);
+
+    SMatrixTextParams textParams;
+
+    textParams.lossText = L"";
+    textParams.planetName = L"";
+    textParams.startText = L"";
+    textParams.winText = L"";
+
+    CNetGame netGame(hinst, set);
+
+    const bool status = netGame.StartNetworkGame(host);
+
+    g_RangersInterface = nullptr;
+
+    if (!status) {
+        return EGameExitCode::NETWORK_ERROR;
+    }
 
     return g_ExitState;
 }

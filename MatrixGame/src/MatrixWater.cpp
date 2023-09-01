@@ -191,7 +191,7 @@ CMatrixWater::CMatrixWater() : CMain() {
         // h[i] = (float)(rand()%255)/255.0f;
         // r[i] = (float)(rand()%1024)/2500.0f;//3024.0f;
         r[i] = (float)512 / 2500.0f;  // 3024.0f;
-        f[i] = rand() % (SIN_TABLE_SIZE - 1);
+        f[i] = IRND(SIN_TABLE_SIZE - 1); // Why -1 ?
     }
 
     m_angle = 0;

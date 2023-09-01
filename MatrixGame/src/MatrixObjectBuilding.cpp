@@ -1313,7 +1313,7 @@ void CMatrixBuilding::ReleaseMe(void) {
     DeletePlacesShow();
 
     CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
-    if (GetSide() == PLAYER_SIDE) {
+    if (GetSide() == ps->GetId()) {
         if (ps->m_ActiveObject == this) {
             ps->PLDropAllActions();
         }

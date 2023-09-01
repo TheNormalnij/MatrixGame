@@ -12,19 +12,15 @@
 #include "Effects/MatrixEffectSelection.hpp"
 #include "Interface/CConstructor.h"
 #include "Interface/CIFaceElement.h"
-#include "Logic/MatrixTactics.h"
 #include "Logic/MatrixAIGroup.h"
 #include "Interface/CConstructor.h"
 #include "Interface/CInterface.h"
-#include "Logic/MatrixTactics.h"
 #include "Logic/MatrixAIGroup.h"
 #include "MatrixObjectCannon.hpp"
 #include "MatrixFlyer.hpp"
 #include "Interface/CCounter.h"
 #include "MatrixMultiSelection.hpp"
-
-#include <algorithm>
-#include <time.h>
+#include "MatrixMapUtils.h"
 
 // robot->GetEnv()->m_Place -   место куда робот идет или где стоит.
 //                              <0 - роботу нужно назначить приказ
@@ -32,44 +28,6 @@
 //                              приказ так как предыдущий нельзя было прервать CanBreakOrder==false. в этом случае когда
 //                              CanBreakOrder станет true выполнится кода: robot->GetEnv()->m_Place=-1
 
-inline bool PrepareBreakOrder(CMatrixMapStatic *robot);
-inline bool IsLiveUnit(CMatrixMapStatic *obj);
-inline CPoint GetMapPos(CMatrixMapStatic *obj);
-inline D3DXVECTOR2 GetWorldPos(CMatrixMapStatic *obj);
-inline bool IsToPlace(CMatrixRobotAI *robot, int place);  // Движется ли робот к назначенному месту
-inline bool IsInPlace(CMatrixRobotAI *robot, int place);  // Если робот стоит на месте
-inline bool IsInPlace(CMatrixRobotAI *robot);             // Если робот стоит на месте
-inline int RobotPlace(CMatrixRobotAI *robot);
-inline int CannonPlace(CMatrixCannon *cannon);
-inline int ObjPlace(CMatrixMapStatic *obj);
-inline SMatrixPlace *ObjPlacePtr(CMatrixMapStatic *obj);
-inline dword ObjPlaceData(CMatrixMapStatic *obj);
-inline void ObjPlaceData(CMatrixMapStatic *obj, dword data);
-inline SMatrixPlace *GetPlacePtr(int no);
-inline bool CanMove(byte movetype, CMatrixRobotAI *robot);
-inline int GetDesRegion(CMatrixRobotAI *robot);
-inline int GetRegion(const CPoint &tp);
-inline int GetRegion(int x, int y);
-inline int GetRegion(CMatrixMapStatic *obj);
-inline D3DXVECTOR3 PointOfAim(CMatrixMapStatic *obj);
-inline int GetObjTeam(CMatrixMapStatic *robot) {
-    return ((CMatrixRobotAI *)(robot))->GetTeam();
-}
-inline CInfo *GetEnv(CMatrixMapStatic *robot) {
-    return ((CMatrixRobotAI *)(robot))->GetEnv();
-}
-inline int GetGroupLogic(CMatrixMapStatic *robot) {
-    return ((CMatrixRobotAI *)(robot))->GetGroupLogic();
-}
-inline float Dist2(D3DXVECTOR2 p1, D3DXVECTOR2 p2) {
-    return POW2(p1.x - p2.x) + POW2(p1.y - p2.y);
-}
-inline bool CanChangePlace(CMatrixRobotAI *robot) {
-    return (g_MatrixMap->GetTime() - robot->GetEnv()->m_PlaceNotFound) > 2000;
-}
-
-inline bool PLIsToPlace(CMatrixRobotAI *robot);
-inline CPoint PLPlacePos(CMatrixRobotAI *robot);
 
 D3DXVECTOR3 CMatrixSideUnit::CorrectArcadedRobotArmorP(D3DXVECTOR3 &p, CMatrixRobot *r) {
     SObjectCore *core = r->GetCore(DEBUG_CALL_INFO);
@@ -171,6 +129,7 @@ CMatrixSideUnit::CMatrixSideUnit()
     m_ArcadedP_available = 0;
 
     m_Id = 0;
+    m_Ai = true;
     // m_Color=0;
     m_ColorTexture = NULL;
 
@@ -438,8 +397,8 @@ void CMatrixSideUnit::LogicTakt(int ms) {
     }
 
     DCP();
-    if (g_MatrixMap->GetPlayerSide() != this || FLAG(g_MatrixMap->m_Flags, MMFLAG_AUTOMATIC_MODE)) {
-        if (m_Id == PLAYER_SIDE) {
+    if (m_Ai || FLAG(g_MatrixMap->m_Flags, MMFLAG_AUTOMATIC_MODE)) {
+        if (IsPlayerSide()) {
             if (!g_MatrixMap->MaintenanceDisabled()) {
                 if (g_MatrixMap->BeforeMaintenanceTime() == 0 && (FRND(1) < 0.05f)) {
                     CMatrixMapStatic *b = NULL;
@@ -482,7 +441,7 @@ void CMatrixSideUnit::LogicTakt(int ms) {
         DCP();
         if ((!GetCurGroup() || !GetCurGroup()->GetObjectsCnt()) &&
             (m_CurrSel == GROUP_SELECTED || m_CurrSel == ROBOT_SELECTED || m_CurrSel == FLYER_SELECTED)) {
-            Select(NOTHING, NULL);
+            Select(ESelType::NOTHING, NULL);
         }
         DCP();
         //        dword t1=timeGetTime();
@@ -602,359 +561,6 @@ void CMatrixSideUnit::LogicTakt(int ms) {
     DCP();
 }
 
-void CMatrixSideUnit::OnMouseMove() {
-    DTRACE();
-    if (m_Id == PLAYER_SIDE && IsRobotMode() && g_IFaceList->m_InFocus != INTERFACE) {
-        CMatrixRobotAI *robot = ((CMatrixRobotAI *)GetArcadedObject());
-    }
-}
-
-void CMatrixSideUnit::OnLButtonDown(const CPoint &) {
-    DTRACE();
-    if (IsArcadeMode())
-        return;
-
-    CMatrixMapStatic *pObject = MouseToLand();
-
-    if (pObject == TRACE_STOP_NONE)
-        return;
-
-    if(m_CurrentAction == BUILDING_TURRET && m_CannonForBuild.m_Cannon && m_CannonForBuild.m_CanBuildFlag/* && (m_CannonForBuild.m_ParentBuilding->m_TurretsHave < m_CannonForBuild.m_ParentBuilding->m_TurretsMax)*/){
-        if (g_MatrixMap->IsPaused())
-            return;
-        CMatrixCannon *ca = g_MatrixMap->StaticAdd<CMatrixCannon>(true);
-        ca->m_CurrState = CANNON_UNDER_CONSTRUCTION;
-
-        ca->SetInvulnerability();
-        ca->m_Pos.x = m_CannonForBuild.m_Cannon->m_Pos.x;  // g_MatrixMap->m_TraceStopPos.x;
-        ca->m_Pos.y = m_CannonForBuild.m_Cannon->m_Pos.y;  // g_MatrixMap->m_TraceStopPos.y;
-        ca->m_Place = m_CannonForBuild.m_Cannon->m_Place;
-        ca->SetSide(m_Id);
-        ca->UnitInit(m_CannonForBuild.m_Cannon->m_Num);
-
-        ca->m_Angle = m_CannonForBuild.m_Cannon->GetMustBeAngle();
-        ca->m_AddH = 0;
-
-        ca->m_ShadowType = SHADOW_STENCIL;
-        ca->m_ShadowSize = 128;
-
-        ca->RNeed(MR_Matrix | MR_Graph);
-        ca->m_ParentBuilding = (CMatrixBuilding *)m_ActiveObject;
-        ca->JoinToGroup();
-
-        m_CannonForBuild.m_ParentBuilding->m_TurretsHave++;
-        ca->SetHitPoint(0);
-        ((CMatrixBuilding *)m_ActiveObject)->m_BS.AddItem(ca);
-
-        AddResourceAmount(TITAN, -g_Config.m_CannonsProps[m_CannonForBuild.m_Cannon->m_Num - 1].m_Resources[TITAN]);
-        AddResourceAmount(ELECTRONICS,
-                          -g_Config.m_CannonsProps[m_CannonForBuild.m_Cannon->m_Num - 1].m_Resources[ELECTRONICS]);
-        AddResourceAmount(ENERGY, -g_Config.m_CannonsProps[m_CannonForBuild.m_Cannon->m_Num - 1].m_Resources[ENERGY]);
-        AddResourceAmount(PLASMA, -g_Config.m_CannonsProps[m_CannonForBuild.m_Cannon->m_Num - 1].m_Resources[PLASMA]);
-
-        m_CurrentAction = NOTHING_SPECIAL;
-        m_CannonForBuild.Delete();
-        CSound::Play(S_TURRET_BUILD_START, SL_ALL);
-        g_IFaceList->ResetBuildCaMode();
-        return;
-    }
-
-    if (m_CurrentAction == BUILDING_TURRET && m_CannonForBuild.m_Cannon) {
-        return;
-    }
-    int mx = Float2Int(g_MatrixMap->m_TraceStopPos.x / GLOBAL_SCALE_MOVE);
-    int my = Float2Int(g_MatrixMap->m_TraceStopPos.y / GLOBAL_SCALE_MOVE);
-    D3DXVECTOR3 tpos = g_MatrixMap->m_TraceStopPos;
-
-    if (g_IFaceList->m_InFocus == INTERFACE && g_IFaceList->m_FocusedInterface->m_strName == IF_MINI_MAP) {
-        D3DXVECTOR2 tgt;
-        if (g_MatrixMap->m_Minimap.CalcMinimap2World(tgt)) {
-            pObject = TRACE_STOP_LANDSCAPE;
-            mx = Float2Int(tgt.x / GLOBAL_SCALE_MOVE);
-            my = Float2Int(tgt.y / GLOBAL_SCALE_MOVE);
-            tpos = D3DXVECTOR3(tgt.x, tgt.y, tpos.z);
-        }
-    }
-
-    if (IS_PREORDERING) {
-        if (FLAG(g_IFaceList->m_IfListFlags, PREORDER_MOVE)) {
-            // Move
-            RESETFLAG(g_IFaceList->m_IfListFlags, PREORDER_MOVE | ORDERING_MODE);
-
-            PGOrderMoveTo(SelGroupToLogicGroup(),
-                          CPoint(mx - ROBOT_MOVECELLS_PER_SIZE / 2, my - ROBOT_MOVECELLS_PER_SIZE / 2));
-
-            CMatrixGroup *group = GetCurGroup();
-            CMatrixGroupObject *objs = group->m_FirstObject;
-            while (objs) {
-                if (objs->GetObject() && objs->GetObject()->GetObjectType() == OBJECT_TYPE_FLYER) {
-                    int param = (group->GetObjectsCnt() - group->GetRobotsCnt()) - 1;
-                    if (param > 4)
-                        param = 4;
-                    float x = (float)g_MatrixMap->RndFloat(g_MatrixMap->m_TraceStopPos.x - param * GLOBAL_SCALE_MOVE,
-                                                           g_MatrixMap->m_TraceStopPos.x + param * GLOBAL_SCALE_MOVE);
-                    float y = (float)g_MatrixMap->RndFloat(g_MatrixMap->m_TraceStopPos.y - param * GLOBAL_SCALE_MOVE,
-                                                           g_MatrixMap->m_TraceStopPos.y + param * GLOBAL_SCALE_MOVE);
-                    ((CMatrixFlyer *)objs->GetObject())->SetTarget(D3DXVECTOR2(x, y));
-                }
-                objs = objs->m_NextObject;
-            }
-        }
-        else if (FLAG(g_IFaceList->m_IfListFlags, PREORDER_FIRE)) {
-            // Fire
-            if (IS_TRACE_STOP_OBJECT(pObject) && (pObject->IsLive() || pObject->IsSpecial())) {
-                RESETFLAG(g_IFaceList->m_IfListFlags, PREORDER_FIRE | ORDERING_MODE);
-
-                PGOrderAttack(SelGroupToLogicGroup(), GetMapPos(pObject), pObject);
-            }
-            else {
-                RESETFLAG(g_IFaceList->m_IfListFlags, PREORDER_FIRE | ORDERING_MODE);
-
-                PGOrderAttack(SelGroupToLogicGroup(),
-                              CPoint(mx - ROBOT_MOVECELLS_PER_SIZE / 2, my - ROBOT_MOVECELLS_PER_SIZE / 2), NULL);
-            }
-        }
-        else if (FLAG(g_IFaceList->m_IfListFlags, PREORDER_CAPTURE)) {
-            // Capture
-            if (IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLiveBuilding() && pObject->GetSide() != PLAYER_SIDE) {
-                RESETFLAG(g_IFaceList->m_IfListFlags, PREORDER_CAPTURE | ORDERING_MODE);
-
-                PGOrderCapture(SelGroupToLogicGroup(), (CMatrixBuilding *)pObject);
-            }
-        }
-        else if (FLAG(g_IFaceList->m_IfListFlags, PREORDER_PATROL)) {
-            // Patrol
-            RESETFLAG(g_IFaceList->m_IfListFlags, PREORDER_PATROL | ORDERING_MODE);
-            PGOrderPatrol(SelGroupToLogicGroup(),
-                          CPoint(mx - ROBOT_MOVECELLS_PER_SIZE / 2, my - ROBOT_MOVECELLS_PER_SIZE / 2));
-        }
-        else if (FLAG(g_IFaceList->m_IfListFlags, PREORDER_BOMB)) {
-            // Nuclear BOMB!!! spasaisya kto mozhet!!! dab shas rvanet bombu!!!!
-            if (IS_TRACE_STOP_OBJECT(pObject) && (pObject->IsLive() || pObject->IsSpecial())) {
-                RESETFLAG(g_IFaceList->m_IfListFlags, PREORDER_BOMB | ORDERING_MODE);
-
-                PGOrderBomb(SelGroupToLogicGroup(), GetMapPos(pObject), pObject);
-            }
-            else {
-                RESETFLAG(g_IFaceList->m_IfListFlags, PREORDER_BOMB | ORDERING_MODE);
-
-                PGOrderBomb(SelGroupToLogicGroup(),
-                            CPoint(mx - ROBOT_MOVECELLS_PER_SIZE / 2, my - ROBOT_MOVECELLS_PER_SIZE / 2), NULL);
-            }
-        }
-        else if (FLAG(g_IFaceList->m_IfListFlags, PREORDER_REPAIR)) {
-            // Repair our robots please
-            if (IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLive() && pObject->GetSide() == PLAYER_SIDE) {
-                RESETFLAG(g_IFaceList->m_IfListFlags, PREORDER_REPAIR | ORDERING_MODE);
-
-                PGOrderRepair(SelGroupToLogicGroup(), (CMatrixBuilding *)pObject);
-            }
-        }
-    }
-}
-
-void CMatrixSideUnit::OnLButtonDouble(const CPoint &mouse) {
-    DTRACE();
-    if (IsArcadeMode())
-        return;
-
-    CMatrixMapStatic *pObject = MouseToLand();
-
-    if (pObject == TRACE_STOP_NONE ||
-        !(IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLiveRobot() && pObject->GetSide() == PLAYER_SIDE))
-        return;
-
-    if (IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLiveRobot() && pObject->GetSide() == PLAYER_SIDE) {
-        D3DXVECTOR3 o_pos = pObject->GetGeoCenter();
-        CMatrixMapStatic *st = CMatrixMapStatic::GetFirstLogic();
-
-        if (GetCurGroup()) {
-            SelectedGroupUnselect();
-            GetCurSelGroup()->RemoveAll();
-        }
-
-        while (st) {
-            if (st->GetSide() == PLAYER_SIDE && st->IsLiveRobot()) {
-                auto tmp = o_pos - st->GetGeoCenter();
-                if (D3DXVec3LengthSq(&tmp) <=
-                    FRIENDLY_SEARCH_RADIUS * FRIENDLY_SEARCH_RADIUS) {
-                    GetCurSelGroup()->AddObject(st, -4);
-                }
-            }
-            st = st->GetNextLogic();
-        }
-    }
-    CreateGroupFromCurrent();
-    if (GetCurGroup() && GetCurGroup()->GetObjectsCnt() == 1) {
-        Select(ROBOT, NULL);
-    }
-    else if (GetCurGroup() && GetCurGroup()->GetObjectsCnt() > 1) {
-        Select(GROUP, NULL);
-    }
-}
-
-void CMatrixSideUnit::OnLButtonUp(const CPoint &) {
-    DTRACE();
-    if (IsArcadeMode())
-        return;
-
-    CMatrixMapStatic *pObject = MouseToLand();
-
-    if (pObject == TRACE_STOP_NONE)
-        return;
-
-    if (IS_TRACE_STOP_OBJECT(pObject)) {}
-}
-
-void CMatrixSideUnit::OnRButtonDown(const CPoint &) {
-    DTRACE();
-    if (IsArcadeMode())
-        return;
-    DCP();
-    if (IS_PREORDERING && m_CurrentAction == BUILDING_TURRET) {
-        DCP();
-        g_IFaceList->ResetOrderingMode();
-        m_CannonForBuild.Delete();
-        m_CurrentAction = NOTHING_SPECIAL;
-        return;
-    }
-    DCP();
-
-    CMatrixMapStatic *pObject = MouseToLand();
-    DCP();
-
-    int mx = Float2Int(g_MatrixMap->m_TraceStopPos.x / GLOBAL_SCALE_MOVE);
-    int my = Float2Int(g_MatrixMap->m_TraceStopPos.y / GLOBAL_SCALE_MOVE);
-    D3DXVECTOR3 tpos = g_MatrixMap->m_TraceStopPos;
-
-    DCP();
-    if (!IS_PREORDERING && GetCurGroup() && g_IFaceList->m_InFocus == INTERFACE &&
-        g_IFaceList->m_FocusedInterface->m_strName == IF_MINI_MAP) {
-        D3DXVECTOR2 tgt;
-        if (g_MatrixMap->m_Minimap.CalcMinimap2World(tgt)) {
-            pObject = TRACE_STOP_LANDSCAPE;
-            mx = Float2Int(tgt.x / GLOBAL_SCALE_MOVE);
-            my = Float2Int(tgt.y / GLOBAL_SCALE_MOVE);
-            tpos = D3DXVECTOR3(tgt.x, tgt.y, tpos.z);
-            g_MatrixMap->m_Minimap.AddEvent(tpos.x, tpos.y, 0xffff0000, 0xffff0000);
-        }
-    }
-
-    if (pObject == TRACE_STOP_NONE)
-        return;
-
-    if (!IS_PREORDERING &&
-        (m_CurrSel == GROUP_SELECTED || m_CurrSel == ROBOT_SELECTED || m_CurrSel == FLYER_SELECTED)) {
-        if (IS_TRACE_STOP_OBJECT(pObject) && pObject->IsLiveBuilding() && pObject->GetSide() != m_Id) {
-            // Capture
-            PGOrderCapture(SelGroupToLogicGroup(), (CMatrixBuilding *)pObject);
-        }
-        else if (IS_TRACE_STOP_OBJECT(pObject) &&
-                 ((IsLiveUnit(pObject) && pObject->GetSide() != m_Id) || pObject->IsSpecial())) {
-            // Attack
-            PGOrderAttack(SelGroupToLogicGroup(), GetMapPos(pObject), pObject);
-        }
-        else if (pObject == TRACE_STOP_LANDSCAPE || pObject == TRACE_STOP_WATER || (IS_TRACE_STOP_OBJECT(pObject))) {
-            // MoveTo
-            PGOrderMoveTo(SelGroupToLogicGroup(),
-                          CPoint(mx - ROBOT_MOVECELLS_PER_SIZE / 2, my - ROBOT_MOVECELLS_PER_SIZE / 2));
-
-            CMatrixGroupObject *objs = GetCurGroup()->m_FirstObject;
-            while (objs) {
-                if (objs->GetObject() && objs->GetObject()->GetObjectType() == OBJECT_TYPE_FLYER) {
-                    int param = (GetCurGroup()->GetObjectsCnt() - GetCurGroup()->GetRobotsCnt()) - 1;
-                    if (param > 4)
-                        param = 4;
-                    float x = (float)g_MatrixMap->RndFloat(g_MatrixMap->m_TraceStopPos.x - param * GLOBAL_SCALE_MOVE,
-                                                           g_MatrixMap->m_TraceStopPos.x + param * GLOBAL_SCALE_MOVE);
-                    float y = (float)g_MatrixMap->RndFloat(g_MatrixMap->m_TraceStopPos.y - param * GLOBAL_SCALE_MOVE,
-                                                           g_MatrixMap->m_TraceStopPos.y + param * GLOBAL_SCALE_MOVE);
-                    ((CMatrixFlyer *)objs->GetObject())->SetTarget(D3DXVECTOR2(x, y));
-                }
-                objs = objs->m_NextObject;
-            }
-        }
-    }
-}
-
-void CMatrixSideUnit::OnRButtonUp(const CPoint &) {
-    DTRACE();
-    if (IsArcadeMode())
-        return;
-}
-
-void CMatrixSideUnit::OnRButtonDouble(const CPoint &) {
-    DTRACE();
-    if (IsArcadeMode())
-        return;
-
-    //   if(m_CurrentAction == BUILDING_TURRET)
-    //       return;
-
-    //   CMatrixMapStatic* pObject = MouseToLand();
-    //   if(pObject == TRACE_STOP_NONE) return;
-    //
-    // 	if(pObject == TRACE_STOP_LANDSCAPE){
-    //       if(m_CurrentAction == CAPTURING_ROBOT || m_CurrentAction == GETING_IN_ROBOT){
-    //           m_CurrentAction = NOTHING_SPECIAL;
-    //       }
-    //       if(m_CurrSel == BUILDING_SELECTED || m_CurrSel == BASE_SELECTED){
-    //           Select(HELICOPTER, NULL);
-    //           return;
-    //       }
-    //}else if(pObject == TRACE_STOP_WATER){
-    //       if(m_CurrentAction == CAPTURING_ROBOT || m_CurrentAction == GETING_IN_ROBOT){
-    //           m_CurrentAction = NOTHING_SPECIAL;
-    //       }
-    //	if(!(m_CurrSel == ROBOT_SELECTED)) Select(HELICOPTER, NULL);
-    //       return;
-    //}
-}
-
-void CMatrixSideUnit::OnForward(bool down) {
-    DTRACE();
-    if (!IsRobotMode() || !m_Arcaded)
-        return;
-
-    if (down && !m_Arcaded->AsRobot()->FindOrderLikeThat(ROT_MOVE_TO)) {
-        D3DXVECTOR3 vel = m_Arcaded->AsRobot()->m_Forward * m_Arcaded->AsRobot()->GetMaxSpeed();
-        float x = m_Arcaded->AsRobot()->m_PosX + vel.x;
-        float y = m_Arcaded->AsRobot()->m_PosY + vel.y;
-        m_Arcaded->AsRobot()->MoveTo(Float2Int(x / GLOBAL_SCALE_MOVE), Float2Int(y / GLOBAL_SCALE_MOVE));
-    }
-    else if (!down && m_Arcaded->AsRobot()->FindOrderLikeThat(ROT_MOVE_TO)) {
-        m_Arcaded->AsRobot()->StopMoving();
-    }
-}
-
-void CMatrixSideUnit::OnBackward(bool down) {
-    DTRACE();
-    if (!IsRobotMode() || !m_Arcaded)
-        return;
-
-    if (down && !m_Arcaded->AsRobot()->FindOrderLikeThat(ROT_MOVE_TO_BACK)) {
-        D3DXVECTOR3 vel = m_Arcaded->AsRobot()->m_Forward * m_Arcaded->AsRobot()->GetMaxSpeed();
-        float x = m_Arcaded->AsRobot()->m_PosX - vel.x;
-        float y = m_Arcaded->AsRobot()->m_PosY - vel.y;
-        m_Arcaded->AsRobot()->MoveToBack(Float2Int(x / GLOBAL_SCALE_MOVE), Float2Int(y / GLOBAL_SCALE_MOVE));
-    }
-    else if (!down && m_Arcaded->AsRobot()->FindOrderLikeThat(ROT_MOVE_TO_BACK)) {
-        m_Arcaded->AsRobot()->StopMoving();
-    }
-}
-
-void CMatrixSideUnit::OnLeft(bool down) {
-    DTRACE();
-    if (!IsRobotMode() || !m_Arcaded)
-        return;
-}
-
-void CMatrixSideUnit::OnRight(bool down) {
-    DTRACE();
-    if (!IsRobotMode() || !m_Arcaded)
-        return;
-}
-
 void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
     DTRACE();
 
@@ -971,7 +577,7 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
     m_ActiveObject = pObject;
 
     if ((m_CurrSel == FLYER_SELECTED || m_CurrSel == ROBOT_SELECTED || m_CurrSel == ARCADE_SELECTED) &&
-        type != ARCADE) {
+        type != ESelType::ARCADE) {
         RESETFLAG(g_IFaceList->m_IfListFlags, SINGLE_MODE);
         g_IFaceList->DeleteWeaponDynamicStatics();
         g_IFaceList->DeletePersonal();
@@ -985,9 +591,9 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
         g_IFaceList->ResetOrderingMode();
     }
 
-    if (type == GROUP || type == FLYER || type == ROBOT) {
+    if (type == ESelType::GROUP || type == ESelType::FLYER || type == ESelType::ROBOT) {
         if (m_Id == PLAYER_SIDE) {
-            int rnd = g_MatrixMap->Rnd(0, 6);
+            int rnd = IRND(7);
             if (!rnd) {
                 CSound::Play(S_SELECTION_1, SL_SELECTION);
             }
@@ -1012,7 +618,7 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
         }
     }
 
-    if (type == BUILDING && pObject) {
+    if (type == ESelType::BUILDING && pObject) {
         m_nCurrRobotPos = -1;
         m_CurrSel = BUILDING_SELECTED;
 
@@ -1032,7 +638,7 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
             CSound::Play(S_BUILDING_SEL, SL_SELECTION);
         }
     }
-    else if (type == GROUP) {
+    else if (type == ESelType::GROUP) {
         m_CurrSel = GROUP_SELECTED;
 
         SetCurSelNum(0);
@@ -1040,9 +646,9 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
 
         ShowOrderState();
     }
-    else if ((type == FLYER || type == ROBOT)) {
+    else if ((type == ESelType::FLYER || type == ESelType::ROBOT)) {
         SETFLAG(g_IFaceList->m_IfListFlags, SINGLE_MODE);
-        if (type == FLYER) {
+        if (type == ESelType::FLYER) {
             m_CurrSel = FLYER_SELECTED;
         }
         else {
@@ -1053,7 +659,7 @@ void CMatrixSideUnit::Select(ESelType type, CMatrixMapStatic *pObject) {
 
         ShowOrderState();
     }
-    else if (type == ARCADE) {
+    else if (type == ESelType::ARCADE) {
     }
     else {
         m_nCurrRobotPos = -1;
@@ -1169,133 +775,6 @@ void __stdcall CMatrixSideUnit::PlayerAction(void *object) {
     }
 }
 
-// void CMatrixSideUnit::GiveRandomOrder()
-//{
-//    //return;
-//    //Attack
-//    CMatrixGroup* groups = m_GroupsList->m_FirstGroup;
-//    while(groups){
-//
-//        if(!groups->GetTactics()){
-//            CMatrixGroupObject* gr_objects = groups->m_FirstObject;
-//            while(gr_objects){
-//                if(gr_objects->GetObject()->GetObjectType() == OBJECT_TYPE_ROBOTAI){
-//                    if(((CMatrixRobotAI*)gr_objects->GetObject())->GetEnv()->GetEnemyCnt() > 0){
-//                        groups->InstallTactics(ATTACK_TACTICS, m_TacticsPar);
-//                        if(groups->GetTactics()){
-//                            groups->GetTactics()->InitialiseTactics(groups, NULL, -1);
-//                        }
-//                    }
-//                }
-//                gr_objects = gr_objects->m_NextObject;
-//            }
-//        }
-//
-//        if(groups->GetTactics() != NULL && (groups->GetTactics()->GetType() == ATTACK_TACTICS ||
-//        groups->GetTactics()->GetType() == JOIN_TACTICS)){
-//            groups = groups->m_NextGroup;
-//            continue;
-//        }
-//
-//        if(groups->GetTactics() != NULL && groups->GetTactics()->GetType() == CAPTURE_TACTICS &&
-//        groups->GetTactics()->GetTarget() && ((CMatrixBuilding*)groups->GetTactics()->GetTarget())->m_Side != m_Id){
-//            groups = groups->m_NextGroup;
-//            continue;
-//        }
-//
-//
-//
-//        if(groups->GetGroupId() == 1){
-//            //Capture
-//            CMatrixMapStatic*   ms = CMatrixMapStatic::GetFirstLogic();
-//            CMatrixMapStatic*   nearest = NULL;
-//            float               nearest_l = 0;
-//
-//            while(ms) {
-//                if(ms->GetObjectType()==OBJECT_TYPE_BUILDING && !((CMatrixBuilding*)ms)->IsBase() && ((CMatrixBuilding
-//                *)ms)->m_Side != m_Id) {
-//                    if(!((CMatrixBuilding *)ms)->m_BusyFlag.IsBusy()){
-//                        D3DXVECTOR2 f_pos = ((CMatrixBuilding *)ms)->m_Pos;
-//                        D3DXVECTOR2 my_pos = D3DXVECTOR2(groups->GetGroupPos().x, groups->GetGroupPos().y);
-//                        float a = D3DXVec2LengthSq(&(f_pos - my_pos));
-//                        if(a < nearest_l || nearest == NULL){
-//                            nearest_l   = a;
-//                            nearest     = ms;
-//                        }
-//                    }
-//                }
-//                ms = ms->GetNextLogic();
-//            }
-//            if(!nearest){
-//                ms = CMatrixMapStatic::GetFirstLogic();
-//                nearest_l = 0;
-//                nearest = NULL;
-//                while(ms) {
-//		            if(ms->GetObjectType()==OBJECT_TYPE_BUILDING && ((CMatrixBuilding *)ms)->m_Side != m_Id &&
-//((CMatrixBuilding*)ms)->IsBase()) {
-//                        if(!((CMatrixBuilding*)ms)->m_BusyFlag.IsBusy() /*||
-//                        ((((CMatrixBuilding*)ms)->m_BusyFlag.IsBusy() &&
-//                        ((CMatrixBuilding*)ms)->m_BusyFlag.GetBusyBy() &&
-//                        ((CMatrixBuilding*)ms)->m_BusyFlag.GetBusyBy()->m_Side != m_Id)) */){
-//                            D3DXVECTOR2 f_pos = ((CMatrixBuilding *)ms)->m_Pos;
-//                            D3DXVECTOR2 my_pos = D3DXVECTOR2(groups->GetGroupPos().x, groups->GetGroupPos().y);
-//                            float a = D3DXVec2LengthSq(&(f_pos - my_pos));
-//                            if(a < nearest_l || nearest == NULL){
-//                                nearest_l   = a;
-//                                nearest     = ms;
-//                            }
-//                        }
-//                    }
-//                    ms = ms->GetNextLogic();
-//                }
-//            }
-//            if(nearest){
-//                groups->InstallTactics(CAPTURE_TACTICS, m_TacticsPar);
-//                groups->GetTactics()->InitialiseTactics(groups, nearest, -1);
-//            }
-//        }else if(groups->GetGroupId() > 1){
-//            //Join to the main group
-//
-//            CMatrixMapStatic* target = NULL;
-//            CMatrixGroup* main_grp = GetGroup(1, groups->GetTeam());
-//            if(main_grp && main_grp->GetTactics())
-//                target = main_grp->GetTactics()->GetTarget();
-//
-//            if(target && ((!((CMatrixBuilding*)target)->m_BusyFlag.IsBusy()) ||
-//            (((CMatrixBuilding*)target)->m_BusyFlag.IsBusy() && ((CMatrixBuilding*)target)->m_BusyFlag.GetBusyBy() &&
-//            ((CMatrixBuilding*)target)->m_BusyFlag.GetBusyBy()->m_Side != m_Id))){
-//                groups->InstallTactics(CAPTURE_TACTICS, m_TacticsPar);
-//                groups->GetTactics()->InitialiseTactics(groups, target, -1);
-//
-//            }else{
-//                groups->InstallTactics(JOIN_TACTICS, m_TacticsPar);
-//                if(groups->GetTactics() != NULL){
-//                    groups->GetTactics()->InitialiseTactics(groups, NULL, -1);
-//                }
-//            }
-//
-//        }
-//        groups = groups->m_NextGroup;
-//    }
-//
-//}
-
-// CMatrixGroup* CMatrixSideUnit::GetGroup(int id, int t)
-//{
-//    DTRACE();
-//    CMatrixGroup* grps = m_GroupsList->m_FirstGroup, *main_grp = NULL;
-//    while(grps){
-//        if(grps->GetGroupId() == id && grps->GetTeam() == t){
-//            main_grp = grps;
-//            break;
-//        }
-//        grps = grps->m_NextGroup;
-//    }
-//    return main_grp;
-//
-//}
-//
-
 void SCannonForBuild::Delete(void) {
     DTRACE();
     if (m_Cannon) {
@@ -1351,7 +830,7 @@ void CMatrixSideUnit::SetArcadedObject(CMatrixMapStatic *o) {
         m_Arcaded->AsRobot()->UnSelect();
         if (g_IFaceList)
             g_IFaceList->DeleteWeaponDynamicStatics();
-        Select(NOTHING, NULL);
+        Select(ESelType::NOTHING, NULL);
     }
     else if (IsRobotMode() && o->GetObjectType() == OBJECT_TYPE_ROBOTAI) {
         if (g_IFaceList)
@@ -1393,7 +872,7 @@ void CMatrixSideUnit::SetArcadedObject(CMatrixMapStatic *o) {
 
         m_Arcaded->AsRobot()->SetMaxSpeed(m_Arcaded->AsRobot()->GetMaxSpeed() * SPEED_BOOST);
         robot->SetWeaponToArcadedCoeff();
-        Select(ARCADE, o);
+        Select(ESelType::ARCADE, o);
         m_Arcaded->AsRobot()->SelectArcade();
         if (g_IFaceList)
             g_IFaceList->CreateWeaponDynamicStatics();
@@ -1667,6 +1146,8 @@ void CMatrixSideUnit::InitPlayerSide() {
     m_CurrentGroup = NULL;  // SetCurGroup(NULL);
 
     m_CurSelGroup = HNew(g_MatrixHeap) CMatrixGroup;
+
+    m_Ai = false;
 }
 
 int CMatrixSideUnit::IsInPlaces(const CPoint *places, int placescnt, int x, int y) {
@@ -1724,7 +1205,7 @@ void CMatrixSideUnit::PLDropAllActions() {
     if (m_ActiveObject && m_ActiveObject->IsBuilding()) {
         m_ActiveObject->AsBuilding()->m_BS.KillBar();
     }
-    Select(NOTHING, NULL);
+    Select(ESelType::NOTHING, NULL);
     RESETFLAG(g_IFaceList->m_IfListFlags, POPUP_MENU_ACTIVE);
     m_ConstructPanel->ResetGroupNClose();
     g_MatrixMap->m_Cursor.SetVisible(true);
@@ -2221,7 +1702,7 @@ void CMatrixSideUnit::EscapeFromBomb() {
         if (ms->GetSide() != m_Id)
             continue;
         CMatrixRobotAI *robot = ms->AsRobot();
-        if (m_Id == PLAYER_SIDE && robot->GetGroupLogic() >= 0 &&
+        if (IsPlayerSide() && robot->GetGroupLogic() >= 0 &&
             m_PlayerGroup[robot->GetGroupLogic()].Order() < mpo_AutoCapture)
             continue;
 
@@ -2274,7 +1755,7 @@ void CMatrixSideUnit::EscapeFromBomb() {
         if (ms == skip_normal || ms == skip_withbomb)
             continue;
         CMatrixRobotAI *robot = ms->AsRobot();
-        if (m_Id == PLAYER_SIDE && robot->GetGroupLogic() >= 0 &&
+        if (IsPlayerSide() && robot->GetGroupLogic() >= 0 &&
             m_PlayerGroup[robot->GetGroupLogic()].Order() < mpo_AutoCapture)
             continue;
 
@@ -2389,7 +1870,7 @@ void CMatrixSideUnit::GroupNoTeamRobot() {
     int g, i, u, cnt, sme;
     float cx, cy;
 
-    if (m_Id == PLAYER_SIDE)
+    if (IsPlayerSide())
         return;
 
     for (i = 0; i < MAX_LOGIC_GROUP; i++)
@@ -2498,10 +1979,12 @@ void CMatrixSideUnit::CalcMaxSpeed() {
         ms->AsRobot()->m_GroupSpeed = ms->AsRobot()->GetMaxSpeed();
     }
 
+    const bool isAiSide = IsAiEnabled();
+
     for (i = 0; i < MAX_LOGIC_GROUP; i++) {
-        if (m_Id == PLAYER_SIDE && m_PlayerGroup[i].m_RobotCnt <= 0)
+        if (!isAiSide && m_PlayerGroup[i].m_RobotCnt <= 0)
             continue;
-        else if (m_Id != PLAYER_SIDE && m_LogicGroup[i].RobotsCnt() <= 0)
+        else if (isAiSide && m_LogicGroup[i].RobotsCnt() <= 0)
             continue;
 
         float cx = 0.0f;
@@ -5152,54 +4635,6 @@ void CMatrixSideUnit::TaktTL() {
             }
         }
     }
-
-#ifdef _DEBUG
-/*    obj = CMatrixMapStatic::GetFirstLogic();
-    while(obj) {
-        if(obj->GetObjectType()==OBJECT_TYPE_ROBOTAI || obj->GetObjectType()==OBJECT_TYPE_CANNON) {
-        }
-        if(obj->IsLiveRobot() && obj->GetSide()==m_Id) {
-            if(obj->AsRobot()->GetEnv()->m_Place>=0) {
-                SMatrixPlace * place=g_MatrixMap->m_RN.GetPlace(obj->AsRobot()->GetEnv()->m_Place);
-
-//
-CHelper::Create(0,DWORD(place))->Cone(D3DXVECTOR3(GLOBAL_SCALE_MOVE*tp.x,GLOBAL_SCALE_MOVE*tp.y,0),D3DXVECTOR3(GLOBAL_SCALE_MOVE*tp.x,GLOBAL_SCALE_MOVE*tp.y,30-2.0f*i),4.0f+1.0f*i,4.0f+1.0f*i,colors[i],colors[i],5);
-
-                D3DXVECTOR3 v1,v2,v3,v4;
-                v1.x=place->m_Pos.x*GLOBAL_SCALE_MOVE; v1.y=place->m_Pos.y*GLOBAL_SCALE_MOVE;
-v1.z=g_MatrixMap->GetZ(v1.x,v1.y)+1.0f; v2.x=(place->m_Pos.x+4)*GLOBAL_SCALE_MOVE;
-v2.y=place->m_Pos.y*GLOBAL_SCALE_MOVE; v2.z=g_MatrixMap->GetZ(v2.x,v2.y)+1.0f;
-                v3.x=(place->m_Pos.x+4)*GLOBAL_SCALE_MOVE; v3.y=(place->m_Pos.y+4)*GLOBAL_SCALE_MOVE;
-v3.z=g_MatrixMap->GetZ(v3.x,v3.y)+1.0f; v4.x=(place->m_Pos.x)*GLOBAL_SCALE_MOVE;
-v4.y=(place->m_Pos.y+4)*GLOBAL_SCALE_MOVE; v4.z=g_MatrixMap->GetZ(v4.x,v4.y)+1.0f;
-
-                CHelper::DestroyByGroup(DWORD(obj)+1);
-                CHelper::Create(10,DWORD(obj)+1)->Triangle(v1,v2,v3,0x8000ff00);
-                CHelper::Create(10,DWORD(obj)+1)->Triangle(v1,v3,v4,0x8000ff00);
-            }
-            D3DXVECTOR2 v=GetWorldPos(obj);
-            CHelper::DestroyByGroup(DWORD(obj)+2);
-            CHelper::Create(10,DWORD(obj)+2)->Cone(D3DXVECTOR3(v.x,v.y,0),D3DXVECTOR3(v.x,v.y,40),float(obj->AsRobot()->GetMinFireDist()),float(obj->AsRobot()->GetMinFireDist()),0x80ffff00,0x80ffff00,20);
-            CHelper::Create(10,DWORD(obj)+2)->Cone(D3DXVECTOR3(v.x,v.y,0),D3DXVECTOR3(v.x,v.y,40),float(obj->AsRobot()->GetMaxFireDist()),float(obj->AsRobot()->GetMaxFireDist()),0x80ff0000,0x80ff0000,20);
-        }
-        if(obj->IsLiveCannon()) {
-            D3DXVECTOR2 v=GetWorldPos(obj);
-            CHelper::DestroyByGroup(DWORD(obj)+2);
-            CHelper::Create(10,DWORD(obj)+2)->Cone(D3DXVECTOR3(v.x,v.y,0),D3DXVECTOR3(v.x,v.y,40),((CMatrixCannon
-*)obj)->GetSeekRadius(),((CMatrixCannon *)obj)->GetSeekRadius(),0x80ff0000,0x80ff0000,20);
-        }
-        obj = obj->GetNextLogic();
-    }*/
-/*    CHelper::DestroyByGroup(5001);
-    for(i=0;i<g_MatrixMap->m_RN.m_RegionCnt;i++) {
-        CPoint tp=g_MatrixMap->m_RN.m_Region[i].m_Center;
-        CHelper::Create(10,5001)->Cone(D3DXVECTOR3(GLOBAL_SCALE_MOVE*tp.x,GLOBAL_SCALE_MOVE*tp.y,0),D3DXVECTOR3(GLOBAL_SCALE_MOVE*tp.x,GLOBAL_SCALE_MOVE*tp.y,20),1.0f,1.0f,g_MatrixMap->m_RN.m_Region[i].m_Color,g_MatrixMap->m_RN.m_Region[i].m_Color,5);
-        for(u=0;u<i;u++) {
-            CHelper::Create(10,5001)->Sphere(D3DXVECTOR3(GLOBAL_SCALE_MOVE*tp.x,GLOBAL_SCALE_MOVE*tp.y,20.0f+8.0f*(u+1)),1.0f,3,g_MatrixMap->m_RN.m_Region[i].m_Color);
-        }
-        CHelper::Create(10,5001)->Cone(D3DXVECTOR3(GLOBAL_SCALE_MOVE*tp.x,GLOBAL_SCALE_MOVE*tp.y,0),D3DXVECTOR3(GLOBAL_SCALE_MOVE*tp.x,GLOBAL_SCALE_MOVE*tp.y,40),GLOBAL_SCALE_MOVE*g_MatrixMap->m_RN.m_Region[i].m_RadiusPlace,GLOBAL_SCALE_MOVE*g_MatrixMap->m_RN.m_Region[i].m_RadiusPlace,g_MatrixMap->m_RN.m_Region[i].m_Color,g_MatrixMap->m_RN.m_Region[i].m_Color,20);
-    }*/
-#endif
 }
 
 void CMatrixSideUnit::WarTL(int group) {
@@ -8922,14 +8357,11 @@ void CMatrixSideUnit::WarPL(int group) {
     }
 }
 
-int CMatrixSideUnit::SelGroupToLogicGroup() {
-    CMatrixMapStatic *obj;
-    int i, no;
-
-    for (i = 0; i < MAX_LOGIC_GROUP; i++)
+void CMatrixSideUnit::RecalculateLogicGroups() {
+    for (int i = 0; i < MAX_LOGIC_GROUP; i++)
         m_PlayerGroup[i].m_RobotCnt = 0;
 
-    obj = CMatrixMapStatic::GetFirstLogic();
+    CMatrixMapStatic *obj = CMatrixMapStatic::GetFirstLogic();
     while (obj) {
         if (obj->IsLiveRobot() && obj->GetSide() == m_Id) {
             if (obj->AsRobot()->GetGroupLogic() >= 0 && obj->AsRobot()->GetGroupLogic() < MAX_LOGIC_GROUP) {
@@ -8938,17 +8370,29 @@ int CMatrixSideUnit::SelGroupToLogicGroup() {
         }
         obj = obj->GetNextLogic();
     }
+}
 
-    for (no = 0; no < MAX_LOGIC_GROUP; no++) {
+int CMatrixSideUnit::GetFreeLogicGroup() {
+    RecalculateLogicGroups();
+
+    for (int no = 0; no < MAX_LOGIC_GROUP; no++) {
         if (m_PlayerGroup[no].m_RobotCnt <= 0)
-            break;
+            return no;
     }
-    ASSERT(no < MAX_LOGIC_GROUP);
+    ASSERT(false, "Logic group overflow");
+    return 0;
+}
 
-    m_PlayerGroup[no].Order(mpo_Stop);
-    m_PlayerGroup[no].m_Obj = NULL;
-    m_PlayerGroup[no].SetWar(false);
-    m_PlayerGroup[no].m_RoadPath->Clear();
+void CMatrixSideUnit::ResetLogicGroup(int id) {
+    m_PlayerGroup[id].Order(mpo_Stop);
+    m_PlayerGroup[id].m_Obj = nullptr;
+    m_PlayerGroup[id].SetWar(false);
+    m_PlayerGroup[id].m_RoadPath->Clear();
+}
+
+int CMatrixSideUnit::SelGroupToLogicGroup() {
+    int no = GetFreeLogicGroup();
+    ResetLogicGroup(no);
 
     CMatrixGroupObject *objs = GetCurGroup()->m_FirstObject;
     while (objs) {
@@ -8962,37 +8406,15 @@ int CMatrixSideUnit::SelGroupToLogicGroup() {
     return no;
 }
 
+void CMatrixSideUnit::AddRobotToLogicGroup(int id, CMatrixRobotAI *robot) {
+    m_PlayerGroup[id].m_RobotCnt = 1;
+    robot->SetGroupLogic(id);
+}
+
 int CMatrixSideUnit::RobotToLogicGroup(CMatrixRobotAI *robot) {
-    CMatrixMapStatic *obj;
-    int i, no;
-
-    for (i = 0; i < MAX_LOGIC_GROUP; i++)
-        m_PlayerGroup[i].m_RobotCnt = 0;
-
-    obj = CMatrixMapStatic::GetFirstLogic();
-    while (obj) {
-        if (obj->IsLiveRobot() && obj->GetSide() == m_Id) {
-            if (obj->AsRobot()->GetGroupLogic() >= 0 && obj->AsRobot()->GetGroupLogic() < MAX_LOGIC_GROUP) {
-                m_PlayerGroup[obj->AsRobot()->GetGroupLogic()].m_RobotCnt++;
-            }
-        }
-        obj = obj->GetNextLogic();
-    }
-
-    for (no = 0; no < MAX_LOGIC_GROUP; no++) {
-        if (m_PlayerGroup[no].m_RobotCnt <= 0)
-            break;
-    }
-    ASSERT(no < MAX_LOGIC_GROUP);
-
-    m_PlayerGroup[no].Order(mpo_Stop);
-    m_PlayerGroup[no].m_Obj = NULL;
-    m_PlayerGroup[no].SetWar(false);
-    m_PlayerGroup[no].m_RoadPath->Clear();
-
-    m_PlayerGroup[no].m_RobotCnt++;
-    robot->SetGroupLogic(no);
-
+    int no = GetFreeLogicGroup();
+    ResetLogicGroup(no);
+    AddRobotToLogicGroup(no, robot);
     return no;
 }
 
@@ -10476,230 +9898,6 @@ void CMatrixSideUnit::PGCalcRegionPath(SMatrixPlayerGroup *pg, int rend, byte mm
     //    v2.z=g_MatrixMap->GetZ(v2.x,v2.y)+150.0f;
     //    CHelper::Create(0,101)->Cone(v1,v2,1.0f,1.0f,0xff00ff00,0xff00ff00,3);
     //}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-inline bool PrepareBreakOrder(CMatrixMapStatic *robot) {
-    return !(((CMatrixRobotAI *)robot)->GetEnv()->m_OrderNoBreak = !robot->AsRobot()->CanBreakOrder());
-}
-
-inline bool IsLiveUnit(CMatrixMapStatic *obj) {
-    if (obj->GetObjectType() == OBJECT_TYPE_ROBOTAI)
-        return obj->AsRobot()->m_CurrState !=
-               ROBOT_DIP;  // && (obj->AsRobot()->GetSide()!=PLAYER_SIDE || !obj->AsRobot()->IsSelected()) &&
-                           // (g_MatrixMap->GetPlayerSide()->GetArcadedObject() != obj);
-    else if (obj->GetObjectType() == OBJECT_TYPE_CANNON)
-        return obj->AsCannon()->m_CurrState != CANNON_DIP && obj->AsCannon()->m_CurrState != CANNON_UNDER_CONSTRUCTION;
-    else
-        return false;
-}
-
-inline CPoint GetMapPos(CMatrixMapStatic *obj) {
-    switch (obj->GetObjectType()) {
-        case OBJECT_TYPE_ROBOTAI:
-            return CPoint(obj->AsRobot()->GetMapPosX(), obj->AsRobot()->GetMapPosY());
-        case OBJECT_TYPE_CANNON:
-            return CPoint(int(((CMatrixCannon *)obj)->m_Pos.x / GLOBAL_SCALE_MOVE),
-                          int(((CMatrixCannon *)obj)->m_Pos.y / GLOBAL_SCALE_MOVE));
-        case OBJECT_TYPE_BUILDING:
-            return CPoint(int(((CMatrixBuilding *)obj)->m_Pos.x / GLOBAL_SCALE_MOVE),
-                          int(((CMatrixBuilding *)obj)->m_Pos.y / GLOBAL_SCALE_MOVE));
-    }
-    if (obj->GetObjectType() == OBJECT_TYPE_MAPOBJECT && obj->IsSpecial()) {
-        return CPoint(int(((CMatrixMapObject *)obj)->GetGeoCenter().x / GLOBAL_SCALE_MOVE),
-                      int(((CMatrixBuilding *)obj)->GetGeoCenter().y / GLOBAL_SCALE_MOVE));
-    }
-    ERROR_E;
-}
-
-inline D3DXVECTOR2 GetWorldPos(CMatrixMapStatic *obj) {
-    switch (obj->GetObjectType()) {
-        case OBJECT_TYPE_ROBOTAI:
-            return D3DXVECTOR2(obj->AsRobot()->m_PosX, obj->AsRobot()->m_PosY);
-        case OBJECT_TYPE_CANNON:
-            return obj->AsCannon()->m_Pos;
-        case OBJECT_TYPE_BUILDING:
-            return obj->AsBuilding()->m_Pos;
-    }
-    ERROR_E;
-}
-
-inline bool IsToPlace(CMatrixRobotAI *robot, int place) {
-    if (place < 0)
-        return false;
-
-    SMatrixPlace *pl = GetPlacePtr(place);
-
-    CPoint tp;
-    if (robot->GetMoveToCoords(tp)) {
-        if (robot->FindOrderLikeThat(ROT_CAPTURE_FACTORY))
-            return false;
-        else if ((pl->m_Pos.x == tp.x) && (pl->m_Pos.y == tp.y))
-            return true;
-        else if (robot->GetReturnCoords(tp) && (pl->m_Pos.x == tp.x) && (pl->m_Pos.y == tp.y))
-            return true;
-        else
-            return false;
-    }
-    else {
-        if (robot->GetReturnCoords(tp) && (pl->m_Pos.x == tp.x) && (pl->m_Pos.y == tp.y))
-            return true;
-
-        return (robot->GetMapPosX() == pl->m_Pos.x) && (robot->GetMapPosY() == pl->m_Pos.y);
-        // return fabs(robot->m_PosX-GLOBAL_SCALE_MOVE*(ROBOT_MOVECELLS_PER_SIZE>>1)-GLOBAL_SCALE_MOVE*pl->m_Pos.x)<0.9f
-        // && fabs(robot->m_PosY-GLOBAL_SCALE_MOVE*(ROBOT_MOVECELLS_PER_SIZE>>1)-GLOBAL_SCALE_MOVE*pl->m_Pos.y)<0.9f;
-    }
-}
-
-inline bool IsInPlace(CMatrixRobotAI *robot, int place) {
-    SMatrixPlace *pl = GetPlacePtr(place);
-
-    if (pl == NULL)
-        return false;
-
-    if (robot->FindOrderLikeThat(ROT_MOVE_TO))
-        return false;
-
-    return (robot->GetMapPosX() == pl->m_Pos.x) && (robot->GetMapPosY() == pl->m_Pos.y);
-}
-
-inline bool IsInPlace(CMatrixRobotAI *robot) {
-    return IsInPlace(robot, RobotPlace(robot));
-}
-
-inline int RobotPlace(CMatrixRobotAI *robot) {
-    return robot->GetEnv()->m_Place;
-    //    if(IsToPlace(robot,robot->GetEnv()->m_Place)) return robot->GetEnv()->m_Place;
-    //    else return -1;
-}
-
-inline int CannonPlace(CMatrixCannon *cannon) {
-    return cannon->m_Place;
-}
-
-inline int ObjPlace(CMatrixMapStatic *obj) {
-    if (obj->IsRobot())
-        return RobotPlace(obj->AsRobot());
-    else if (obj->IsCannon())
-        return CannonPlace(obj->AsCannon());
-    ERROR_E;
-}
-
-inline SMatrixPlace *ObjPlacePtr(CMatrixMapStatic *obj) {
-    int i = ObjPlace(obj);
-    if (i >= 0)
-        return GetPlacePtr(i);
-    else
-        return NULL;
-}
-
-inline dword ObjPlaceData(CMatrixMapStatic *obj) {
-    int i = ObjPlace(obj);
-    if (i >= 0)
-        return GetPlacePtr(i)->m_Data;
-    else
-        return 0;
-}
-
-inline void ObjPlaceData(CMatrixMapStatic *obj, dword data) {
-    int i = ObjPlace(obj);
-    if (i >= 0)
-        GetPlacePtr(i)->m_Data = data;
-}
-
-inline bool CanMove(byte movetype, CMatrixRobotAI *robot) {
-    return !(movetype & (1 << (robot->m_Unit[0].u1.s1.m_Kind - 1)));
-}
-
-inline int GetDesRegion(CMatrixRobotAI *robot) {
-    SMatrixPlace *pl = ObjPlacePtr(robot);
-    if (!pl)
-        return -1;
-    return pl->m_Region;
-    /*    CPoint tp;
-
-        if(robot->GetMoveToCoords(tp)) return GetRegion(tp);
-        else return GetRegion(robot->GetMapPosX(),robot->GetMapPosY());*/
-}
-
-inline int GetRegion(const CPoint &tp) {
-    return g_MatrixMap->GetRegion(tp);
-}
-
-inline int GetRegion(int x, int y) {
-    return g_MatrixMap->GetRegion(x, y);
-}
-
-inline int GetRegion(CMatrixMapStatic *obj) {
-    return GetRegion(GetMapPos(obj));
-}
-
-inline D3DXVECTOR3 PointOfAim(CMatrixMapStatic *obj) {
-    D3DXVECTOR3 p;
-
-    if (obj->GetObjectType() == OBJECT_TYPE_ROBOTAI) {
-        p = obj->GetGeoCenter();
-        p.z += 5.0f;
-    }
-    else if (obj->GetObjectType() == OBJECT_TYPE_CANNON) {
-        p = obj->GetGeoCenter();
-        p.z += 5.0f;
-
-        /*        p.x=((CMatrixCannon *)(obj))->m_Pos.x;
-                p.y=((CMatrixCannon *)(obj))->m_Pos.y;
-                p.z=g_MatrixMap->GetZ(p.x,p.y)+25.0f;*/
-    }
-    else if (obj->GetObjectType() == OBJECT_TYPE_BUILDING) {
-        p = obj->GetGeoCenter();
-        p.z = g_MatrixMap->GetZ(p.x, p.y) + 20.0f;
-    }
-    else
-        ASSERT(0);
-
-    return p;
-}
-
-inline bool PLIsToPlace(CMatrixRobotAI *robot) {
-    CPoint tp, ptp;
-    if (robot->GetEnv()->m_Place >= 0) {
-        ptp = GetPlacePtr(robot->GetEnv()->m_Place)->m_Pos;
-    }
-    else if (robot->GetEnv()->m_PlaceAdd.x >= 0) {
-        ptp = robot->GetEnv()->m_PlaceAdd;
-    }
-    else
-        return false;
-
-    if (robot->GetMoveToCoords(tp)) {
-        if (robot->FindOrderLikeThat(ROT_CAPTURE_FACTORY))
-            return false;
-        else if ((ptp.x == tp.x) && (ptp.y == tp.y))
-            return true;
-        else if (robot->GetReturnCoords(tp) && (ptp.x == tp.x) && (ptp.y == tp.y))
-            return true;
-        else
-            return false;
-    }
-    else {
-        if (robot->GetReturnCoords(tp) && (ptp.x == tp.x) && (ptp.y == tp.y))
-            return true;
-
-        return (robot->GetMapPosX() == ptp.x) && (robot->GetMapPosY() == ptp.y);
-    }
-}
-
-inline CPoint PLPlacePos(CMatrixRobotAI *robot) {
-    if (robot->GetEnv()->m_Place >= 0) {
-        return GetPlacePtr(robot->GetEnv()->m_Place)->m_Pos;
-    }
-    else if (robot->GetEnv()->m_PlaceAdd.x >= 0) {
-        return robot->GetEnv()->m_PlaceAdd;
-    }
-    else
-        return CPoint(-1, -1);
 }
 
 void CMatrixSideUnit::CalcRegionPath(SMatrixLogicAction *ac, int rend, byte mm) {

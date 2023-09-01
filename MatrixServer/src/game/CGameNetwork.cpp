@@ -1,0 +1,87 @@
+// MatrixServer - Multiplayer server for SR2 PB game
+// Copyright (C) 2023, Uladzislau "TheNormalnij" Nikalayevich
+// Licensed under GPLv2 or any later version
+// Refer to the LICENSE file included
+
+#include "CGameNetwork.h"
+
+#include <shared/net/CWriteStream.h>
+#include <shared/net/PacketEnums.h>
+#include "net/packets/CGameTickPacket.h"
+#include "net/packets/CChangeGameStatePacket.h"
+#include "net/packets/CGameInfoPacket.h"
+#include "net/packets/CConnectPacket.h"
+
+#include <bitset>
+
+struct SMiltictasRequestSendStatus {
+    size_t sendetCount = 0;
+    size_t targetCount = 0;
+    CWriteStream *stream = nullptr;
+};
+
+void CGameNetwork::SendTickCommands(size_t tick, std::list<IGameCommand *> *commands) {
+    CGameTickPacket packet = CGameTickPacket(tick, commands);
+    Broadcast(packet);
+}
+
+void CGameNetwork::SendGameStatusChanged(EGameStatus status) {
+    CChangeGameStatePacket packet = CChangeGameStatePacket(status);
+    Broadcast(packet);
+}
+
+void CGameNetwork::SendGameInfo(ISession *session, std::string_view mapName, char side, CSidesLogic *sides) {
+    std::bitset<MAX_SIDES_COUNT> aiStatus;
+    for (int i = 0; i < MAX_SIDES_COUNT; i++) {
+        aiStatus.set(i, sides->GetSide((EGameSide)i).IsAiEnabled());
+    }
+    CGameInfoPacket packet(mapName, 0, side, (uint8_t)aiStatus.to_ulong());
+    Unicast(session, packet);
+}
+
+void CGameNetwork::SendConnect(ISession *session) {
+    CConnectPacket packet;
+    Unicast(session, packet);
+}
+
+void CGameNetwork::Broadcast(IPacket &packet) {
+    CWriteStream *stream = new CWriteStream();
+    packet.WritePacket(stream);
+
+    CRequest *req = new CRequest(stream->GetData(), stream->GetSize());
+
+    SMiltictasRequestSendStatus *status = new SMiltictasRequestSendStatus();
+    status->stream = stream;
+    req->SetCustomData(status);
+
+    req->SetCallback([](CRequest *req, bool success) {
+        SMiltictasRequestSendStatus *status = (SMiltictasRequestSendStatus *)req->GetCustomData();
+        status->sendetCount++;
+        if (status->sendetCount >= status->targetCount) {
+            delete req;
+            delete status->stream;
+            delete status;
+        }
+    });
+
+    for (ISession *session : m_sessionStore->GetSessions()) {
+        session->SendData(req);
+        status->targetCount++;
+    }
+}
+
+void CGameNetwork::Unicast(ISession *session, IPacket &packet) {
+    CWriteStream *stream = new CWriteStream();
+    packet.WritePacket(stream);
+
+    CRequest *req = new CRequest(stream->GetData(), stream->GetSize());
+
+    req->SetCustomData(stream);
+
+    req->SetCallback([](CRequest *req, bool status) {
+        delete (CWriteStream *)req->GetCustomData();
+        delete req;
+    });
+
+    session->SendData(req);
+}

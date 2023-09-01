@@ -6,6 +6,7 @@
 #pragma once
 
 #include "MatrixMap.hpp"
+#include "CRandom.hpp"
 
 extern CMatrixRobotAI *g_TestRobot;
 extern bool g_TestLocal;
@@ -72,9 +73,10 @@ public:
     // int m_Takt;				// Game takt
     int m_TaktNext;
 
-    int m_Rnd;
-
     int m_GatherInfoLast;
+
+private:
+    CRandom m_Random;
 
 public:
     CMatrixMapLogic(void);
@@ -82,7 +84,6 @@ public:
 
     void Clear(void);
 
-    int Rnd(void);
     double RndFloat(void);  // 0-1
     int Rnd(int zmin, int zmax);
     double RndFloat(double zmin, double zmax);
@@ -179,6 +180,8 @@ public:
     bool IsLogicVisible(CMatrixMapStatic *ofrom, CMatrixMapStatic *oto, float second_z = 0.0f);
 
     void DumpLogic(void);
+
+    CRandom &GetRandom() noexcept { return m_Random; };
 };
 
 inline int CMatrixMapGroup::ObjectsCnt(void) const {

@@ -163,7 +163,7 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
 
     ApplyVideoParams(set, wnd != NULL);
 
-    CStorage stor(g_CacheHeap);
+    CStorage stor;
     DCP();
 
     std::wstring mapname;
@@ -326,7 +326,7 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
     g_MatrixMap->CreatePoolDefaultResources(true);
     g_MatrixMap->InitObjectsLights();
 
-    g_MatrixMap->GetPlayerSide()->Select(BUILDING, g_MatrixMap->GetPlayerSide()->m_ActiveObject);
+    g_MatrixMap->GetPlayerSide()->Select(ESelType::BUILDING, g_MatrixMap->GetPlayerSide()->m_ActiveObject);
     g_MatrixMap->m_Cursor.Select(CURSOR_ARROW);
 
     if (!FLAG(g_MatrixMap->m_Flags, MMFLAG_FULLAUTO))
@@ -526,6 +526,43 @@ void CGame::ApplyTextsReplaces(SMatrixTextParams *textParams) {
     }
 }
 
+void CGame::ApplySceneColors() {
+    DTRACE();
+    S3D_Default();
+    D3DMATERIAL9 mtrl;
+    ZeroMemory(&mtrl, sizeof(D3DMATERIAL9));
+    mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
+    mtrl.Diffuse.g = mtrl.Ambient.g = 1.0f;
+    mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
+    mtrl.Diffuse.a = mtrl.Ambient.a = 1.0f;
+    mtrl.Specular.r = 0.5f;
+    mtrl.Specular.g = 0.5f;
+    mtrl.Specular.b = 0.5f;
+    mtrl.Specular.a = 0.5f;
+    g_D3DD->SetMaterial(&mtrl);
+    g_D3DD->SetRenderState(D3DRS_SPECULARMATERIALSOURCE, D3DMCS_MATERIAL);
+
+    D3DXVECTOR3 vecDir;
+    D3DLIGHT9 light;
+    ZeroMemory(&light, sizeof(D3DLIGHT9));
+    light.Type = D3DLIGHT_DIRECTIONAL;  // D3DLIGHT_POINT;//D3DLIGHT_DIRECTIONAL;
+    light.Diffuse.r = GetColorR(g_MatrixMap->m_LightMainColorObj);
+    light.Diffuse.g = GetColorG(g_MatrixMap->m_LightMainColorObj);
+    light.Diffuse.b = GetColorB(g_MatrixMap->m_LightMainColorObj);
+    light.Ambient.r = 0.0f;
+    light.Ambient.g = 0.0f;
+    light.Ambient.b = 0.0f;
+    light.Specular.r = GetColorR(g_MatrixMap->m_LightMainColorObj);
+    light.Specular.g = GetColorG(g_MatrixMap->m_LightMainColorObj);
+    light.Specular.b = GetColorB(g_MatrixMap->m_LightMainColorObj);
+    // light.Range       = 0;
+    light.Direction = g_MatrixMap->m_LightMain;
+    //	light.Direction=D3DXVECTOR3(250.0f,-50.0f,-250.0f);
+    //	D3DXVec3Normalize((D3DXVECTOR3 *)(&(light.Direction)),(D3DXVECTOR3 *)(&(light.Direction)));
+    ASSERT_DX(g_D3DD->SetLight(0, &light));
+    ASSERT_DX(g_D3DD->LightEnable(0, TRUE));
+}
+
 void CGame::Deinit(void) {
     DTRACE();
 
@@ -647,9 +684,13 @@ void CGame::Deinit(void) {
     }
 }
 
-void CGame::RunGameLoop(CFormMatrixGame *formgame) {
+void CGame::RunGameLoop(CForm *formgame) {
     try {
         g_ExitState = 0;
+        
+        // Проверить, можно ли в лучшем контексте то запустить
+        ApplySceneColors();
+
         FormChange(formgame);
 
         timeBeginPeriod(1);

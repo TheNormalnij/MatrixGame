@@ -25,7 +25,6 @@
 #include "MatrixInstantDraw.hpp"
 
 #include "Interface/CInterface.h"
-#include "Logic/MatrixTactics.h"
 #include "MatrixGameDll.hpp"
 #include "MatrixSampleStateManager.hpp"
 #include "MatrixMultiSelection.hpp"
@@ -1014,17 +1013,28 @@ void CMatrixMap::LoadSide(CBlockPar &bp) {
         m_Side[idx].m_Constructor->SetSide(id);
         m_Side[idx].m_Color = color;
         m_Side[idx].m_ColorMM = colorMM;
-        m_Side[idx].m_ColorTexture = NULL;
+        m_Side[idx].m_ColorTexture = nullptr;
         m_Side[idx].m_Name = name.GetStrPar(0, L",");
-        ++idx;
 
-        if (id == PLAYER_SIDE) {
-            m_PlayerSide = m_Side;
-            m_Side->InitPlayerSide();
+        // TODO: set player side later
+        if (id == DEFAULT_PLAYER_SIDE) {
+            m_PlayerSide = &m_Side[idx];
+            m_PlayerSide->InitPlayerSide();
+        }
+
+        ++idx;
+    }
+}
+
+void CMatrixMap::SetPlayerSide(int id) {
+    for (int i = 0; i < m_SideCnt; i++) {
+        if (m_Side[i].m_Id == id) {
+            m_PlayerSide = &m_Side[i];
+            m_PlayerSide->InitPlayerSide();
+
+            return;
         }
     }
-
-    /*m_PlayerSide = GetSideById(PLAYER_SIDE);*/
 }
 
 void CMatrixMap::WaterClear() {
@@ -2226,134 +2236,9 @@ void CMatrixMap::Draw(void) {
         }
     }
 
-    // CDText::T("COL", (int)GetColor(m_TraceStopPos.x, m_TraceStopPos.y));
-
-    /*
-        CHelper::Create(1,0)->Line(D3DXVECTOR3(m_TraceStopPos.x, m_TraceStopPos.y, -100),
-                                D3DXVECTOR3(m_TraceStopPos.x, m_TraceStopPos.y, 100));
-
-        D3DXVECTOR2 dir;
-        if (CalcVectorToLandscape(D3DXVECTOR2(m_TraceStopPos.x, m_TraceStopPos.y), dir))
-
-        {
-
-            CHelper::Create(1,0)->Line(D3DXVECTOR3(m_TraceStopPos.x, m_TraceStopPos.y, 10),
-                                    D3DXVECTOR3(m_TraceStopPos.x, m_TraceStopPos.y, 10) + 100 * D3DXVECTOR3(dir.x,
-       dir.y, 0));
-        }
-        */
-
-    // m_Minimap.Draw();
 
     CMatrixProgressBar::DrawAll();
     CMultiSelection::DrawAll();
-
-    //#ifdef _DEBUG
-    //
-    //    {
-    //        static CTextureManaged *test = NULL;
-    //
-    //        if (m_KeyDown && m_KeyScan == KEY_R)
-    //        {
-    //            if (IS_TRACE_STOP_OBJECT(m_TraceStopObj))
-    //            {
-    //
-    //                if (test)
-    //                {
-    //                    test->FreeReminder();
-    //                    g_Cache->Destroy(test);
-    //                }
-    //
-    //                test = m_TraceStopObj->RenderToTexture(TEXSIZE_128);
-    //            }
-    //        }
-    //
-    //#define SME  256
-    //#define SZ  128
-    //
-    //        if (test)
-    //        {
-    //            struct { D3DXVECTOR4 v; float tu, tv; } v[4] =
-    //            {
-    //                { D3DXVECTOR4(0+SME,  SZ+SME, 0.0f, 1.0f), 0,1},
-    //                { D3DXVECTOR4(0.0f+SME, 0.0f+SME, 0.0f, 1.0f), 0,0},
-    //                { D3DXVECTOR4(SZ+SME,  SZ+SME, 0.0f, 1.0f), 1,1},
-    //                { D3DXVECTOR4(SZ+SME, 0+SME, 0.0f, 1.0f), 1,0}
-    //            };
-    //
-    //            g_D3DD->SetTexture(0,test->Tex());
-    //
-    //            SetAlphaOpSelect(0, D3DTA_TEXTURE);
-    //            SetColorOpSelect(0, D3DTA_TEXTURE);
-    //            SetColorOpDisable(1);
-    //
-    //            ASSERT_DX(g_D3DD->SetFVF(D3DFVF_XYZRHW|D3DFVF_TEX1));
-    //            ASSERT_DX(g_D3DD->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, &v, sizeof(D3DXVECTOR4)+8 ));
-    //
-    //        }
-    //
-    //    }
-    //
-    //#endif
-
-    // shader
-    // if (m_ShadeOn)
-    //{
-    //    float k = (1.0f-(float(m_ShadeTime)*INVERT(SHADER_TIME)));
-    //    float y = k * float(g_ScreenY) * (SHADER_PERC / 100.0f);
-
-    //    D3DXVECTOR4 v[8] =
-    //    {
-    //        D3DXVECTOR4(0.0f, y, 0.0f, 1.0f),
-    //        D3DXVECTOR4(0,  0, 0.0f, 1.0f),
-    //        D3DXVECTOR4(float(g_ScreenX), y, 0.0f, 1.0f),
-    //        D3DXVECTOR4(float(g_ScreenX),  0, 0.0f, 1.0f),
-
-    //        D3DXVECTOR4(0.0f, float(g_ScreenY), 0.0f, 1.0f),
-    //        D3DXVECTOR4(0,  float(g_ScreenY)-y, 0.0f, 1.0f),
-    //        D3DXVECTOR4(float(g_ScreenX), float(g_ScreenY), 0.0f, 1.0f),
-    //        D3DXVECTOR4(float(g_ScreenX),  float(g_ScreenY)-y, 0.0f, 1.0f)
-
-    //    };
-    //
-
-    // ASSERT_DX(g_D3DD->SetRenderState(D3DRS_TEXTUREFACTOR,		0x0));
-
-    //    SetAlphaOpDisable(0);
-    //    SetColorOpSelect(0, D3DTA_TFACTOR);
-    //    SetColorOpDisable(1);
-    //
-    //    ASSERT_DX(g_D3DD->SetFVF(D3DFVF_XYZRHW|D3DFVF_DIFFUSE));
-    //    ASSERT_DX(g_D3DD->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, &v, sizeof(D3DXVECTOR4) ));
-    //    ASSERT_DX(g_D3DD->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, &v[4], sizeof(D3DXVECTOR4) ));
-
-    //    if (m_ShadeTimeCurrent > 3000)
-    //    {
-    //        ASSERT_DX(g_D3DD->SetRenderState(D3DRS_ALPHABLENDENABLE,		TRUE));
-    //        float k = (float(m_ShadeTimeCurrent-3000) * INVERT(2000.0f));
-    //        if (k < 0) k = 0;
-    //        if (k > 1) k = 1;
-    //        BYTE a = BYTE(k*255.0);
-    //        ASSERT_DX(g_D3DD->SetRenderState(D3DRS_TEXTUREFACTOR, (a << 24)));
-
-    //        D3DXVECTOR4 v[4] =
-    //        {
-    //            D3DXVECTOR4(0,  float(g_ScreenY)-y, 0.0f, 1.0f),
-    //            D3DXVECTOR4(0.0f, y, 0.0f, 1.0f),
-    //            D3DXVECTOR4(float(g_ScreenX),  float(g_ScreenY)-y, 0.0f, 1.0f),
-    //            D3DXVECTOR4(float(g_ScreenX), y, 0.0f, 1.0f),
-    //        };
-
-    //        SetAlphaOpSelect(0, D3DTA_TFACTOR);
-
-    //        ASSERT_DX(g_D3DD->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, &v, sizeof(D3DXVECTOR4) ));
-    //        ASSERT_DX(g_D3DD->SetRenderState(D3DRS_ALPHABLENDENABLE,		FALSE));
-
-    //    }
-
-    //    m_Camera.SetTarget(m_ShadePosFrom + (m_ShadePosTo-m_ShadePosFrom) * k);
-
-    //}
 
     if (IsPaused()) {
         ASSERT_DX(g_D3DD->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE));

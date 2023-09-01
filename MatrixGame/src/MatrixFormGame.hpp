@@ -3,29 +3,15 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
+#pragma once
+
 #include "Form.hpp"
+#include "MatrixKeyScan.hpp"
+#include "Control/COrderController.h"
+#include "Control/CLocalOrderProcessor.h"
 
 #include <deque>
 #include <string>
-#include <cstdint>
-
-#pragma once
-
-#define MAX_SCANS             16
-#define MOUSE_BORDER          4
-#define DOUBLESCAN_TIME_DELTA 200
-
-struct SKeyScan {
-    SKeyScan() = default;
-
-    SKeyScan(uint32_t _time, uint32_t _scan)
-    : time{_time}
-    , scan{_scan}
-    {}
-
-    uint32_t time;
-    uint32_t scan;
-};
 
 class CFormMatrixGame : public CForm {
 private:
@@ -50,4 +36,11 @@ public:
 
     virtual void Keyboard(bool down, int scan);
     virtual void SystemEvent(ESysEvent se);
+
+    void MinimapClick(int key);
+    COrderController *GetOrderController() const noexcept override { return m_pOrderController; };
+
+private:
+    CLocalOrderProcessor *m_pOrderProcessor;
+    COrderController *m_pOrderController;
 };

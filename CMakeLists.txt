@@ -5,10 +5,24 @@ set(CMAKE_CONFIGURATION_TYPES Release Debug)
 
 project(MatrixGame)
 
+if(CMAKE_CONFIGURATION_TYPES)
+    message("Multi-configuration generator")
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "My multi config types" FORCE)
+else()
+    message("Single-configuration generator")
+endif()
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+option(MATRIXGAME_BUILD_GAME "Build main game" TRUE)
 option(MATRIXGAME_BUILD_LAUNCHER "Build standalone launcher for game" TRUE)
+option(MATRIXGAME_BUILD_SERVER "Build server for multipayer game" TRUE)
 option(MATRIXGAME_CHEATS "Enable cheats" TRUE)
+
+if(NOT WIN32)
+    set(MATRIXGAME_BUILD_GAME FALSE)
+    set(MATRIXGAME_BUILD_LAUNCHER FALSE)
+endif()
 
 find_package(DIRECTX9 REQUIRED)
 if(MSVC)
@@ -76,8 +90,27 @@ else()
     )
 endif()
 
-add_subdirectory(MatrixLib)
-add_subdirectory(MatrixGame)
+
+add_subdirectory(MatrixShared)
+
+if(MATRIXGAME_BUILD_GAME)
+    add_subdirectory(MatrixLib)
+    add_subdirectory(MatrixGame)
+
+    install(
+        TARGETS MatrixGame
+        RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
+        LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
+    )
+    if(MSVC)
+        install(
+            FILES $<TARGET_PDB_FILE:MatrixGame>
+            CONFIGURATIONS Debug
+            DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
+        )
+    endif()
+
+endif()
 
 if(MATRIXGAME_BUILD_LAUNCHER)
     add_subdirectory(MatrixLauncher)
@@ -98,15 +131,20 @@ if(MATRIXGAME_BUILD_LAUNCHER)
 
 endif()
 
-install(
-    TARGETS MatrixGame
-    RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
-    LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
-)
-if(MSVC)
+if(MATRIXGAME_BUILD_SERVER)
+    add_subdirectory(MatrixServer)
+
     install(
-        FILES $<TARGET_PDB_FILE:MatrixGame>
-        CONFIGURATIONS Debug
-        DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
+        TARGETS MatrixServer
+        RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
+        LIBRARY DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
     )
+
+    if(MSVC)
+        install(
+            FILES $<TARGET_PDB_FILE:MatrixServer>
+            CONFIGURATIONS Debug
+            DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/bin
+        )
+    endif()
 endif()

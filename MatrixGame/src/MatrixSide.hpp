@@ -14,7 +14,10 @@
 //#define MAX_ROBOTS_BUILD        10
 #define MAX_ROBOTS      60
 #define MAX_FACTORIES   10
-#define PLAYER_SIDE     1
+#define DEFAULT_PLAYER_SIDE 1
+
+// Dirty hack. All usages should be refactored
+#define PLAYER_SIDE     g_MatrixMap->GetPlayerSide()->GetId()
 #define MAX_LOGIC_GROUP (MAX_ROBOTS + 1)
 
 #define MAX_TEAM_CNT         3
@@ -46,6 +49,7 @@ class CMatrixCannon;
 class CMatrixEffectLandscapeSpot;
 class CMatrixFlyer;
 class CConstructorPanel;
+class COrderController; // shitcode remove after refactor
 
 #define MAX_STATISTICS 6
 enum EStat {
@@ -71,7 +75,7 @@ enum ESelection {
     ESelection_FORCE_DWORD = 0x7FFFFFFF
 };
 
-enum ESelType {
+enum class ESelType {
     ROBOT = 0,
     FAR_ROBOT = 1,
     FLYER = 2,
@@ -331,6 +335,8 @@ struct SMatrixLogicRegion {
 };
 
 class CMatrixSideUnit : public CMain {
+    friend class COrderController; // shitcode remove after refactor
+
 public:
     // In map options
     int m_TimeNextBomb;
@@ -394,6 +400,7 @@ public:
     SMatrixTeam m_Team[MAX_TEAM_CNT];
 
 public:
+    int GetId() { return m_Id; };
     void BufPrepare(void);
 
     void SetStatus(ESideStatus s) { m_SideStatus = s; }
@@ -435,6 +442,7 @@ public:
     SMatrixTeam *GetTeam(int no) { return m_Team + no; }
 
     int m_Id;
+    bool m_Ai;
     std::wstring m_Name;
 
     DWORD m_Color;
@@ -451,6 +459,11 @@ public:
     int GetMaxSideRobots();
 
     void LogicTakt(int ms);
+
+    void SetAiEnabled(bool state) { m_Ai = state; };
+    bool IsAiEnabled() const noexcept { return m_Ai; };
+    // Если сторона управляется игроком. Возможно, сетевым
+    bool IsPlayerSide() const noexcept { return !m_Ai; };
 
     // Player
     CConstructorPanel *m_ConstructPanel;
@@ -483,9 +496,6 @@ public:
     void SelectedGroupUnselect();
     void GroupsUnselectSoft();
     void SelectedGroupBreakOrders();
-    void SelectedGroupMoveTo(const D3DXVECTOR2 &pos);
-    void SelectedGroupAttack(CMatrixMapStatic *victim);
-    void SelectedGroupCapture(CMatrixMapStatic *building);
     void PumpGroups();
 
     CMatrixGroup *GetFirstGroup() { return m_FirstGroup; }
@@ -503,17 +513,6 @@ public:
     void ShowOrderState(void);
     bool MouseToLand(const CPoint &mouse, float *pWorldX, float *pWorldY, int *pMapX, int *pMapY);
     CMatrixMapStatic *MouseToLand();
-    void OnRButtonDown(const CPoint &mouse);
-    void OnRButtonDouble(const CPoint &mouse);
-    void OnLButtonDown(const CPoint &mouse);
-    void OnLButtonDouble(const CPoint &mouse);
-    void OnRButtonUp(const CPoint &mouse);
-    void OnLButtonUp(const CPoint &mouse);
-    void OnForward(bool down);
-    void OnBackward(bool down);
-    void OnLeft(bool down);
-    void OnRight(bool down);
-    void OnMouseMove();
 
     // Tactics
     // void GiveRandomOrder();
@@ -583,6 +582,8 @@ public:
 
     bool CanMoveNoEnemy(byte mm, int r1, int r2);
 
+    CConstructor *GetConstructor() const noexcept { return m_Constructor; };
+
     // Player logic
 
     void SoundCapture(int pg);
@@ -591,7 +592,11 @@ public:
     bool FirePL(int group);
     void RepairPL(int group);
     void WarPL(int group);
+    void RecalculateLogicGroups();
+    int GetFreeLogicGroup();
+    void ResetLogicGroup(int id);
     int SelGroupToLogicGroup(void);
+    void AddRobotToLogicGroup(int id, CMatrixRobotAI *robot);
     int RobotToLogicGroup(CMatrixRobotAI *robot);
     void PGOrderStop(int no);
     void PGOrderMoveTo(int no, const CPoint &tp);

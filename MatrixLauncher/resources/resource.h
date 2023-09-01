@@ -12,6 +12,8 @@
 #define ID_BTN_SETTINGS                 1001
 #define IDC_MAPLIST                     1002
 #define IDC_SCREEN                      1003
+#define ID_BTN_PLAY2                    1003
+#define ID_BTN_JOIN                     1003
 #define IDC_FULLSCREEN                  1005
 #define IDC_SCREEN_W                    1006
 #define IDC_SCREEN_H                    1007

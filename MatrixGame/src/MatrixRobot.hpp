@@ -10,7 +10,6 @@
 #include "MatrixObjectRobot.hpp"
 #include "MatrixObjectBuilding.hpp"
 #include "Logic/MatrixEnvironment.h"
-#include "Logic/MatrixTactics.h"
 #include "Logic/MatrixAIGroup.h"
 #include "Effects/MatrixEffectWeapon.hpp"
 
@@ -383,33 +382,9 @@ public:
     bool IsAutomaticMode(void) const {
         return m_CurrState == ROBOT_IN_SPAWN || m_CurrState == ROBOT_BASE_MOVEOUT || m_CurrState == ROBOT_BASE_CAPTURE;
     }
-    bool CanBreakOrder(void) {
-        if (m_Side != PLAYER_SIDE || FLAG(g_MatrixMap->m_Flags, MMFLAG_FULLAUTO)) {
-            CMatrixBuilding *cf = GetCaptureFactory();
-            if (cf) {
-                return false;  // DO NOT BREAK CAPTURING!!!!!!!!!!!!!!!!!!!!!!!! NEVER!!!!!!!!!!
-                // if (cf->IsBase()) return false;
-                // if (cf->GetSide()!=robot->GetSide())
-                //{
-                //    if(
-                //        (float(cf->m_TrueColor.m_ColoredCnt)/MAX_ZAHVAT_POINTS)
-                //        >
-                //        (1.0-(robot->AsRobot()->GetHitPoint()*1.1f)/robot->AsRobot()->GetMaxHitPoint())
-                //    ) return false;
-                //}
-            }
-        }
 
-        return !IsAutomaticMode() &&
-               ((m_Side != PLAYER_SIDE) || (g_MatrixMap->GetPlayerSide()->GetArcadedObject() != this));
-    }
+    bool CanBreakOrder(); // TODO const
 
-    void OBBToAABBCollision(int nHeight, int nWidth);
-    D3DXVECTOR3 LineToAABBIntersection(const D3DXVECTOR2 &s, const D3DXVECTOR2 &e, const D3DXVECTOR2 &vLu,
-                                       const D3DXVECTOR2 &vLd, const D3DXVECTOR2 &vRu, const D3DXVECTOR2 &vRd,
-                                       bool revers_x, bool revers_y);
-    D3DXVECTOR3 CornerLineToAABBIntersection(const D3DXVECTOR2 &s, const D3DXVECTOR2 &e, const D3DXVECTOR2 &vLu,
-                                             const D3DXVECTOR2 &vLd, const D3DXVECTOR2 &vRu, const D3DXVECTOR2 &vRd);
     D3DXVECTOR3 SphereRobotToAABBObstacleCollision(D3DXVECTOR3 &corr, const D3DXVECTOR3 &vel);
     // D3DXVECTOR3 SphereToAABBIntersection(const D3DXVECTOR2 &pos,float r, const D3DXVECTOR2 &vLu,const D3DXVECTOR2
     // &vLd,const D3DXVECTOR2 &vRu,const D3DXVECTOR2 &vRd, bool revers_x, bool revers_y);
@@ -428,7 +403,6 @@ public:
     // void ZoneMoveCalcTo(void);	                // Рассчитать путь в нутрии текущей зоны до точки назначения (In:
     // m_DesX,m_DesY) (Out: m_MovePathCnt,m_MovePathCur,m_MovePath)
     void MoveByMovePath(int ms);  // Двигаться по пути движения
-    void MoveToRndBuilding();
 
     void CalcRobotMass();  // вычисляет массу, скорость, силу робота
     bool Seek(const D3DXVECTOR3 &dest, bool &rotate, bool end_path,

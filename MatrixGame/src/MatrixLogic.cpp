@@ -45,8 +45,7 @@ CMatrixMapLogic::CMatrixMapLogic() : CMatrixMap() {
 
     m_TaktNext = 0;
 
-    m_Rnd = rand();
-    Rnd(0, 1);
+    m_Random.Reset(1);
 
     m_GatherInfoLast = 0;
     m_MaintenanceTime = 0;
@@ -97,34 +96,16 @@ void CMatrixMapLogic::Clear() {
     CMatrixMap::Clear();
 }
 
-int CMatrixMapLogic::Rnd() {
-    DTRACE();
-
-    m_Rnd = 16807 * (m_Rnd % 127773) - 2836 * (m_Rnd / 127773);
-    if (m_Rnd <= 0)
-        m_Rnd = m_Rnd + 2147483647;
-    return m_Rnd - 1;
-}
-
 double CMatrixMapLogic::RndFloat(void) {
-    DTRACE();
-
-    return float(Rnd()) / float(2147483647 - 2);
+    return m_Random.RndFloat();
 }
 
 int CMatrixMapLogic::Rnd(int zmin, int zmax) {
-    DTRACE();
-
-    if (zmin <= zmax)
-        return zmin + (Rnd() % (zmax - zmin + 1));
-    else
-        return zmax + (Rnd() % (zmin - zmax + 1));
+    return m_Random.Rnd(zmin, zmax);
 }
 
 double CMatrixMapLogic::RndFloat(double zmin, double zmax) {
-    DTRACE();
-
-    return zmin + RndFloat() * (zmax - zmin);
+    return m_Random.RndFloat(zmin, zmax);
 }
 
 void CMatrixMapLogic::GatherInfo(int type) {
@@ -166,293 +147,6 @@ void CMatrixMapLogic::PrepareBuf() {
     if (!m_ZoneIndexAccess)
         m_ZoneIndexAccess = (int *)HAlloc(std::max(m_RN.m_ZoneCnt, m_RN.m_PlaceCnt) * sizeof(int), g_MatrixHeap);
 }
-
-// void CMatrixMapLogic::ZoneClear()
-//{
-//    DTRACE();
-//
-//	for(int i=0;i<5;i++) {
-//		if(m_Zone[i]!=NULL) {
-//			HFree(m_Zone[i],g_MatrixHeap);
-//			m_Zone[i]=NULL;
-//		}
-//		m_ZoneCnt[i]=0;
-//	}
-//}
-//
-// void CMatrixMapLogic::ZoneCalc(int nsh,byte mm)
-//{
-//    DTRACE();
-//
-//	int x,y,cx,cy,i,u,t,k;
-//	SMatrixMapUnit * mu;
-//	CMatrixMapStatic * ms;
-//
-//	// Clear zone
-//	mu=UnitGet(0,0);
-//	for(y=0;y<m_Size.y;y++) {
-//		for(x=0;x<m_Size.x;x++,mu++) {
-//			mu->m_Zone[nsh]=-1;
-//		}
-//	}
-//
-//	// Find begin zone
-//	int zonesize=16;
-//
-//	SMatrixMapZone * zone=(SMatrixMapZone
-//*)HAllocClear(sizeof(SMatrixMapZone)*(m_Size.x/zonesize+1)*(m_Size.y/zonesize+1),g_MatrixHeap); 	int zonecnt=0;
-//
-//	for(y=zonesize/2;y<m_Size.y;y+=zonesize) {
-//		for(x=zonesize/2;x<m_Size.x;x+=zonesize) {
-//			zone[zonecnt].m_Building=false;
-//			zone[zonecnt].m_BeginX=x;
-//			zone[zonecnt].m_BeginY=y;
-//			ms=m_StaticFirst;
-//			while(ms)
-//            {
-//				if(ms->GetObjectType() == OBJECT_TYPE_BUILDING)
-//                {
-//                    cx=Float2Int(((CMatrixBuilding *)ms)->m_Pos.x / GLOBAL_SCALE_MOVE);
-//					cy=Float2Int(((CMatrixBuilding *)ms)->m_Pos.y / GLOBAL_SCALE_MOVE);
-//					if(cx>=(x-zonesize/2) && cx<(x+zonesize/2) && cy>=(y-zonesize/2) && cy<(y+zonesize/2)) {
-//						zone[zonecnt].m_BeginX=cx;
-//						zone[zonecnt].m_BeginY=cy;
-//						zone[zonecnt].m_Building=true;
-//						break;
-//					}
-//				}
-//				ms=ms->m_Next;
-//			}
-//			if(zone[zonecnt].m_Building) { zonecnt++; continue; }
-//			mu=UnitGet(zone[zonecnt].m_BeginX,zone[zonecnt].m_BeginY);
-//			if(!(mu->m_Stop && mm)) { zonecnt++; continue; }
-//
-//			bool fo=false;
-//			for(i=0;i<(zonesize/2-1);i++) {
-//				for(u=0;u<((i+1)*2+1);u++) {
-//					mu=UnitGetTest(x-(i+1)+u,y-(i+1));
-//					if(mu && !(mu->m_Stop & mm)) {
-//						zone[zonecnt].m_BeginX=x-(i+1)+u;
-//						zone[zonecnt].m_BeginY=y-(i+1);
-//						fo=true;
-//						break;
-//					}
-//					mu=UnitGetTest(x-(i+1)+u,y+(i+1));
-//					if(mu && !(mu->m_Stop & mm)) {
-//						zone[zonecnt].m_BeginX=x-(i+1)+u;
-//						zone[zonecnt].m_BeginY=y+(i+1);
-//						fo=true;
-//						break;
-//					}
-//				}
-//				if(fo) break;
-//
-//				for(u=0;u<(i*2+1);u++) {
-//					mu=UnitGetTest(x-(i+1),y-i+u);
-//					if(mu && !(mu->m_Stop & mm)) {
-//						zone[zonecnt].m_BeginX=x-(i+1);
-//						zone[zonecnt].m_BeginY=y-i+u;
-//						fo=true;
-//						break;
-//					}
-//					mu=UnitGetTest(x+(i+1),y-i+u);
-//					if(mu && !(mu->m_Stop & mm)) {
-//						zone[zonecnt].m_BeginX=x+(i+1);
-//						zone[zonecnt].m_BeginY=y-i+u;
-//						fo=true;
-//						break;
-//					}
-//				}
-//				if(fo) break;
-//			}
-//			if(fo) zonecnt++;
-//		}
-//	}
-//
-//	for(i=0;i<zonecnt;i++) {
-//		mu=UnitGet(zone[i].m_BeginX,zone[i].m_BeginY);
-//		mu->m_Zone[nsh]=i;
-//	}
-//
-//	// Grow zone, prepate center, calc rect, calc size
-//	if(zonecnt>0) {
-//		struct sgz {
-//			int cnt,cnt2;
-//			int max;
-//			CPoint * p,* p2;
-//		} * pgz=(sgz *)HAllocClear(sizeof(sgz)*zonecnt,g_MatrixHeap);
-//
-//		for(i=0;i<zonecnt;i++) {
-//			pgz[i].max=zonesize*8;
-//			pgz[i].p=(CPoint *)HAlloc(sizeof(CPoint)*pgz[i].max,g_MatrixHeap);
-//			pgz[i].p2=(CPoint *)HAlloc(sizeof(CPoint)*pgz[i].max,g_MatrixHeap);
-//			pgz[i].p[0].x=zone[i].m_BeginX;
-//			pgz[i].p[0].y=zone[i].m_BeginY;
-//			pgz[i].cnt=1;
-//
-//			zone[i].m_Rect.left=1000000;
-//			zone[i].m_Rect.top=1000000;
-//			zone[i].m_Rect.right=-1000000;
-//			zone[i].m_Rect.bottom=-1000000;
-//		}
-//
-//		bool growok=true;
-//		while(growok) {
-//			growok=false;
-//
-//			for(i=0;i<zonecnt;i++) {
-//				if(pgz[i].cnt+4>pgz[i].max) {
-//					pgz[i].max+=32;
-//					pgz[i].p=(CPoint *)HAllocEx(pgz[i].p,sizeof(CPoint)*pgz[i].max,g_MatrixHeap);
-//					pgz[i].p2=(CPoint *)HAllocEx(pgz[i].p2,sizeof(CPoint)*pgz[i].max,g_MatrixHeap);
-//				}
-//				for(u=0;u<pgz[i].cnt;u++) {
-//					zone[i].m_CenterX+=pgz[i].p[u].x;
-//					zone[i].m_CenterY+=pgz[i].p[u].y;
-//
-//					if(pgz[i].p[u].x<zone[i].m_Rect.left) zone[i].m_Rect.left=pgz[i].p[u].x;
-//					if(pgz[i].p[u].x>=zone[i].m_Rect.right) zone[i].m_Rect.right=pgz[i].p[u].x+1;
-//					if(pgz[i].p[u].y<zone[i].m_Rect.top) zone[i].m_Rect.top=pgz[i].p[u].y;
-//					if(pgz[i].p[u].y>=zone[i].m_Rect.bottom) zone[i].m_Rect.bottom=pgz[i].p[u].y+1;
-//
-//					zone[i].m_Size++;
-//				}
-//
-//				for(u=0;u<pgz[i].cnt;u++) {
-//					CPoint cp=pgz[i].p[u];
-//					mu=UnitGetTest(cp.x-1,cp.y); if(mu && mu->m_Zone[nsh]<0 && !(mu->m_Stop & mm)) { mu->m_Zone[nsh]=i;
-//pgz[i].p2[pgz[i].cnt2].x=cp.x-1; pgz[i].p2[pgz[i].cnt2].y=cp.y; pgz[i].cnt2++; growok=true; }
-//					mu=UnitGetTest(cp.x+1,cp.y); if(mu && mu->m_Zone[nsh]<0 && !(mu->m_Stop & mm)) { mu->m_Zone[nsh]=i;
-//pgz[i].p2[pgz[i].cnt2].x=cp.x+1; pgz[i].p2[pgz[i].cnt2].y=cp.y; pgz[i].cnt2++; growok=true; }
-//					mu=UnitGetTest(cp.x,cp.y-1); if(mu && mu->m_Zone[nsh]<0 && !(mu->m_Stop & mm)) { mu->m_Zone[nsh]=i;
-//pgz[i].p2[pgz[i].cnt2].x=cp.x; pgz[i].p2[pgz[i].cnt2].y=cp.y-1; pgz[i].cnt2++; growok=true; }
-//					mu=UnitGetTest(cp.x,cp.y+1); if(mu && mu->m_Zone[nsh]<0 && !(mu->m_Stop & mm)) { mu->m_Zone[nsh]=i;
-//pgz[i].p2[pgz[i].cnt2].x=cp.x; pgz[i].p2[pgz[i].cnt2].y=cp.y+1; pgz[i].cnt2++; growok=true; }
-//				}
-//
-//				CPoint * pt=pgz[i].p; pgz[i].p=pgz[i].p2; pgz[i].p2=pt;
-//				pgz[i].cnt=pgz[i].cnt2; pgz[i].cnt2=0;
-//			}
-//		}
-//
-//		for(i=0;i<zonecnt;i++) {
-//			HFree(pgz[i].p,g_MatrixHeap);
-//			HFree(pgz[i].p2,g_MatrixHeap);
-//		}
-//		HFree(pgz,g_MatrixHeap);
-//	}
-//
-//	// find center, calc perimeter, find near zone
-//	for(i=0;i<zonecnt;i++) {
-//		zone[i].m_CenterX/=zone[i].m_Size;
-//		zone[i].m_CenterY/=zone[i].m_Size;
-//
-////		if(UnitGet(zone[i].m_CenterX,zone[i].m_CenterY)->zone!=i) {
-//			cx=zone[i].m_BeginX;
-//			cy=zone[i].m_BeginY;
-//			u=1000000000;
-//			for(y=zone[i].m_Rect.top;y<zone[i].m_Rect.bottom;y++) {
-//				for(x=zone[i].m_Rect.left;x<zone[i].m_Rect.right;x++) {
-//					if(UnitGet(x,y)->m_Zone[nsh]==i) {
-//						t=(x-zone[i].m_CenterX)*(x-zone[i].m_CenterX)+(y-zone[i].m_CenterY)*(y-zone[i].m_CenterY);
-//						if(t<u) {
-//							cx=x; cy=y;
-//							u=t;
-//						}
-//
-//						for(u=0;u<4;u++) {
-//							if(u==0) mu=UnitGetTest(x-1,y);
-//							else if(u==1) mu=UnitGetTest(x+1,y);
-//							else if(u==2) mu=UnitGetTest(x,y-1);
-//							else if(u==3) mu=UnitGetTest(x,y+1);
-//
-//							if(!mu) continue;
-//
-//							if(mu->m_Zone[nsh]!=i) {
-//								zone[i].m_Perim++;
-//
-//								if(mu->m_Zone[nsh]>=0) {
-//									for(k=0;k<zone[i].m_NearZoneCnt;k++) if(zone[i].m_NearZone[k]==mu->m_Zone[nsh])
-//break; 									if(k>=zone[i].m_NearZoneCnt) { 										ASSERT(zone[i].m_NearZoneCnt+1<=8);
-//										zone[i].m_NearZone[zone[i].m_NearZoneCnt]=mu->m_Zone[nsh];
-//										zone[i].m_NearZoneConnectSize[zone[i].m_NearZoneCnt]=1;
-//										zone[i].m_NearZoneCnt++;
-//									} else {
-//										zone[i].m_NearZoneConnectSize[k]++;
-//									}
-//								}
-//							}
-//						}
-//					}
-//				}
-//			}
-//			zone[i].m_CenterX=cx;
-//			zone[i].m_CenterY=cy;
-////		}
-//	}
-//
-//	// Delete connect m_NearZoneConnectSize<1
-//	for(i=0;i<zonecnt;i++) {
-//		for(k=0;k<zone[i].m_NearZoneCnt;k++) {
-//			if(zone[i].m_NearZoneConnectSize[k]<1) {
-//				MoveMemory(zone[i].m_NearZone+k,zone[i].m_NearZone+k+1,(zone[i].m_NearZoneCnt-k-1)*sizeof(int));
-//				MoveMemory(zone[i].m_NearZoneConnectSize+k,zone[i].m_NearZoneConnectSize+k+1,(zone[i].m_NearZoneCnt-k-1)*sizeof(int));
-//				zone[i].m_NearZoneCnt--;
-//			}
-//		}
-//	}
-//
-//	// Delete zone if NearCnt==0
-//	for(i=0;i<zonecnt;i++) {
-//		if(zone[i].m_NearZoneCnt>0) continue;
-//
-//		mu=UnitGet(0,0);
-//		for(y=0;y<m_Size.y;y++) {
-//			for(x=0;x<m_Size.x;x++,mu++) {
-//				if(mu->m_Zone[nsh]==i) {
-//					mu->m_Zone[nsh]=-1;// mu->m_Move|=(1+2+4+8+16);
-//				}
-//				else if(mu->m_Zone[nsh]>i) mu->m_Zone[nsh]--;
-//			}
-//		}
-//
-//		for(u=0;u<zonecnt;u++) {
-//			for(k=0;k<zone[u].m_NearZoneCnt;k++) {
-//				if(zone[u].m_NearZone[k]>i) zone[u].m_NearZone[k]--;
-//			}
-//		}
-//
-//		if(zonecnt-i-1>0) MoveMemory(zone+i,zone+i+1,(zonecnt-i-1)*sizeof(SMatrixMapZone));
-//		i--;
-//		zonecnt--;
-//	}
-//
-//	// Куда не можем попасть делаем непроходящими
-////	mu=UnitGet(0,0);
-////	for(y=0;y<m_Size.y;y++) {
-////		for(x=0;x<m_Size.x;x++,mu++) {
-////			if(mu->zone<0) mu->m_Move=1+2+4+8+16;
-////		}
-////	}
-//
-//	zone=(SMatrixMapZone *)HAllocEx(zone,sizeof(SMatrixMapZone)*zonecnt,g_MatrixHeap);
-//
-//	m_Zone[nsh]=zone;
-//	m_ZoneCnt[nsh]=zonecnt;
-//}
-//
-// void CMatrixMapLogic::ZoneCalc()
-//{
-//    DTRACE();
-//
-//	ZoneClear();
-//
-//	ZoneCalc(0,1);
-//	ZoneCalc(1,2);
-//	ZoneCalc(2,4);
-//	ZoneCalc(3,8);
-//	ZoneCalc(4,16);
-//}
 
 int CMatrixMapLogic::ZoneFindNear(int nsh, int mx, int my) {
     DTRACE();
@@ -556,51 +250,7 @@ bool CMatrixMapLogic::IsAbsenceWall(int nsh, int size, int mx, int my) {
 
     SMatrixMapMove *smm = MoveGet(mx, my);
     return (smm->m_Stop & nsh_mask) == 0;
-
-    /*	SMatrixMapMove * smm=MoveGet(mx,my);
-        for(int y=0;y<size;y++,smm+=m_SizeMove.x-size) {
-            for(int x=0;x<size;x++,smm++) {
-                if(nsh < 0){
-                    if(smm->m_Stop) return false;
-                }else{
-                    if(smm->m_Stop & (1<<nsh)) return false;
-                }
-            }
-        }
-        return true;*/
 }
-
-/*bool CMatrixMapLogic::PlaceFindNear(int nsh,int size,int & mx,int & my)
-{
-    DTRACE();
-
-    if(PlaceIsEmpty(nsh,size,mx,my)) return true;
-
-    byte mm=1<<nsh;
-
-    SMatrixMapMove * smm=MoveGetTest(mx,my);
-
-    if(smm && !(smm->m_Stop & mm) && size==2) {
-        if(PlaceIsEmpty(nsh,size,mx,my-1)) { my--; return true; }
-        else if(PlaceIsEmpty(nsh,size,mx-1,my)) { mx--; return true; }
-        else if(PlaceIsEmpty(nsh,size,mx-1,my-1)) { mx--; my--; return true; }
-    }
-
-    int u,i=0;
-    while(i<m_SizeMove.x) {
-        for(u=0;u<((i+1)*2+1);u++) {
-            if(PlaceIsEmpty(nsh,size,mx-(i+1)+u,my-(i+1))) { mx=mx-(i+1)+u; my=my-(i+1); return true; }
-            if(PlaceIsEmpty(nsh,size,mx-(i+1)+u,my+(i+1))) { mx=mx-(i+1)+u; my=my+(i+1); return true; }
-        }
-
-        for(u=0;u<(i*2+1);u++) {
-            if(PlaceIsEmpty(nsh,size,mx-(i+1),my-i+u)) { mx=mx-(i+1); my=my-i+u; return true; }
-            if(PlaceIsEmpty(nsh,size,mx+(i+1),my-i+u)) { mx=mx+(i+1); my=my-i+u; return true; }
-        }
-        i++;
-    }
-    return false;
-}*/
 
 bool CMatrixMapLogic::PlaceFindNear(int nsh, int size, int &mx, int &my, int other_cnt, int *other_size,
                                     CPoint *other_des) {
@@ -684,91 +334,6 @@ bool CMatrixMapLogic::PlaceFindNear(int nsh, int size, int &mx, int &my, int oth
     }
     return false;
 }
-
-// bool CMatrixMapLogic::PlaceFindNear(int nsh,int size,int & mx,int & my,const D3DXVECTOR2 & vdir,int other_cnt,int *
-// other_size,CPoint * other_des)
-//{
-//    DTRACE();
-//
-//    int k,tx,ty;
-//    int * os;
-//    CPoint * od;
-//
-//    float sx=GLOBAL_SCALE_MOVE*mx+GLOBAL_SCALE_MOVE*size/2;
-//    float sy=GLOBAL_SCALE_MOVE*my+GLOBAL_SCALE_MOVE*size/2;
-//
-//    float vx=vdir.x;
-//    float vy=vdir.y;
-//    float vd=1/sqrt(POW2(vx)+POW2(vy));
-//    vx*=vd; vy*=vd;
-//
-//	SMatrixMapMove * smm=MoveGetTest(mx,my);
-//
-//    float pa=cos(80.0f*ToRad);
-//
-//	int u,i=0;
-//	while(i<m_SizeMove.x) {
-//		for(u=0;u<((i+1)*2+1);u++) {
-//            tx=mx-(i+1)+u; ty=my-(i+1);
-//			if(IsAbsenceWall(nsh,size,tx,ty)) {
-//                float dx=GLOBAL_SCALE_MOVE*tx+GLOBAL_SCALE_MOVE*size/2-sx;
-//                float dy=GLOBAL_SCALE_MOVE*ty+GLOBAL_SCALE_MOVE*size/2-sy;
-//                float t=1.0f/sqrt(POW2(dx)+POW2(dy));
-//                dx*=t; dy*=t;
-//                if(fabs(dx*vx+dx+vx)<pa) {
-//                    for(k=0,os=other_size,od=other_des;k<other_cnt;k++,od++,os++) {
-//                        if(!(od->x+*os<=tx || od->x>=tx+size) && !(od->y+*os<=ty || od->y>=ty+size)) break;
-//                    }
-//                    if(k>=other_cnt) { mx=tx; my=ty; return true; }
-//                }
-//            }
-//            tx=mx-(i+1)+u; ty=my+(i+1);
-//			if(IsAbsenceWall(nsh,size,tx,ty)) {
-//                float dx=GLOBAL_SCALE_MOVE*tx+GLOBAL_SCALE_MOVE*size/2-sx;
-//                float dy=GLOBAL_SCALE_MOVE*ty+GLOBAL_SCALE_MOVE*size/2-sy;
-//                float t=1.0f/sqrt(POW2(dx)+POW2(dy));
-//                dx*=t; dy*=t;
-//                if(fabs(dx*vx+dx*vx)<pa) {
-//                    for(k=0,os=other_size,od=other_des;k<other_cnt;k++,od++,os++) {
-//                        if(!(od->x+*os<=tx || od->x>=tx+size) && !(od->y+*os<=ty || od->y>=ty+size)) break;
-//                    }
-//                    if(k>=other_cnt) { mx=tx; my=ty; return true; }
-//                }
-//            }
-//		}
-//
-//		for(u=0;u<(i*2+1);u++) {
-//            tx=mx-(i+1); ty=my-i+u;
-//			if(IsAbsenceWall(nsh,size,tx,ty)) {
-//                float dx=GLOBAL_SCALE_MOVE*tx+GLOBAL_SCALE_MOVE*size/2-sx;
-//                float dy=GLOBAL_SCALE_MOVE*ty+GLOBAL_SCALE_MOVE*size/2-sy;
-//                float t=1.0f/sqrt(POW2(dx)+POW2(dy));
-//                dx*=t; dy*=t;
-//                if(fabs(dx*vx+dx+vx)<pa) {
-//                    for(k=0,os=other_size,od=other_des;k<other_cnt;k++,od++,os++) {
-//                        if(!(od->x+*os<=tx || od->x>=tx+size) && !(od->y+*os<=ty || od->y>=ty+size)) break;
-//                    }
-//                    if(k>=other_cnt) { mx=tx; my=ty; return true; }
-//                }
-//            }
-//            tx=mx+(i+1); ty=my-i+u;
-//			if(IsAbsenceWall(nsh,size,tx,ty)) {
-//                float dx=GLOBAL_SCALE_MOVE*tx+GLOBAL_SCALE_MOVE*size/2-sx;
-//                float dy=GLOBAL_SCALE_MOVE*ty+GLOBAL_SCALE_MOVE*size/2-sy;
-//                float t=1.0f/sqrt(POW2(dx)+POW2(dy));
-//                dx*=t; dy*=t;
-//                if(fabs(dx*vx+dx+vx)<pa) {
-//                    for(k=0,os=other_size,od=other_des;k<other_cnt;k++,od++,os++) {
-//                        if(!(od->x+*os<=tx || od->x>=tx+size) && !(od->y+*os<=ty || od->y>=ty+size)) break;
-//                    }
-//                    if(k>=other_cnt) { mx=tx; my=ty; return true; }
-//                }
-//            }
-//		}
-//		i++;
-//	}
-//	return false;
-//}
 
 bool CMatrixMapLogic::PlaceFindNear(int nsh, int size, int &mx, int &my, CMatrixMapStatic *skip) {
     int other_cnt = 0;
@@ -898,43 +463,6 @@ bool CMatrixMapLogic::PlaceFindNearReturn(int nsh, int size, int &mx, int &my, C
     return PlaceFindNear(nsh, size, mx, my, other_cnt, other_size, other_des);
 }
 
-// bool CMatrixMapLogic::PlaceFindNear(int nsh,int size,int & mx,int & my,const D3DXVECTOR2 & vdir,CMatrixMapStatic *
-// skip)
-//{
-//    int other_cnt=0;
-//    int other_size[50];
-//    CPoint other_des[50];
-//
-//    CMatrixMapStatic * obj = CMatrixMapStatic::GetFirstLogic();
-//    while(obj) {
-//        if(obj->GetObjectType() == OBJECT_TYPE_ROBOTAI && obj->AsRobot()->m_CurrState != ROBOT_DIP && obj!=skip) {
-//            CMatrixRobotAI * r=(CMatrixRobotAI*)obj;
-//
-//            CPoint tp;
-//            if(r->GetReturnCoords(tp)) {
-//                ASSERT(other_cnt<50);
-//                other_size[other_cnt]=4;
-//                other_des[other_cnt]=tp;
-//                other_cnt++;
-//            }
-//            if(r->GetMoveToCoords(tp)) {
-//                ASSERT(other_cnt<50);
-//                other_size[other_cnt]=4;
-//                other_des[other_cnt]=tp;
-//                other_cnt++;
-//            } else {
-//                ASSERT(other_cnt<50);
-//                other_size[other_cnt]=4;
-//                other_des[other_cnt]=CPoint(r->m_MapX,r->m_MapY);
-//                other_cnt++;
-//            }
-//        }
-//        obj = obj->GetNextLogic();
-//    }
-//
-//    return PlaceFindNear(nsh,size,mx,my,vdir,other_cnt,other_size,other_des);
-//}
-
 bool CMatrixMapLogic::PlaceIsEmpty(int nsh, int size, int mx, int my, CMatrixMapStatic *skip) {
     DTRACE();
 
@@ -982,245 +510,6 @@ bool CMatrixMapLogic::PlaceIsEmpty(int nsh, int size, int mx, int my, CMatrixMap
 
     return true;
 }
-
-/*int CMatrixMapLogic::ZoneMoveFindNear(int nsh,int mx,int my,CPoint * path)
-{
-    int i;
-
-    SMatrixMapUnit * mu=UnitGetTest(mx,my);
-    if(!mu) ERROR_E;
-
-    if(mu->m_Zone[nsh]>=0) return 0;
-
-    int mind=1000000000;
-    int minz=-1;
-    for(i=0;i<m_ZoneCnt[nsh];i++) {
-        int
-d=(mx-m_Zone[nsh][i].m_CenterX)*(mx-m_Zone[nsh][i].m_CenterX)+(my-m_Zone[nsh][i].m_CenterY)*(my-m_Zone[nsh][i].m_CenterY);
-        if(d<mind) { mind=d; minz=i; }
-    }
-
-    if(minz<0) return 0;
-
-    path[0].x=m_Zone[nsh][minz].m_CenterX;
-    path[0].y=m_Zone[nsh][minz].m_CenterY;
-    return 1;
-}*/
-
-/*int CMatrixMapLogic::ZoneMoveFind(int nsh,int size,int mx,int my,int zonesou1,int zonesou2,int zonesou3,int
-deszone,int dx,int dy,CPoint * path)
-{
-    DTRACE();
-
-    int x,y,i,u;
-
-    SMatrixMapMove * smm2,* smm=MoveGetTest(mx,my);
-    if(!smm) ERROR_E;
-
-    CRect re=m_RN.m_Zone[zonesou1].m_Rect;
-    UnionRect(&re,&re,&(m_RN.m_Zone[zonesou2].m_Rect));
-    if(zonesou3>=0)	UnionRect(&re,&re,&(m_RN.m_Zone[zonesou3].m_Rect));
-    UnionRect(&re,&re,&(m_RN.m_Zone[deszone].m_Rect));
-    re.left=max(re.left-size,0);
-    re.top=max(re.top-size,0);
-    re.right=min(re.right+size,m_SizeMove.x-size);
-    re.bottom=min(re.bottom+size,m_SizeMove.y-size);
-
-    smm=MoveGet(re.left,re.top);
-    for(y=re.top;y<re.bottom;y++,smm+=m_SizeMove.x-(re.right-re.left)) {
-        for(x=re.left;x<re.right;x++,smm++) {
-            smm->m_Find=-1;
-        }
-    }
-
-    if(!m_MPF) m_MPF=(CPoint *)HAlloc(sizeof(CPoint)*(m_SizeMove.x*2+m_SizeMove.y*2)*2,g_MatrixHeap);
-    if(!m_MPF2) m_MPF2=(CPoint *)HAlloc(sizeof(CPoint)*(m_SizeMove.x*2+m_SizeMove.y*2)*2,g_MatrixHeap);
-    m_MPFCnt=0; m_MPF2Cnt=0;
-
-    MoveGetTest(mx,my)->m_Find=0;
-    m_MPF[0].x=mx;
-    m_MPF[0].y=my;
-    m_MPFCnt++;
-
-    bool fok=false;
-    int level=1;
-
-//HelperDestroyByGroup(DWORD(this));
-
-    while(m_MPFCnt>0) {
-        for(i=0;i<m_MPFCnt && !fok;i++) {
-            for(u=0;u<4 && !fok;u++) {
-                int nx=m_MPF[i].x+MatrixDir45[u].x;
-                int ny=m_MPF[i].y+MatrixDir45[u].y;
-
-//if(UnitGet(nx,ny)->m_Zone[nsh]==deszone) {
-//ASSERT(1);
-//}
-//				if(nx<re.left || nx+size>re.right || ny<re.top || ny+size>=re.bottom) continue;
-                if(nx<re.left || nx>=re.right || ny<re.top || ny>=re.bottom) continue;
-                smm=MoveGet(nx,ny);
-                if(smm->m_Find>=0) continue;
-
-                smm2=smm;
-                for(y=0;y<size;y++,smm2+=m_SizeMove.x-size) {
-                    for(x=0;x<size;x++,smm2++) {
-                        if(smm2->m_Stop & (1<<nsh)) break;
-                    }
-                    if(x<size) break;
-                }
-                if(y<size) continue;
-                else if(nx==dx && ny==dy) {
-                    fok=true;
-                } else if(smm->m_Zone==deszone && zonesou1!=deszone && zonesou2!=deszone && (zonesou3<0 ||
-zonesou3!=deszone)) { fok=true;
-                }
-//				else if(smm->m_Zone!=zonesou1 && smm->m_Zone!=zonesou2 && (zonesou3<0 || smm->m_Zone!=zonesou3))
-continue;
-
-                smm->m_Find=level;
-
-//CHelper::Create(0,DWORD(this))->Cone(D3DXVECTOR3(GLOBAL_SCALE*nx+5.0f,GLOBAL_SCALE*ny+5.0f,0),D3DXVECTOR3(10.0f*nx+5.0f,10.0f*ny+5.0f,10.0f+2.0f*level),0.5f,0.5f,0xffffffff,fok?0xff00ff00:0xffff0000,6);
-
-                m_MPF2[m_MPF2Cnt].x=nx;
-                m_MPF2[m_MPF2Cnt].y=ny;
-                m_MPF2Cnt++;
-            }
-        }
-        if(fok) break;
-
-        level++;
-        CPoint *tp=m_MPF; m_MPF=m_MPF2; m_MPF2=tp;
-        m_MPFCnt=m_MPF2Cnt;
-        m_MPF2Cnt=0;
-    }
-
-    if(!fok) return 0;
-
-    ASSERT(level+1<=MatrixPathMoveMax);
-
-    x=m_MPF2[m_MPF2Cnt-1].x;
-    y=m_MPF2[m_MPF2Cnt-1].y;
-
-    path[level].x=x;
-    path[level].y=y;
-
-    int cnt=level+1;
-
-    while(level>0) {
-        for(u=0;u<8;u++) {
-            int nx=x+MatrixDir45[u].x;
-            int ny=y+MatrixDir45[u].y;
-
-            if(nx<re.left || nx>=re.right || ny<re.top || ny>=re.bottom) continue;
-            smm=MoveGet(nx,ny);
-            if(smm->m_Find!=level-1) continue;
-            x=nx; y=ny;
-            level--;
-
-            path[level].x=x;
-            path[level].y=y;
-            break;
-        }
-        ASSERT(u<8);
-    }
-    return cnt;
-}*/
-
-/*int CMatrixMapLogic::ZoneFindPath(int nsh,int zstart,int zend,int * path)
-{
-    DTRACE();
-
-    int i,u;
-
-    if(zstart==zend) return 0;
-
-    for(i=0;i<m_RN.m_ZoneCnt;i++) {
-        m_RN.m_Zone[i].m_FPLevel=-1;
-        m_RN.m_Zone[i].m_FPWt=1;
-        m_RN.m_Zone[i].m_FPWtp=0;
-    }
-
-    int * fp=(int *)HAlloc(m_RN.m_ZoneCnt*sizeof(int *),g_MatrixHeap);
-    int * fp2=(int *)HAlloc(m_RN.m_ZoneCnt*sizeof(int *),g_MatrixHeap);
-    int fpcnt=0;
-    int fpcnt2=0;
-    int level=0;
-
-    fp[fpcnt]=zend;
-    fpcnt++;
-    m_RN.m_Zone[zend].m_FPLevel=level;
-    m_RN.m_Zone[zend].m_FPWtp=0;
-    level++;
-
-    bool fok=false;
-
-//HelperDestroyByGroup(2);
-
-    while(fpcnt>0) {
-        for(i=0;i<fpcnt;i++) {
-            for(u=0;u<m_RN.m_Zone[fp[i]].m_NearZoneCnt;u++) {
-                int nz=m_RN.m_Zone[fp[i]].m_NearZone[u];
-                int wtp=m_RN.m_Zone[fp[i]].m_FPWtp+m_RN.m_Zone[nz].m_FPWt;
-
-                if(m_RN.m_Zone[nz].m_Move & (1<<nsh)) continue;
-
-                if(m_RN.m_Zone[nz].m_FPLevel<0 || wtp<m_RN.m_Zone[nz].m_FPWtp) {
-                    m_RN.m_Zone[nz].m_FPLevel=level;
-                    m_RN.m_Zone[nz].m_FPWtp=wtp;
-                    fp2[fpcnt2]=nz;
-                    fpcnt2++;
-
-//CHelper::Create(0,2)->Cone(D3DXVECTOR3(GLOBAL_SCALE_MOVE*m_RN.m_Zone[nz].m_CenterX,GLOBAL_SCALE_MOVE*m_RN.m_Zone[nz].m_CenterY,0),D3DXVECTOR3(GLOBAL_SCALE_MOVE*m_RN.m_Zone[nz].m_CenterX,GLOBAL_SCALE*m_RN.m_Zone[nz].m_CenterY,GLOBAL_SCALE_MOVE+wtp*2.0f),0.5f,0.5f,0xffffffff,0xffff0000,6);
-
-                    if(zstart==nz) fok=true;
-                }
-            }
-        }
-
-        level++;
-        fpcnt=fpcnt2;
-        fpcnt2=0;
-        int * fpt=fp; fp=fp2; fp2=fpt;
-    }
-
-    HFree(fp,g_MatrixHeap);
-    HFree(fp2,g_MatrixHeap);
-
-    if(!fok) return 0;
-
-    path[0]=zstart;
-    int cnt=1;
-    int curzone=zstart;
-    int curwt=m_RN.m_Zone[curzone].m_FPWtp;
-    for(;;) {
-        int nz_=-1;
-        int wtp_=curwt;
-        for(int i=0;i<m_RN.m_Zone[curzone].m_NearZoneCnt;i++) {
-            int nz=m_RN.m_Zone[curzone].m_NearZone[i];
-            int wtp=m_RN.m_Zone[nz].m_FPWtp;
-
-            if(m_RN.m_Zone[nz].m_Move & (1<<nsh)) continue;
-
-            if(nz==zend) { nz_=nz; wtp_=wtp; break; }
-            else if(wtp<=wtp_) { nz_=nz; wtp_=wtp; }
-        }
-        if(nz_<0) {
-            ERROR_E;
-        }
-
-        curzone=nz_;
-        curwt=wtp_;
-//if(!(cnt+1<=m_RN.m_ZoneCnt)) {
-//    ASSERT(1);
-//}
-        ASSERT(cnt+1<=m_RN.m_ZoneCnt);
-        path[cnt]=curzone;
-        cnt++;
-        if(curzone==zend) break;
-    }
-
-    return cnt;
-}*/
 
 void CMatrixMapLogic::SetWeightFromTo(int size, int x1, int y1, int x2, int y2) {
     ASSERT(size >= 1 && size <= 5);
@@ -2373,6 +1662,7 @@ int CMatrixMapLogic::FindNearPlace(byte mm, const CPoint &mappos) {
     return -1;
 }
 #ifdef _MSC_FULL_VER
+    // TODO remove this. This enables optimisation in debug mmode too
     #pragma optimize("g", on)
 #endif
 
@@ -2706,8 +1996,6 @@ int CMatrixMapLogic::PlaceListGrow(byte mm, int *list, int *listcnt, int growcnt
     return addcnt;
 }
 
-bool takt_effect(DWORD key, DWORD val, DWORD user);
-
 float SQ(float x) {
     return (float)sqrt(x);
 }
@@ -2929,43 +2217,6 @@ void CMatrixMapLogic::Takt(int step) {
 
     DCP();
 
-    // if (m_ShadeOn)
-    //{
-    //    m_ShadeTime -= step;
-    //    m_ShadeTimeCurrent += step;
-    //    if (m_ShadeTime < 0)
-    //    {
-    //        m_ShadeTime = 0;
-    //    }
-
-    //    float k = (float(m_ShadeTime)/SHADER_TIME);
-    //    m_Minimap.SetColor(LIC(0x00000000, m_ShadeInterfaceColor, k));
-
-    //    double xx1 = (0.05 * double(m_ShadeTimeCurrent));
-    //    double xx2 = (double(m_ShadeTimeCurrent) - 1500.0);
-    //    float speed = float((xx1 * xx1 + xx2 * xx2) / 2000000.0);
-
-    //    float nt =  float(step) * speed;
-
-    //    m_Camera.RotateZ(GRAD2RAD(step * 0.05f));
-    //
-    //    if (m_ShadeTimeCurrent > 1000 && m_ShadeTimeCurrent < 5000)
-    //    {
-    //        m_Camera.RotateX(GRAD2RAD(-step * 0.00001f * (m_ShadeTimeCurrent - 1000)));
-    //        //m_Camera.RotateZ(step * 0.001f * (m_ShadeTimeCurrent - 1000));
-    //    } else
-    //    {
-
-    //    }
-
-    //    for (int i = 0; i<m_EffectsCnt; ++i)
-    //        m_Effects[i]->Takt(nt);
-
-    //    return;
-    //}
-
-    DCP();
-
     // TODO : 10 time per second
     g_IFaceList->LogicTakt(step);
 
@@ -2980,26 +2231,28 @@ void CMatrixMapLogic::Takt(int step) {
     }
     DCP();
 
-    int portions = step / LOGIC_TAKT_PERIOD;
+    if (IsLogicEnabled()) {
+        int portions = step / LOGIC_TAKT_PERIOD;
 
-    for (int cnt = 0; cnt < portions; cnt++) {
-        CMatrixMapStatic::ProceedLogic(LOGIC_TAKT_PERIOD);
-    }
+        for (int cnt = 0; cnt < portions; cnt++) {
+            CMatrixMapStatic::ProceedLogic(LOGIC_TAKT_PERIOD);
+        }
 
-    DCP();
+        DCP();
 
-    portions = step - portions * LOGIC_TAKT_PERIOD;
-    if (portions) {
-        CMatrixMapStatic::ProceedLogic(portions);
-    }
-    DCP();
+        portions = step - portions * LOGIC_TAKT_PERIOD;
+        if (portions) {
+            CMatrixMapStatic::ProceedLogic(portions);
+        }
+        DCP();
 
-    while (GetTime() > m_TaktNext) {
-        m_TaktNext += LOGIC_TAKT_PERIOD;
-        // CMatrixMapStatic::ProceedLogic(LOGIC_TAKT_PERIOD);
+        while (GetTime() > m_TaktNext) {
+            m_TaktNext += LOGIC_TAKT_PERIOD;
+            // CMatrixMapStatic::ProceedLogic(LOGIC_TAKT_PERIOD);
 
-        for (int i = 0; i < m_SideCnt; i++) {
-            m_Side[i].LogicTakt(LOGIC_TAKT_PERIOD);
+            for (int i = 0; i < m_SideCnt; i++) {
+                m_Side[i].LogicTakt(LOGIC_TAKT_PERIOD);
+            }
         }
     }
 
@@ -3386,29 +2639,6 @@ bool CMatrixMapLogic::PathIntersect(SMatrixPath *path, float cx, float cy, float
     }
     return false;
 }
-
-/*bool CMatrixMapLogic::PathIntersect(SMatrixPath * path1,SMatrixPath * path2)
-{
-    int ox1=0; // Center
-    if(path2->m_StartX<=path1->m_StartX-path1->m_Radius-path2->m_Radius) ox1=-1; // left
-    else if(path2->m_StartX>=path1->m_EndX+path1->m_Radius+path2->m_Radius) ox1=1; // right
-
-    int ox2=0; // Center
-    if(path2->m_EndX<=path1->m_StartX-path1->m_Radius-path2->m_Radius) ox1=-1; // left
-    else if(path2->m_EndX>=path1->m_EndX+path1->m_Radius+path2->m_Radius) ox1=1; // right
-
-    if(ox1==ox2) return false;
-
-    int oy1=0; // Center
-    if(path2->m_StartY<=path1->m_StartY-path1->m_Radius-path2->m_Radius) oy1=-1; // left
-    else if(path2->m_StartY>=path1->m_EndY+path1->m_Radius+path2->m_Radius) oy1=1; // right
-
-    int oy2=0; // Center
-    if(path2->m_EndY<=path1->m_StartY-path1->m_Radius-path2->m_Radius) oy1=-1; // left
-    else if(path2->m_EndY>=path1->m_EndY+path1->m_Radius+path2->m_Radius) oy1=1; // right
-
-    if(oy1==oy2) return false;
-}*/
 
 void CMatrixMapLogic::CalcCannonPlace(void) {
     DTRACE();

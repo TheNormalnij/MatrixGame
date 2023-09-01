@@ -1141,7 +1141,7 @@ void CMatrixFlyer::ApplyOrder(const D3DXVECTOR2 &pos, int side, EFlyerOrder orde
 
         bot.m_Strength = (float)botpar->ParGet(L"BotStrength").GetDouble();
 
-        CMatrixRobotAI *r = bot.GetRobot(m_Pos, PLAYER_SIDE);
+        CMatrixRobotAI *r = bot.GetRobot(m_Pos, g_MatrixMap->GetPlayerSide()->GetId());
         g_MatrixMap->AddObject(r, true);
         r->CreateTextures();
         r->Carry(this, true);
@@ -1942,8 +1942,8 @@ bool CMatrixFlyer::IsSelected() {
 }
 
 void CMatrixFlyer::ReleaseMe() {
-    if (GetSide() == PLAYER_SIDE) {
-        CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
+    CMatrixSideUnit *ps = g_MatrixMap->GetPlayerSide();
+    if (GetSide() == ps->GetId()) {
         int pos = 0;
 
         if (ps->IsArcadeMode() && this == ps->GetArcadedObject() && g_IFaceList) {

@@ -911,14 +911,14 @@ int CMatrixMap::ReloadDynamics(CStorage &stor, CMatrixMap::EReloadStep step, voi
                         if (ic >= 0) {
                             auto tmp = bup - cpp;
                             if (D3DXVec2LengthSq(&tmp) < POW2(300)) {
-                                g_MatrixMap->GetPlayerSide()->Select(BUILDING, ms);
+                                g_MatrixMap->GetPlayerSide()->Select(ESelType::BUILDING, ms);
                                 break;
                             }
 
                             continue;
                         }
 
-                        g_MatrixMap->GetPlayerSide()->Select(BUILDING, ms);
+                        g_MatrixMap->GetPlayerSide()->Select(ESelType::BUILDING, ms);
                         g_MatrixMap->m_Camera.SetXYStrategy(bup);
 
                         break;

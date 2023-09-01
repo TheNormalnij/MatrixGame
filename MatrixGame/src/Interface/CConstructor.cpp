@@ -13,6 +13,8 @@
 #include "CHistory.h"
 #include "../Effects/MatrixEffectWeapon.hpp"
 
+#include "Control/COrderController.h"
+
 CConstructor::CConstructor() {
     m_ViewPosX = 0;
     m_ViewPosY = 0;
@@ -53,6 +55,7 @@ CConstructor::~CConstructor() {
         m_Robot = NULL;
     }
 }
+
 SNewBorn *CConstructor::ProduceRobot(void *) {
     DTRACE();
     if (!m_Base || m_Base->m_State != BASE_CLOSED)
@@ -189,11 +192,6 @@ void CConstructor::StackRobot(void *pObject, int team) {
 
         m_Build->m_HullForward = m_Build->m_Forward;
 
-        if (m_Base->m_Side == PLAYER_SIDE) {
-            CMatrixSideUnit *si = g_MatrixMap->GetPlayerSide();
-            int cfg_num = si->m_ConstructPanel->m_CurrentConfig;
-        }
-
         m_Build->SetTeam(team);
 
         // robot sozdan
@@ -204,13 +202,8 @@ void CConstructor::StackRobot(void *pObject, int team) {
 
         m_Build->RNeed(MR_Graph);
 
-        // if (!FLAG(g_Flags, SETBIT(22)))
-        //{
-        //    for(;;) ;
 
-        //}
-
-        if (m_Base->m_Side == PLAYER_SIDE)
+        if (m_Base->m_Side == g_MatrixMap->GetPlayerSide()->GetId())
             m_Build->CreateTextures();
         m_Build->SetBase(m_Base);
         GetConstructionName((CMatrixRobotAI *)m_Build);
@@ -220,24 +213,28 @@ void CConstructor::StackRobot(void *pObject, int team) {
 
 void __stdcall CConstructor::RemoteBuild(void *pObj) {
     DTRACE();
-    if (m_Base->m_Side != PLAYER_SIDE) {
+    CMatrixSideUnit *player_side = g_MatrixMap->GetPlayerSide();
+
+    if (m_Base->m_Side != player_side->GetId()) {
         return;
     }
-    CMatrixSideUnit *player_side = g_MatrixMap->GetPlayerSide();
 
     int cfg_num = player_side->m_ConstructPanel->m_CurrentConfig;
     g_ConfigHistory->AddConfig(&player_side->m_ConstructPanel->m_Configs[cfg_num]);
 
-    for (int i = 0; i < g_IFaceList->m_RCountControl->GetCounter(); i++) {
-        StackRobot(pObj);
+    SRobotCostructInfo info;
+
+    info.head = m_Head.m_nKind;
+    info.armour = m_Armor.m_Unit.m_nKind;
+    info.chassis = m_Chassis.m_nKind;
+
+    for (int i = 0; i < MAX_WEAPON_CNT; i++) {
+        info.weapon[i] = m_Weapon[i].m_Unit.m_nKind;
     }
 
-    int res[MAX_RESOURCES];
-    GetConstructionPrice(res);
-    player_side->AddResourceAmount(TITAN, -res[TITAN] * g_IFaceList->m_RCountControl->GetCounter());
-    player_side->AddResourceAmount(ELECTRONICS, -res[ELECTRONICS] * g_IFaceList->m_RCountControl->GetCounter());
-    player_side->AddResourceAmount(ENERGY, -res[ENERGY] * g_IFaceList->m_RCountControl->GetCounter());
-    player_side->AddResourceAmount(PLASMA, -res[PLASMA] * g_IFaceList->m_RCountControl->GetCounter());
+    int count = g_IFaceList->m_RCountControl->GetCounter();
+
+    g_FormCur->GetOrderController()->BuildRobot(m_Base, info, count);
 
     if (player_side && player_side->m_ConstructPanel) {
         player_side->m_ConstructPanel->ResetGroupNClose();
@@ -767,14 +764,10 @@ void CConstructor::OperateUnit(ERobotUnitType type, ERobotUnitKind kind) {
         }
     }
 
-    int we_are = 0;
-    CMatrixSideUnit *player_side = g_MatrixMap->GetPlayerSide();
-    int cfg_num = player_side->m_ConstructPanel->m_CurrentConfig;
+    RecalculateModel();
+}
 
-    if (player_side && g_MatrixMap->GetPlayerSide()->m_Constructor == this) {
-        we_are = 1;
-    }
-
+void CConstructor::RecalculateModel() {
     m_nUnitCnt = 0;
     if (m_Chassis.m_nKind != 0) {
         m_nUnitCnt++;
@@ -795,6 +788,19 @@ void CConstructor::OperateUnit(ERobotUnitType type, ERobotUnitKind kind) {
 
     if (m_nUnitCnt > 0)
         InsertUnits();
+}
+
+void CConstructor::OperateUnitNoCheck(ERobotUnitType type, ERobotUnitKind kind, int pos) {
+    if (type == ERobotUnitType::MRT_WEAPON) {
+        m_Weapon[pos].m_Unit.m_nKind = kind;
+        m_Weapon[pos].m_Unit.m_nType = MRT_WEAPON;
+        m_Weapon[pos].m_Pos = pos + 1;
+
+        RecalculateModel();
+    }
+    else {
+        OperateUnit(type, kind);
+    }
 }
 
 int CConstructor::CheckWeaponLegality(SWeaponUnit *weapons, int weaponKind, int armorKind) {

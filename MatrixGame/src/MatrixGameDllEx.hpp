@@ -21,8 +21,19 @@ struct SMatrixSettings : public SRobotsSettings {
     const wchar_t *m_Lang;
 };
 
+enum EGameExitCode : int {
+    TERMINATE,
+    EXIT_TO_MAIN_MENU,
+    LOSS,
+    WIN,
+    CANCEL,
+    NETWORK_ERROR = 99,
+};
+
 extern "C" {
 MATRIXGAMEDLL_API void __cdecl InterateMaps(void predicate(const wchar_t *name));
 MATRIXGAMEDLL_API int __cdecl RunStandalone(HINSTANCE hinst, wchar *map, SMatrixSettings *set,
                                             SMatrixTextParams *textParams, SRobotGameState *rgs);
+
+MATRIXGAMEDLL_API int __cdecl ConnectNetGame(HINSTANCE hinst, char *host, SMatrixSettings *set, SRobotGameState *rgs);
 }

@@ -224,6 +224,9 @@ class CMatrixMapStatic : public CMain {
     CMatrixMapStatic *m_NextVis;
     CMatrixMapStatic *m_PrevVis;
 
+    static unsigned int m_lastId;
+    unsigned int m_id;
+
 protected:
     struct SEVH_data {
         D3DXMATRIX m;
@@ -294,6 +297,8 @@ public:
 
         m_FirstVisOld = NULL;
         m_LastVisOld = NULL;
+
+        m_lastId = 0;
     }
 #ifdef _DEBUG
     static void ValidateAfterReset(void) {
@@ -343,10 +348,13 @@ public:
         m_PrevVis = NULL;
 
         m_CamDistSq = 10000.0f;
+        m_id = m_lastId++;
     }
 #pragma warning(default : 4355)
 
     ~CMatrixMapStatic();
+
+    unsigned int GetId() const noexcept { return m_id; };
 
     static CMatrixMapStatic *GetFirstLogic(void) { return m_FirstLogicTemp; }
     static CMatrixMapStatic *GetLastLogic(void) { return m_LastLogicTemp; }

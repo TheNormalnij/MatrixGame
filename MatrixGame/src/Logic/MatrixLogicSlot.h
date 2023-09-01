@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "MatrixTactics.h"
 #include "CMain.hpp"
 
 class CMatrixState;
