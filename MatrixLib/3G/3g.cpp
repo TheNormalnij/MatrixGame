@@ -517,8 +517,8 @@ int L3GRun() {
 
                 tt = smooths / SMOOTH_COUNT;
 
-                SRemindCore::Takt(tt);
-                g_FormCur->Takt(tt);
+                SRemindCore::Takt(25);
+                g_FormCur->Takt(25);
 #ifdef _DEBUG
 
                 // DM(L"takts", CWStr(tt));

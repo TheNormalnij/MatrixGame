@@ -1976,8 +1976,11 @@ void CMatrixSideUnit::CalcMaxSpeed() {
         if (ms->GetSide() != m_Id)
             continue;
 
-        ms->AsRobot()->m_GroupSpeed = ms->AsRobot()->GetMaxSpeed();
+        ms->AsRobot()->m_GroupSpeed = 1.0;
     }
+
+    // TODO FUCK THIS. MAYBE CASES DESYNC
+    return;
 
     const bool isAiSide = IsAiEnabled();
 

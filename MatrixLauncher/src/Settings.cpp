@@ -30,7 +30,7 @@ void CSettings::ResetSettings() {
     m_sRobotSettings.m_VSync = 1;
     m_sRobotSettings.m_Lang = L"Eng";
 
-    SetScreen(1366, 768);
+    SetScreen(930, 1000);
     SetFullScreen(false);
 }
 

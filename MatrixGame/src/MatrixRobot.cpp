@@ -308,27 +308,26 @@ void CMatrixRobotAI::LogicTakt(int ms) {
     if (0) {
     do_animation:;
         DCP();
+        //if (fabs(m_Speed) <= 0.01f) {
+        //    SwitchAnimation(ANIMATION_STAY);
+        //}
+        //else {
+        //    bool mt = FindOrderLikeThat(ROT_MOVE_TO);
+        //    if (!mt)
+        //        mt = FindOrderLikeThat(ROT_CAPTURE_FACTORY);
 
-        if (fabs(m_Speed) <= 0.01f) {
-            SwitchAnimation(ANIMATION_STAY);
-        }
-        else {
-            bool mt = FindOrderLikeThat(ROT_MOVE_TO);
-            if (!mt)
-                mt = FindOrderLikeThat(ROT_CAPTURE_FACTORY);
+        //    if (mt) {
+        //        SwitchAnimation(ANIMATION_MOVE);
+        //    }
+        //    else if (FindOrderLikeThat(ROT_MOVE_TO_BACK)) {
+        //        SwitchAnimation(ANIMATION_MOVE_BACK);
+        //    }
+        //}
 
-            if (mt) {
-                SwitchAnimation(ANIMATION_MOVE);
-            }
-            else if (FindOrderLikeThat(ROT_MOVE_TO_BACK)) {
-                SwitchAnimation(ANIMATION_MOVE_BACK);
-            }
-        }
-
-        if (m_Unit[0].u1.s1.m_Kind == RUK_CHASSIS_PNEUMATIC) {
-            DoAnimation(ms);
-            LinkPneumatic();  // corrects pneumatic
-        }
+        //if (m_Unit[0].u1.s1.m_Kind == RUK_CHASSIS_PNEUMATIC) {
+        //    DoAnimation(ms);
+        //    LinkPneumatic();  // corrects pneumatic
+        //}
         return;
     }
 
@@ -691,12 +690,6 @@ void CMatrixRobotAI::LogicTakt(int ms) {
 
     // normal...
 
-    {
-        float mul = (float)(1.0 - pow(0.996, double(ms)));
-        D3DXVECTOR3 up;
-        g_MatrixMap->GetNormal(&up, m_PosX, m_PosY, true);
-        *(D3DXVECTOR3 *)&m_Core->m_Matrix._31 = LERPVECTOR(mul, *(D3DXVECTOR3 *)&m_Core->m_Matrix._31, up);
-    }
     DCP();
 
     // soles
@@ -2886,6 +2879,7 @@ struct CollisionData {
 };
 
 static bool CollisionCallback(const D3DXVECTOR3 &fpos, CMatrixMapStatic *pObject, DWORD user) {
+    return true;
     CollisionData *data = (CollisionData *)user;
 
     const int tm = 2;

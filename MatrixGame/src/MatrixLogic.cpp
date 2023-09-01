@@ -45,7 +45,7 @@ CMatrixMapLogic::CMatrixMapLogic() : CMatrixMap() {
 
     m_TaktNext = 0;
 
-    m_Random.Reset(rand());
+    m_Random.Reset(100);
 
     m_GatherInfoLast = 0;
     m_MaintenanceTime = 0;
@@ -2254,21 +2254,22 @@ void CMatrixMapLogic::Takt(int step) {
                 m_Side[i].LogicTakt(LOGIC_TAKT_PERIOD);
             }
         }
-    }
 
-    DCP();
+       DCP();
 
-    if (GetPlayerSide()->GetArcadedObject()) {
-        DCP();
-        GetPlayerSide()->GetArcadedObject()->StaticTakt(step);
         if (GetPlayerSide()->GetArcadedObject()) {
-            GetPlayerSide()->GetArcadedObject()->RNeed(MR_Matrix);
-            GetPlayerSide()->InterpolateArcadedRobotArmorP(step);
+            DCP();
+            GetPlayerSide()->GetArcadedObject()->StaticTakt(step);
+            if (GetPlayerSide()->GetArcadedObject()) {
+                GetPlayerSide()->GetArcadedObject()->RNeed(MR_Matrix);
+                GetPlayerSide()->InterpolateArcadedRobotArmorP(step);
+            }
         }
-    }
-    DCP();
+        DCP();
 
-    CMatrixMap::Takt(step);  // graphic takts after logic takt
+        // Effects and weapon hit logic 
+        CMatrixMap::Takt(step);
+    }
 
     DCP();
 

@@ -73,6 +73,9 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
     srand(seed);
     static_init();
 
+
+    SETFLAG(g_Flags, GFLAG_KEEPALIVE);
+
     DTRACE();
 
     g_MatrixHeap = HNew(NULL) CHeap;

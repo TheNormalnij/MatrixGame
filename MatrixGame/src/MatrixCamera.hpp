@@ -375,6 +375,7 @@ inline bool CMatrixCamera::IsInFrustum(const D3DXVECTOR3 &p) const {
     + tp.z * GetFrustPlaneT().norm.z) < 0.0f) return false; if ( (tp.x * GetFrustPlaneB().norm.x + tp.y *
     GetFrustPlaneB().norm.y + tp.z * GetFrustPlaneB().norm.z) < 0.0f) return false;
     */
+    return true;
     if (!GetFrustPlaneL().IsOnSide(p))
         return false;
     if (!GetFrustPlaneR().IsOnSide(p))
@@ -387,6 +388,7 @@ inline bool CMatrixCamera::IsInFrustum(const D3DXVECTOR3 &p) const {
 }
 
 inline bool CMatrixCamera::IsInFrustum(const D3DXVECTOR3 &p, float r) const {
+    return true;
     if (!GetFrustPlaneL().IsOnSide(p + GetFrustPlaneL().norm * r))
         return false;
     if (!GetFrustPlaneR().IsOnSide(p + GetFrustPlaneR().norm * r))
@@ -399,6 +401,7 @@ inline bool CMatrixCamera::IsInFrustum(const D3DXVECTOR3 &p, float r) const {
 }
 
 inline bool CMatrixCamera::IsInFrustum(const D3DXVECTOR3 &mins, const D3DXVECTOR3 &maxs) const {
+    return true;
     if (GetFrustPlaneL().BoxSide(mins, maxs) == 2)
         return false;
     if (GetFrustPlaneR().BoxSide(mins, maxs) == 2)

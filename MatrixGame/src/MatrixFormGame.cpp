@@ -190,7 +190,7 @@ void CFormMatrixGame::Takt(int step) {
     if (g_MatrixMap->CheckLostDevice())
         return;
 
-    g_MatrixMap->Takt(step);
+    g_MatrixMap->Takt(15);
 
     CPoint mp = g_MatrixMap->m_Cursor.GetPos();
 

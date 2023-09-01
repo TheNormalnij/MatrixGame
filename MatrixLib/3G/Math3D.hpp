@@ -33,7 +33,11 @@ using namespace Base; // TODO: remove
 #define LERPFLOAT(k, c1, c2)  (((k) * (float(c2) - float(c1))) + float(c1))
 #define LERPVECTOR(k, v1, v2) (((k) * ((v2) - (v1))) + (v1))
 
-#define RND(from, to) ((double)rand() * (1.0 / (RAND_MAX)) * (fabs(double((to) - (from)))) + (from))
+inline int fuckRnd() {
+    return 0;
+}
+
+#define RND(from, to) ((double)fuckRnd() * (1.0 / (RAND_MAX)) * (fabs(double((to) - (from)))) + (from))
 #define FRND(x)       ((float)(RND(0, (x))))
 #define FSRND(x)      (FRND(2.0f * (x)) - float(x))
 #define IRND(n)       Double2Int(RND(0, double(n) - 0.55))

@@ -138,7 +138,7 @@ void CServerMatrixGame::OnAskGameInfo(ISession *session) {
     if (player) {
         side = m_sides.FindPlayerSide(player);
     }
-    m_pNet->SendGameInfo(session, m_settings.mapName, (char)side, &m_sides);
+    m_pNet->SendGameInfo(session, m_settings.mapName, (char)1, &m_sides);
 }
 
 void CServerMatrixGame::OnSessionReady(ISession *session) {

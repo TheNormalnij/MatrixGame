@@ -5,7 +5,10 @@
 
 #pragma once
 
-constexpr const int TICK_DURATION_MS = 100;  // 10 ticks per second
+ // 20 ticks per second
+constexpr const int TICK_DURATION_MS = 100;
+
+constexpr const int TICK_STEP = 25;
 
 constexpr const int ROBOT_MAX_WEAPONS = 5;
 

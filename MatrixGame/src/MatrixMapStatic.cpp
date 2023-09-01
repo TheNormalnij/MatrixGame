@@ -654,15 +654,14 @@ void CMatrixMapStatic::SortEndRecalcTerainColor(void) {
     DTRACE();
 
     for (int i = objects_left; i < objects_rite; ++i) {
-        objects[i]->RecalcTerainColor();
+        //objects[i]->RecalcTerainColor();
     }
 }
 void CMatrixMapStatic::CalcDistances(void) {
     for (int i = objects_left; i < objects_rite; ++i) {
         // calc m_CamDistSq
         auto tmp = g_MatrixMap->m_Camera.GetFrustumCenter() - objects[i]->m_Core->m_GeoCenter;
-        objects[i]->m_CamDistSq =
-                D3DXVec3LengthSq(&tmp);
+        //objects[i]->m_CamDistSq = 10000.0f;
     }
 }
 
@@ -672,31 +671,34 @@ void CMatrixMapStatic::SortEndGraphicTakt(int step) {
     for (int i = objects_left; i < objects_rite; ++i) {
         // calc m_CamDistSq
         auto tmp = g_MatrixMap->m_Camera.GetFrustumCenter() - objects[i]->m_Core->m_GeoCenter;
-        objects[i]->m_CamDistSq =
-                D3DXVec3LengthSq(&tmp);
-        objects[i]->Takt(step);
+        //objects[i]->m_CamDistSq = 10000.0f;
+        //objects[i]->Takt(step);
     }
 }
 
 void CMatrixMapStatic::SortEndDraw(void) {
     DTRACE();
-
     for (int i = objects_left; i < objects_rite; ++i) {
-        objects[i]->Draw();
+        if (objects[i]->IsRobot()) {
+            //objects[i]->Draw();
+        }
     }
 }
 
 void CMatrixMapStatic::SortEndBeforeDraw(void) {
     DTRACE();
-
     for (int i = objects_left; i < objects_rite; ++i) {
-        objects[i]->m_RemindCore.Use(FREE_TIME_PERIOD);
-        objects[i]->BeforeDraw();
+        //objects[i]->m_RemindCore.Use(FREE_TIME_PERIOD);
+        if (objects[i]->IsRobot()) {
+            //objects[i]->BeforeDraw();
+        }
     }
 }
 
 void CMatrixMapStatic::SortEndDrawShadowProj(void) {
     DTRACE();
+
+    return;
 
     for (int i = objects_left; i < objects_rite; ++i) {
         if (objects[i]->m_CamDistSq < DRAW_SHADOWS_DISTANCE_SQ)
@@ -706,6 +708,7 @@ void CMatrixMapStatic::SortEndDrawShadowProj(void) {
 
 void CMatrixMapStatic::SortEndDrawShadowStencil(void) {
     DTRACE();
+    return;
 
     for (int i = objects_left; i < objects_rite; ++i) {
         if (objects[i]->m_CamDistSq < DRAW_SHADOWS_DISTANCE_SQ)
@@ -714,6 +717,7 @@ void CMatrixMapStatic::SortEndDrawShadowStencil(void) {
 }
 
 void CMatrixMapStatic::Sort(const D3DXMATRIX &sort) {
+
     if (FLAG(m_ObjectState, OBJECT_STATE_INVISIBLE))
         return;
 

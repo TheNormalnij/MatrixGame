@@ -1342,11 +1342,14 @@ void CMatrixMap::BeforeDraw(void) {
     CMatrixMapStatic::SortBegin();
     // CMatrixMapStatic::OnEndOfDraw(); // this will call OnOutScreen for all
 
+    D3DXMATRIX matrix = D3DXMATRIX(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0);
+
     int cnt = m_VisibleGroupsCount;
     CMatrixMapGroup **md = m_VisibleGroups;
     while ((cnt--) > 0) {
         if (*(md) != NULL) {
-            (*(md))->SortObjects(m_Camera.GetViewMatrix());
+            //(*(md))->SortObjects(m_Camera.GetViewMatrix());
+            (*(md))->SortObjects(matrix);
             (*(md))->BeforeDrawSurfaces();
         }
         ++md;

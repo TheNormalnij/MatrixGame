@@ -965,7 +965,8 @@ void CMatrixRobot::BeforeDraw(void) {
     // RNeed(MR_Matrix|MR_Graph|MR_GraphSort|MR_ShadowStencil|MR_ShadowProj);
     DWORD sh = (g_Config.m_ShowProjShadows ? (MR_ShadowProjGeom | MR_ShadowProjTex) : 0) |
                (g_Config.m_ShowStencilShadows ? MR_ShadowStencil : 0);
-    RNeed(MR_Matrix | MR_Graph | sh);
+    RNeed(MR_Graph | sh);
+    return;
 
     if (m_ShowHitpointTime > 0 && m_HitPoint > 0 && m_CurrState != ROBOT_DIP) {
         D3DXVECTOR3 pos(*(D3DXVECTOR3 *)&m_Core->m_Matrix._41);

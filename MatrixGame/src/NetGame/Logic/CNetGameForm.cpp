@@ -24,6 +24,7 @@
 #include "Interface/CCounter.h"
 #include "MatrixGamePathUtils.hpp"
 
+#include <shared/game/Game.h>
 
 CNetGameForm::CNetGameForm(INetGameLogic *logic, COrderController *orderController) : CForm() {
     DTRACE();
@@ -116,7 +117,10 @@ void CNetGameForm::Takt(int step) {
     if (g_MatrixMap->CheckLostDevice())
         return;
 
-    g_MatrixMap->Takt(step);
+    //if (g_MatrixMap->IsLogicEnabled()) {
+        g_MatrixMap->Takt(TICK_STEP);
+    //}
+
 
     if (!GetActiveWindow()) {
         return;
