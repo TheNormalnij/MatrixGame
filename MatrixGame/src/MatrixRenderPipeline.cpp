@@ -1047,7 +1047,7 @@ static void TerBotTexM(int tex, int pass) {
     CTextureManaged *t = CBottomTextureUnion::Get(tex).GetTexture();
 
     ASSERT_DX(g_D3DD->SetTexture(0, t->Tex()));
-    ASSERT_DX(g_D3DD->SetTexture(1, g_MatrixMap->m_Macrotexture->Tex()));
+    ASSERT_DX(g_D3DD->SetTexture(1, g_MatrixMap->GetMacroTexture().Tex()));
 }
 
 static void TerBot(int pass) {
@@ -1083,7 +1083,7 @@ static void TerBotTexM_sux(int tex, int pass) {
         ASSERT_DX(g_D3DD->SetTexture(0, t->Tex()));
     }
     else
-        ASSERT_DX(g_D3DD->SetTexture(0, g_MatrixMap->m_Macrotexture->Tex()));
+        ASSERT_DX(g_D3DD->SetTexture(0, g_MatrixMap->GetMacroTexture().Tex()));
 }
 
 static void TerBotM_sux(int pass) {
@@ -1240,7 +1240,7 @@ static void TerSurfTexGlossM(CTextureManaged *tex, CTextureManaged *gloss, int p
     ASSERT_DX(g_D3DD->SetTexture(0, gloss->Tex()));
     ASSERT_DX(g_D3DD->SetTexture(1, g_MatrixMap->GetReflectionTexture()->Tex()));
     ASSERT_DX(g_D3DD->SetTexture(2, tex->Tex()));
-    ASSERT_DX(g_D3DD->SetTexture(3, g_MatrixMap->m_Macrotexture->Tex()));
+    ASSERT_DX(g_D3DD->SetTexture(3, g_MatrixMap->GetMacroTexture().Tex()));
 }
 
 static void TerSurfGlossM(int pass, bool wrapy) {
@@ -1493,7 +1493,7 @@ static void TerSurfTex(CTextureManaged *tex, CTextureManaged *gloss, int pass) {
 }
 static void TerSurfTexM(CTextureManaged *tex, CTextureManaged *gloss, int pass) {
     ASSERT_DX(g_D3DD->SetTexture(0, tex->Tex()));
-    ASSERT_DX(g_D3DD->SetTexture(1, g_MatrixMap->m_Macrotexture->Tex()));
+    ASSERT_DX(g_D3DD->SetTexture(1, g_MatrixMap->GetMacroTexture().Tex()));
 }
 
 static void TerSurf(int pass, bool wrapy) {
@@ -1627,7 +1627,7 @@ static void TerSurfMW_sux(int pass, bool wrapy) {
 static void TerSurfTexM_sux(CTextureManaged *tex, CTextureManaged *gloss, int pass) {
     if (pass == 0) {
         ASSERT_DX(g_D3DD->SetTexture(0, tex->Tex()));
-        ASSERT_DX(g_D3DD->SetTexture(1, g_MatrixMap->m_Macrotexture->Tex()));
+        ASSERT_DX(g_D3DD->SetTexture(1, g_MatrixMap->GetMacroTexture().Tex()));
     }
     // else
 }

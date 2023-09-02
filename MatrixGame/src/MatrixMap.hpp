@@ -74,6 +74,7 @@
 #include "MatrixObjectRobot.hpp"
 #include "MatrixFlyer.hpp"
 #include "MatrixTransition.hpp"
+#include "Visuall/CMacroTexture.h"
 
 inline bool CMatrixMapStatic::FitToMask(DWORD mask) {
     if (IsLiveRobot())
@@ -367,8 +368,7 @@ public:
     DWORD m_ShadowColor;
     float m_LightMainAngleZ, m_LightMainAngleX;
 
-    int m_MacrotextureSize;
-    CTextureManaged *m_Macrotexture;
+    CMacroTexture m_macroTexture;
 
     CTextureManaged *m_Reflection;
 
@@ -449,6 +449,8 @@ public:
     inline const std::wstring &MapName(void) { return m_Ids[m_IdsCnt - 1]; }
     inline ParamParser IdsGet(int no) { return m_Ids[no]; }
     inline int IdsGetCount(void) const { return m_IdsCnt; }
+
+    CMacroTexture &GetMacroTexture() { return m_macroTexture; };
 
     void UnitClear(void);
 
@@ -552,9 +554,6 @@ public:
     void AddEffectSpawner(float x, float y, float z, int ttl, const std::wstring &type);
     void RemoveEffectSpawnerByObject(CMatrixMapStatic *ms);
     void RemoveEffectSpawnerByTime(void);
-
-    void MacrotextureClear(void);
-    void MacrotextureInit(const std::wstring &path);
 
     // side funcs
     DWORD GetSideColor(int id);

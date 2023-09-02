@@ -987,14 +987,14 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
         std::wstring mt;
         mt = propval->GetAsParamParser(ic);
         if (mt.empty()) {
-            MacrotextureClear();
+            GetMacroTexture().Clear();
         }
         else {
-            MacrotextureInit(mt);
+            GetMacroTexture().Init(mt);
         }
     }
     else {
-        MacrotextureClear();
+        GetMacroTexture().Clear();
     }
 
     g_LoadProgress->SetCurLPPos(100);

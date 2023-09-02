@@ -222,7 +222,7 @@ void CMatrixMapGroup::BuildBottom(int x, int y, BYTE *rawbottom) {
     m_maxz = -10000.0;
     m_minz = 10000.0;
 
-    const float macrotexturestep = 1.0f / g_MatrixMap->m_MacrotextureSize;
+    const float macrotexturestep = 1.0f / g_MatrixMap->GetMacroTexture().GetSize();
 
     m_IdxsSource_bottom.size = 0;
     m_IdxsSource_bottom.inds = NULL;
@@ -520,7 +520,7 @@ void CMatrixMapGroup::Draw(void) {
 
     ASSERT_DX(g_D3DD->SetTransform(D3DTS_WORLD, &m_Matrix));
 
-    int type = (g_MatrixMap->m_Macrotexture == NULL) ? 0 : 1;
+    int type = g_MatrixMap->GetMacroTexture().HasTexture() ? 1 : 0;
 
     for (int i = 0; i < m_BottomGeometryCount; ++i) {
         SBottomGeometry *bg = m_BottomGeometry + i;

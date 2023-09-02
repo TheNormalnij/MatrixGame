@@ -84,9 +84,6 @@ CMatrixMap::CMatrixMap()
 
     m_EffectsCnt = 0;
 
-    m_MacrotextureSize = 1;
-    m_Macrotexture = NULL;
-
     // zakker
 
     m_minz = 10000.0;
@@ -181,7 +178,7 @@ void CMatrixMap::Clear(void) {
     m_EffectSpawners = NULL;
     CMatrixEffect::ClearEffects();
 
-    MacrotextureClear();
+    GetMacroTexture().Clear();
     WaterClear();
     GroupClear();
 
@@ -931,29 +928,6 @@ void CMatrixMap::StaticDelete(CMatrixMapStatic *ms) {
 //	return ms;
 //}
 
-void CMatrixMap::MacrotextureClear() {
-    DTRACE();
-
-    if (m_Macrotexture) {
-        m_Macrotexture = NULL;
-    }
-}
-
-void CMatrixMap::MacrotextureInit(const std::wstring &path) {
-    DTRACE();
-
-    MacrotextureClear();
-
-    m_Macrotexture = (CTextureManaged *)g_Cache->Get(cc_TextureManaged, path.c_str());
-
-    int cnt = ParamParser{path}.GetCountPar(L"?");
-    for (int i = 1; i < cnt; i++) {
-        ParamParser op = utils::trim(ParamParser{path}.GetStrPar(i, L"?"));
-        if (utils::starts_with(op, L"SIM"))
-            m_MacrotextureSize = op.GetInt();
-    }
-}
-
 void CMatrixMap::ClearSide() {
     DTRACE();
 
@@ -1446,8 +1420,7 @@ void CMatrixMap::BeforeDrawLandscape(bool all) {
     DTRACE();
 
     CMatrixMapGroup::BeforeDrawAll();
-    if (m_Macrotexture)
-        m_Macrotexture->Prepare();
+    GetMacroTexture().Prepare();
 
     int cnt;
     CMatrixMapGroup **md;
@@ -1473,8 +1446,8 @@ void CMatrixMap::BeforeDrawLandscapeSurfaces(bool all) {
     DTRACE();
 
     CTerSurface::BeforeDrawAll();
-    if (m_Macrotexture)
-        m_Macrotexture->Prepare();
+
+    GetMacroTexture().Prepare();
 
     int cnt;
     CMatrixMapGroup **md;
