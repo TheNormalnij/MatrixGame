@@ -63,8 +63,6 @@ CMatrixMap::CMatrixMap()
     m_Group = NULL;
     m_GroupVis = NULL;
 
-    m_AD_Obj_cnt = 0;
-
     m_GroundZ = WATER_LEVEL;
     m_GroundZBase = WATER_LEVEL - 64;
 
@@ -1326,11 +1324,12 @@ void CMatrixMap::BeforeDraw(void) {
         ++md;
     }
 
-    for (int od = 0; od < m_AD_Obj_cnt; ++od) {
-        m_AD_Obj[od]->Sort(m_Camera.GetViewMatrix());
-        if (m_AD_Obj[od]->GetObjectType() == OBJECT_TYPE_FLYER) {
-            if (((CMatrixFlyer *)m_AD_Obj[od])->CarryingRobot()) {
-                ((CMatrixFlyer *)m_AD_Obj[od])->GetCarryingRobot()->Sort(m_Camera.GetViewMatrix());
+    for (int od = 0; od < m_AlwaysDrawStorage.GetObjectCount(); ++od) {
+        auto object = m_AlwaysDrawStorage.Get(od);
+        object->Sort(m_Camera.GetViewMatrix());
+        if (object->GetObjectType() == OBJECT_TYPE_FLYER) {
+            if (((CMatrixFlyer *)object)->CarryingRobot()) {
+                ((CMatrixFlyer *)object)->GetCarryingRobot()->Sort(m_Camera.GetViewMatrix());
             }
         }
     }
@@ -2203,9 +2202,10 @@ void CMatrixMap::Draw(void) {
 
     DrawEffects();
 
-    for (int od = 0; od < m_AD_Obj_cnt; ++od) {
-        if (m_AD_Obj[od]->GetObjectType() == OBJECT_TYPE_FLYER) {
-            ((CMatrixFlyer *)m_AD_Obj[od])->DrawPropeller();
+    for (int od = 0; od < m_AlwaysDrawStorage.GetObjectCount(); ++od) {
+        auto object = m_AlwaysDrawStorage.Get(od);
+        if (object->GetObjectType() == OBJECT_TYPE_FLYER) {
+            ((CMatrixFlyer *)object)->DrawPropeller();
         }
     }
 
@@ -2501,13 +2501,14 @@ bool CMatrixMap::FindObjects(const D3DXVECTOR2 &pos, float radius, float oscale,
     }
 
 skip:;
-    for (int od = 0; od < m_AD_Obj_cnt; ++od) {
-        if (m_AD_Obj[od]->m_IntersectFlagFindObjects != m_IntersectFlagFindObjects) {
-            m_AD_Obj[od]->m_IntersectFlagFindObjects = m_IntersectFlagFindObjects;
+    for (int od = 0; od < m_AlwaysDrawStorage.GetObjectCount(); ++od) {
+        auto object = m_AlwaysDrawStorage.Get(od);
+        if (object->m_IntersectFlagFindObjects != m_IntersectFlagFindObjects) {
+            object->m_IntersectFlagFindObjects = m_IntersectFlagFindObjects;
 
             CMatrixMapStatic *msa[2];
             int mscnt = 1;
-            msa[0] = m_AD_Obj[od];
+            msa[0] = object;
 
             for (;;) {
                 if (mscnt == 0)
@@ -2692,13 +2693,14 @@ bool CMatrixMap::FindObjects(const D3DXVECTOR3 &pos, float radius, float oscale,
     }
 
 skip:;
-    for (int od = 0; od < m_AD_Obj_cnt; ++od) {
-        if (m_AD_Obj[od]->m_IntersectFlagFindObjects != m_IntersectFlagFindObjects) {
-            m_AD_Obj[od]->m_IntersectFlagFindObjects = m_IntersectFlagFindObjects;
+    for (int od = 0; od < m_AlwaysDrawStorage.GetObjectCount(); ++od) {
+        auto object = m_AlwaysDrawStorage.Get(od);
+        if (object->m_IntersectFlagFindObjects != m_IntersectFlagFindObjects) {
+            object->m_IntersectFlagFindObjects = m_IntersectFlagFindObjects;
 
             CMatrixMapStatic *msa[2];
             int mscnt = 1;
-            msa[0] = m_AD_Obj[od];
+            msa[0] = object;
 
             for (;;) {
                 if (mscnt == 0)

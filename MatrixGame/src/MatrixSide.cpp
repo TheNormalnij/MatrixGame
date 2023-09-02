@@ -346,13 +346,12 @@ void CMatrixSideUnit::BufPrepare() {
 void CMatrixSideUnit::OrderFlyer(const D3DXVECTOR2 &to, EFlyerOrder order, float ang, int place, const CPoint &bpos,
                                  int botpar_i) {
     DTRACE();
-    if (g_MatrixMap->m_AD_Obj_cnt >= MAX_ALWAYS_DRAW_OBJ)
+    if (!g_MatrixMap->GetAlwaysDrawStorage().HasFreeSpace())
         return;
 
     CMatrixFlyer *fl = g_MatrixMap->StaticAdd<CMatrixFlyer>(true);
 
-    g_MatrixMap->m_AD_Obj[g_MatrixMap->m_AD_Obj_cnt] = fl;
-    ++g_MatrixMap->m_AD_Obj_cnt;
+    g_MatrixMap->GetAlwaysDrawStorage().Add(fl);
 
     fl->ApplyOrder(to, m_Id, order, ang, place, bpos, botpar_i);
 }

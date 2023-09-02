@@ -401,52 +401,52 @@ CMatrixMapStatic *CMatrixMap::Trace(D3DXVECTOR3 *result, const D3DXVECTOR3 &star
     data.maxz = std::max(start.z, end.z);
     data.obj = NULL;
 
-    if (m_AD_Obj_cnt > 0) {
-        for (int od = 0; od < m_AD_Obj_cnt; ++od) {
-            float ttt;
-            bool hit;
-            if (m_AD_Obj[od]->IsFlyer()) {
-                if (mask & TRACE_FLYER) {
-                    if ((data.mask & TRACE_OBJECTSPHERE) != 0) {
-                        hit = IsIntersectSphere(m_AD_Obj[od]->GetGeoCenter(), m_AD_Obj[od]->GetRadius(), start,
-                                                data.dir, ttt);
-                        if (hit && (ttt < 0))
-                            hit = false;
-                    }
-                    else {
-                        hit = m_AD_Obj[od]->Pick(start, data.dir, &ttt);
-                    }
-
-                    if (hit && (ttt < data.last_t)) {
-                        data.last_t = ttt;
-                        data.obj = m_AD_Obj[od];
-                        m_AD_Obj[od]->m_IntersectFlagTracer = m_IntersectFlagTracer;
-                    }
+    const int objectCount = m_AlwaysDrawStorage.GetObjectCount();
+    for (int od = 0; od < objectCount; ++od) {
+        float ttt;
+        bool hit;
+        auto object = m_AlwaysDrawStorage.Get(od);
+        if (object->IsFlyer()) {
+            if (mask & TRACE_FLYER) {
+                if ((data.mask & TRACE_OBJECTSPHERE) != 0) {
+                    hit = IsIntersectSphere(object->GetGeoCenter(), object->GetRadius(), start,
+                                            data.dir, ttt);
+                    if (hit && (ttt < 0))
+                        hit = false;
+                }
+                else {
+                    hit = object->Pick(start, data.dir, &ttt);
                 }
 
-                CMatrixFlyer *fl = (CMatrixFlyer *)m_AD_Obj[od];
-                if (fl->CarryingRobot() && (mask & TRACE_ROBOT)) {
-                    CMatrixMapStatic *ms = fl->GetCarryingRobot();
-
-                    if ((data.mask & TRACE_OBJECTSPHERE) != 0) {
-                        hit = IsIntersectSphere(ms->GetGeoCenter(), ms->GetRadius(), start, data.dir, ttt);
-                        if (hit && (ttt < 0))
-                            hit = false;
-                    }
-                    else {
-                        hit = ms->Pick(start, data.dir, &ttt);
-                    }
-
-                    if (hit && (ttt < data.last_t)) {
-                        data.last_t = ttt;
-                        data.obj = ms;
-                        ms->m_IntersectFlagTracer = m_IntersectFlagTracer;
-                    }
+                if (hit && (ttt < data.last_t)) {
+                    data.last_t = ttt;
+                    data.obj = object;
+                    object->m_IntersectFlagTracer = m_IntersectFlagTracer;
                 }
             }
-            if (data.obj) {
-                data.out = start + data.dir * data.last_t;
+
+            CMatrixFlyer *fl = (CMatrixFlyer *)object;
+            if (fl->CarryingRobot() && (mask & TRACE_ROBOT)) {
+                CMatrixMapStatic *ms = fl->GetCarryingRobot();
+
+                if ((data.mask & TRACE_OBJECTSPHERE) != 0) {
+                    hit = IsIntersectSphere(ms->GetGeoCenter(), ms->GetRadius(), start, data.dir, ttt);
+                    if (hit && (ttt < 0))
+                        hit = false;
+                }
+                else {
+                    hit = ms->Pick(start, data.dir, &ttt);
+                }
+
+                if (hit && (ttt < data.last_t)) {
+                    data.last_t = ttt;
+                    data.obj = ms;
+                    ms->m_IntersectFlagTracer = m_IntersectFlagTracer;
+                }
             }
+        }
+        if (data.obj) {
+            data.out = start + data.dir * data.last_t;
         }
     }
 

@@ -87,7 +87,7 @@ CMatrixMapStatic::~CMatrixMapStatic() {
         g_MatrixMap->GetPlayerSide()->SetArcadedObject(NULL);
     }
 
-    g_MatrixMap->RemoveFromAD(this);
+    g_MatrixMap->GetAlwaysDrawStorage().Remove(this);
 
     m_Core->m_Object = NULL;
     m_Core->Release();

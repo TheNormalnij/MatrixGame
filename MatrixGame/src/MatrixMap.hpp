@@ -22,8 +22,6 @@
 #define MOVE_CNT          (2)
 #define GLOBAL_SCALE_MOVE (GLOBAL_SCALE / MOVE_CNT)
 
-#define MAX_ALWAYS_DRAW_OBJ 16
-
 #define MatrixPathMoveMax 256
 
 #define ROBOT_WEAPONS_PER_ROBOT_CNT 10
@@ -75,6 +73,7 @@
 #include "MatrixFlyer.hpp"
 #include "MatrixTransition.hpp"
 #include "Visuall/CMacroTexture.h"
+#include "Visuall/CAlwaysDrawStorage.h"
 
 inline bool CMatrixMapStatic::FitToMask(DWORD mask) {
     if (IsLiveRobot())
@@ -394,8 +393,7 @@ public:
     CMatrixMapStatic *m_TraceStopObj;
 
     bool IsTraceNonPlayerObj();
-    PCMatrixMapStatic m_AD_Obj[MAX_ALWAYS_DRAW_OBJ];  // out of land object // flyer
-    int m_AD_Obj_cnt;
+    CAlwaysDrawStorage m_AlwaysDrawStorage;
 
     CMatrixCamera m_Camera;
 
@@ -451,6 +449,7 @@ public:
     inline int IdsGetCount(void) const { return m_IdsCnt; }
 
     CMacroTexture &GetMacroTexture() { return m_macroTexture; };
+    CAlwaysDrawStorage &GetAlwaysDrawStorage() { return m_AlwaysDrawStorage; };
 
     void UnitClear(void);
 
@@ -510,15 +509,6 @@ public:
     const D3DXMATRIX &GetIdentityMatrix(void) const { return m_Identity; }
 
     bool CalcVectorToLandscape(const D3DXVECTOR2 &pos, D3DXVECTOR2 &dir);
-
-    inline void RemoveFromAD(CMatrixMapStatic *ms) {
-        for (int i = 0; i < m_AD_Obj_cnt; ++i) {
-            if (m_AD_Obj[i] == ms) {
-                m_AD_Obj[i] = m_AD_Obj[--m_AD_Obj_cnt];
-                return;
-            }
-        }
-    }
 
     bool UnitPick(const D3DXVECTOR3 &orig, const D3DXVECTOR3 &dir, int *ox, int *oy, float *ot = NULL) {
         return UnitPick(orig, dir, CRect(0, 0, m_Size.x, m_Size.y), ox, oy, ot);
