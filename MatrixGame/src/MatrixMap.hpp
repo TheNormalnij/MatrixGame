@@ -622,6 +622,9 @@ public:
     void DrawSky(void);
 
 private:
+    void InitDificulty();
+
+private:
     enum EScanResult {
         SR_NONE,
         SR_BREAK,

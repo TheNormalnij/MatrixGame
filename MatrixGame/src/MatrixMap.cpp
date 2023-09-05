@@ -106,7 +106,19 @@ CMatrixMap::CMatrixMap()
     m_StoreCurrentMusicVolume = 1.0f;
     m_DeviceState = NULL;
 
-    // init dificulty
+    InitDificulty();
+
+}
+
+CMatrixMap::~CMatrixMap() {
+    DTRACE();
+
+    delete m_VisibleCalculator;
+
+    // Clear(); do not call Clear method from this destructor!!!!!! it will be called from CMatrixMapLogic Clear
+}
+
+void CMatrixMap::InitDificulty() {
     m_Difficulty.k_damage_enemy_to_player = 1.0f;
     m_Difficulty.k_time_before_maintenance = 1.0f;
     m_Difficulty.k_friendly_fire = 1.0f;
@@ -133,14 +145,6 @@ CMatrixMap::CMatrixMap()
             }
         }
     }
-}
-
-CMatrixMap::~CMatrixMap() {
-    DTRACE();
-
-    delete m_VisibleCalculator;
-
-    // Clear(); do not call Clear method from this destructor!!!!!! it will be called from CMatrixMapLogic Clear
 }
 
 void CMatrixMap::Clear(void) {
