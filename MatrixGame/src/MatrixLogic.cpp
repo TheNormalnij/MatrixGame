@@ -1601,11 +1601,6 @@ int CMatrixMapLogic::RandomizeMovePath(int nsh, int size, int cnt, CPoint *path)
     return cnt;
 }
 
-// C1001 Internal compiler error here with using MS Visual Studio 17 2022
-// TODO refactor?
-#ifdef _MSC_FULL_VER
-    #pragma optimize("g", off)
-#endif
 int CMatrixMapLogic::FindNearPlace(byte mm, const CPoint &mappos) {
     int i;
     int sme = 0;
@@ -1661,10 +1656,6 @@ int CMatrixMapLogic::FindNearPlace(byte mm, const CPoint &mappos) {
         m_ZoneDataZero[m_ZoneIndex[i]] = 0;
     return -1;
 }
-#ifdef _MSC_FULL_VER
-    // TODO remove this. This enables optimisation in debug mmode too
-    #pragma optimize("g", on)
-#endif
 
 int CMatrixMapLogic::FindPlace(const CPoint &mappos) {
     SMatrixMapMove *mm = MoveGetTest(mappos.x, mappos.y);
@@ -2186,10 +2177,8 @@ void CMatrixMapLogic::Takt(int step) {
             ms = ms->GetNextLogic();
         }
 
-        int cnt = m_VisibleGroupsCount;
-        CMatrixMapGroup **md = m_VisibleGroups;
-        while ((cnt--) > 0) {
-            (*(md++))->PauseTakt(step);
+        for (CMatrixMapGroup* md : GetVisibleCalculator()->GetVisibleGroupIterator()) {
+            md->PauseTakt(step);
         }
 
         CMatrixMapStatic::CalcDistances();

@@ -58,10 +58,7 @@ CMatrixMap::CMatrixMap()
     m_Point = NULL;
     m_Move = NULL;
 
-    m_GroupSize.x = 0;
-    m_GroupSize.y = 0;
-    m_Group = NULL;
-    m_GroupVis = NULL;
+    m_VisibleCalculator = new CMatrixVisiCalc(&m_Camera);
 
     m_GroundZ = WATER_LEVEL;
     m_GroundZBase = WATER_LEVEL - 64;
@@ -72,7 +69,6 @@ CMatrixMap::CMatrixMap()
     D3DXVec3Normalize(&m_LightMain, &m_LightMain);
 
     m_Water = NULL;
-    m_VisibleGroupsCount = 0;
 
     m_IdsCnt = 0;
     m_Ids = NULL;
@@ -83,9 +79,6 @@ CMatrixMap::CMatrixMap()
     m_EffectsCnt = 0;
 
     // zakker
-
-    m_minz = 10000.0;
-    m_maxz = -10000.0;
     D3DXMatrixIdentity(&m_Identity);
 
     m_EffectSpawners = NULL;
@@ -145,6 +138,8 @@ CMatrixMap::CMatrixMap()
 CMatrixMap::~CMatrixMap() {
     DTRACE();
 
+    delete m_VisibleCalculator;
+
     // Clear(); do not call Clear method from this destructor!!!!!! it will be called from CMatrixMapLogic Clear
 }
 
@@ -178,7 +173,8 @@ void CMatrixMap::Clear(void) {
 
     GetMacroTexture().Clear();
     WaterClear();
-    GroupClear();
+
+    GetVisibleCalculator()->GroupClear();
 
     UnitClear();
     IdsClear();
@@ -428,7 +424,7 @@ float CMatrixMap::GetZInterpolatedLand(float wx, float wy) {
 
     for (int j = 0; j <= 3; ++j) {
         int cy = y + j - 1;
-        float prex_z = GetGroupMaxZLand(x - 2, cy);
+        float prex_z = GetVisibleCalculator()->GetGroupMaxZLand(x - 2, cy);
         if (prex_z < m_GroundZBaseMiddle)
             prex_z = m_GroundZBaseMiddle;
         else if (prex_z > m_GroundZBaseMax)
@@ -439,7 +435,7 @@ float CMatrixMap::GetZInterpolatedLand(float wx, float wy) {
             // along x
             xx[i].x = cx * (GLOBAL_SCALE * MAP_GROUP_SIZE);
             xx[i].y = cy * (GLOBAL_SCALE * MAP_GROUP_SIZE);
-            z = GetGroupMaxZLand(cx, cy);
+            z = GetVisibleCalculator()->GetGroupMaxZLand(cx, cy);
             if (z < m_GroundZBaseMiddle)
                 z = m_GroundZBaseMiddle;
             else if (z > m_GroundZBaseMax)
@@ -476,14 +472,14 @@ float CMatrixMap::GetZInterpolatedObj(float wx, float wy) {
 
     for (int j = 0; j <= 3; ++j) {
         int cy = y + j - 1;
-        float prex_z = GetGroupMaxZObj(x - 2, cy);
+        float prex_z = GetVisibleCalculator()->GetGroupMaxZObj(x - 2, cy);
         for (int i = 0; i <= 3; ++i) {
             int cx = x + i - 1;
 
             // along x
             xx[i].x = cx * (GLOBAL_SCALE * MAP_GROUP_SIZE);
             xx[i].y = cy * (GLOBAL_SCALE * MAP_GROUP_SIZE);
-            z = GetGroupMaxZObj(cx, cy);
+            z = GetVisibleCalculator()->GetGroupMaxZObj(cx, cy);
             xx[i].z = std::max(prex_z, z);  //(prex_z + z) * 0.5f;
             prex_z = z;
         }
@@ -516,14 +512,14 @@ float CMatrixMap::GetZInterpolatedObjRobots(float wx, float wy) {
 
     for (int j = 0; j <= 3; ++j) {
         int cy = y + j - 1;
-        float prex_z = GetGroupMaxZObjRobots(x - 2, cy);
+        float prex_z = GetVisibleCalculator()->GetGroupMaxZObjRobots(x - 2, cy);
         for (int i = 0; i <= 3; ++i) {
             int cx = x + i - 1;
 
             // along x
             xx[i].x = cx * (GLOBAL_SCALE * MAP_GROUP_SIZE);
             xx[i].y = cy * (GLOBAL_SCALE * MAP_GROUP_SIZE);
-            z = GetGroupMaxZObjRobots(cx, cy);
+            z = GetVisibleCalculator()->GetGroupMaxZObjRobots(cx, cy);
             xx[i].z = std::max(prex_z, z);  //(prex_z + z) * 0.5f;
             prex_z = z;
         }
@@ -1016,7 +1012,7 @@ void CMatrixMap::WaterClear() {
         HDelete(CMatrixWater, m_Water, g_MatrixHeap);
         m_Water = NULL;
     }
-    m_VisWater.clear();
+    GetVisibleCalculator()->GetVisWater().clear();
 
     SInshorewave::MarkAllBuffersNoNeed();
 }
@@ -1031,7 +1027,7 @@ void CMatrixMap::WaterInit() {
         m_Water->Clear();
     }
 
-    m_VisWater.clear();
+    GetVisibleCalculator()->GetVisWater().clear();
     m_Water->Init();
 }
 
@@ -1303,7 +1299,7 @@ void CMatrixMap::BeforeDraw(void) {
         CHelper::Create(1,0)->Line(p1, p1 + D3DXVECTOR3(0,0,100));
     */
 
-    CalcMapGroupVisibility();
+    GetVisibleCalculator()->CalcMapGroupVisibility();
 
     BeforeDrawLandscape();
     if (CTerSurface::IsSurfacesPresent())
@@ -1314,14 +1310,11 @@ void CMatrixMap::BeforeDraw(void) {
     CMatrixMapStatic::SortBegin();
     // CMatrixMapStatic::OnEndOfDraw(); // this will call OnOutScreen for all
 
-    int cnt = m_VisibleGroupsCount;
-    CMatrixMapGroup **md = m_VisibleGroups;
-    while ((cnt--) > 0) {
-        if (*(md) != NULL) {
-            (*(md))->SortObjects(m_Camera.GetViewMatrix());
-            (*(md))->BeforeDrawSurfaces();
+    for (auto visGroup : GetVisibleCalculator()->GetVisibleGroupIterator()) {
+        if (visGroup) {
+            visGroup->SortObjects(m_Camera.GetViewMatrix());
+            visGroup->BeforeDrawSurfaces();
         }
-        ++md;
     }
 
     for (int od = 0; od < m_AlwaysDrawStorage.GetObjectCount(); ++od) {
@@ -1421,23 +1414,12 @@ void CMatrixMap::BeforeDrawLandscape(bool all) {
     CMatrixMapGroup::BeforeDrawAll();
     GetMacroTexture().Prepare();
 
-    int cnt;
-    CMatrixMapGroup **md;
+    auto iter = all ? GetVisibleCalculator()->GetGroupsIterator() : GetVisibleCalculator()->GetVisibleGroupIterator();
 
-    if (all) {
-        cnt = m_GroupSize.x * m_GroupSize.y;
-        md = m_Group;
-    }
-    else {
-        cnt = m_VisibleGroupsCount;
-        md = m_VisibleGroups;
-    }
-
-    while (cnt > 0) {
-        if (*md)
-            (*md)->BeforeDraw();
-        md++;
-        cnt--;
+    for (auto group : iter) {
+        if (group) {
+            group->BeforeDraw();
+        }
     }
 }
 
@@ -1448,23 +1430,12 @@ void CMatrixMap::BeforeDrawLandscapeSurfaces(bool all) {
 
     GetMacroTexture().Prepare();
 
-    int cnt;
-    CMatrixMapGroup **md;
+    auto iter = all ? GetVisibleCalculator()->GetGroupsIterator() : GetVisibleCalculator()->GetVisibleGroupIterator();
 
-    if (all) {
-        cnt = m_GroupSize.x * m_GroupSize.y;
-        md = m_Group;
-    }
-    else {
-        cnt = m_VisibleGroupsCount;
-        md = m_VisibleGroups;
-    }
-
-    while (cnt > 0) {
-        if ((*md))
-            (*md)->BeforeDrawSurfaces();
-        md++;
-        cnt--;
+    for (auto group : iter) {
+        if (group) {
+            group->BeforeDrawSurfaces();
+        }
     }
 }
 
@@ -1520,69 +1491,13 @@ void CMatrixMap::DrawLandscape(bool all) {
     ASSERT_DX(g_D3DD->SetFVF(MATRIX_MAP_BOTTOM_VERTEX_FORMAT));
     ASSERT_DX(g_D3DD->SetRenderState(D3DRS_LIGHTING, FALSE));
 
-    int cnt;
-    CMatrixMapGroup **md;
+    auto iter = all ? GetVisibleCalculator()->GetGroupsIterator() : GetVisibleCalculator()->GetVisibleGroupIterator();
 
-    if (all) {
-        cnt = m_GroupSize.x * m_GroupSize.y;
-        md = m_Group;
-        while (cnt > 0) {
-            if ((*md))
-                (*md)->Draw();
-            md++;
-            cnt--;
+    for (auto group : iter) {
+        if (group) {
+            group->Draw();
         }
     }
-    else {
-        cnt = m_VisibleGroupsCount;
-        md = m_VisibleGroups;
-        while (cnt > 0) {
-            (*md)->Draw();
-
-            ///*
-#if DRAW_LANDSCAPE_SETKA == 1
-            CHelper::Create(1, 0)->Line(D3DXVECTOR3((*md)->GetPos0().x, (*md)->GetPos0().y, 10.0f),
-                                        D3DXVECTOR3((*md)->GetPos0().x, (*md)->GetPos1().y, 10.0f), 0xFFFF0000,
-                                        0xFFFF0000);
-
-            CHelper::Create(1, 0)->Line(D3DXVECTOR3((*md)->GetPos0().x, (*md)->GetPos1().y, 10.0f),
-                                        D3DXVECTOR3((*md)->GetPos1().x, (*md)->GetPos1().y, 10.0f), 0xFFFF0000,
-                                        0xFFFF0000);
-
-            CHelper::Create(1, 0)->Line(D3DXVECTOR3((*md)->GetPos1().x, (*md)->GetPos1().y, 10.0f),
-                                        D3DXVECTOR3((*md)->GetPos1().x, (*md)->GetPos0().y, 10.0f), 0xFFFF0000,
-                                        0xFFFF0000);
-
-            CHelper::Create(1, 0)->Line(D3DXVECTOR3((*md)->GetPos1().x, (*md)->GetPos0().y, 10.0f),
-                                        D3DXVECTOR3((*md)->GetPos0().x, (*md)->GetPos0().y, 10.0f), 0xFFFF0000,
-                                        0xFFFF0000);
-
-            //*/
-#endif
-
-            md++;
-            cnt--;
-        }
-    }
-
-    /*
-        for (int x = 0; x < m_Size.x; ++x)
-            for (int y = 0; y < m_Size.y; ++y)
-            {
-                D3DXVECTOR3 p0(x * GLOBAL_SCALE, y*GLOBAL_SCALE, 30);
-                D3DXVECTOR3 p1((x+1) * GLOBAL_SCALE, y*GLOBAL_SCALE, 30);
-                D3DXVECTOR3 p2((x+1) * GLOBAL_SCALE, (y+1)*GLOBAL_SCALE, 30);
-                SMatrixMapUnit *mu = UnitGet(x,y);
-                if (mu->IsBridge())
-                {
-                    CHelper::Create(1,0)->Triangle(p0,p1,p2,0xFFFF0000);
-
-                } else
-                {
-                    //CHelper::Create(1,0)->Triangle(p0,p1,p2,0xFF0000FF);
-                }
-            }
-    */
 }
 
 void CMatrixMap::DrawObjects(void) {
@@ -1661,23 +1576,16 @@ void CMatrixMap::DrawWater(void) {
     for (curpass = 0; curpass < g_Render->m_WaterPassAlpha; ++curpass) {
         g_Render->m_WaterAlpha(m_Water->m_WaterTex1, m_Water->m_WaterTex2, curpass);
 
-        int cnt = m_VisibleGroupsCount;
-        CMatrixMapGroup **md = m_VisibleGroups;
+       for (CMatrixMapGroup* group : GetVisibleCalculator()->GetVisibleGroupIterator()) {
+            if (group->HasWater()) {
+                if (curpass == 0)
+                    ASSERT_DX(g_D3DD->SetTexture(0, group->GetWaterAlpha()->Tex()));
 
-        while ((cnt--) > 0) {
-            if (!(*(md))->HasWater()) {
-                ++md;
-                continue;
+                const D3DXVECTOR2 &p = group->GetPos0();
+                m._41 = p.x;
+                m._42 = p.y;
+                m_Water->Draw(m);
             }
-
-            if (curpass == 0)
-                ASSERT_DX(g_D3DD->SetTexture(0, (*md)->GetWaterAlpha()->Tex()));
-
-            const D3DXVECTOR2 &p = (*(md))->GetPos0();
-            m._41 = p.x;
-            m._42 = p.y;
-            m_Water->Draw(m);
-            ++md;
         }
     }
 
@@ -1686,7 +1594,7 @@ void CMatrixMap::DrawWater(void) {
     for (curpass = 0; curpass < g_Render->m_WaterPassSolid; ++curpass) {
         g_Render->m_WaterSolid(m_Water->m_WaterTex1, m_Water->m_WaterTex2, curpass);
 
-        for (const auto& item : m_VisWater)
+        for (const auto& item : GetVisibleCalculator()->GetVisWater())
         {
             m._41 = item.x;
             m._42 = item.y;
@@ -1698,22 +1606,15 @@ void CMatrixMap::DrawWater(void) {
 
     // g_D3DD->SetRenderState( D3DRS_NORMALIZENORMALS,  FALSE );
 
-    int cnt;
-    CMatrixMapGroup **md;
     if (SInshorewave::m_Tex) {
         SInshorewave::DrawBegin();
 
-        cnt = m_VisibleGroupsCount;
-        md = m_VisibleGroups;
-        while ((cnt--) > 0) {
-            if (!(*(md))->HasWater()) {
-                ++md;
-                continue;
+        for (auto group : GetVisibleCalculator()->GetVisibleGroupIterator()) {
+            if (group->HasWater()) {
+                group->DrawInshorewaves();
             }
-
-            (*md)->DrawInshorewaves();
-            ++md;
         }
+
         SInshorewave::DrawEnd();
     }
 }
@@ -1745,12 +1646,9 @@ void CMatrixMap::DrawShadowsProjFast(void) {
     ASSERT_DX(g_D3DD->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_CLAMP));
 
     CMatrixMapStatic::SortEndDrawShadowProj();
-    int cnt = m_VisibleGroupsCount;
-    CMatrixMapGroup **md = m_VisibleGroups;
-    while (cnt > 0) {
-        (*md)->DrawShadowProj();
-        md++;
-        cnt--;
+
+    for (auto group : GetVisibleCalculator()->GetVisibleGroupIterator()) {
+        group->DrawShadowProj();
     }
 
     // g_D3DD->SetRenderState(D3DRS_ALPHATESTENABLE,		FALSE);
@@ -1840,12 +1738,9 @@ void CMatrixMap::DrawShadows(void) {
     ASSERT_DX(g_D3DD->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0));
 
     CMatrixMapStatic::SortEndDrawShadowProj();
-    int cnt = m_VisibleGroupsCount;
-    CMatrixMapGroup **md = m_VisibleGroups;
-    while (cnt > 0) {
-        (*md)->DrawShadowProj();
-        md++;
-        cnt--;
+
+    for (CMatrixMapGroup* group : GetVisibleCalculator()->GetVisibleGroupIterator()) {
+        group->DrawShadowProj();
     }
 
     ASSERT_DX(g_D3DD->SetRenderState(D3DRS_COLORWRITEENABLE, 0xF));
@@ -2277,10 +2172,10 @@ void CMatrixMap::Takt(int step) {
 
     DCP();
 
-    int cnt = m_VisibleGroupsCount;
-    CMatrixMapGroup **md = m_VisibleGroups;
-    while ((cnt--) > 0) {
-        (*(md++))->GraphicTakt(step);
+    for (auto group : GetVisibleCalculator()->GetVisibleGroupIterator()) {
+        if (group) {
+            group->GraphicTakt(step);
+        }
     }
 
     DCP();
@@ -2420,14 +2315,17 @@ bool CMatrixMap::FindObjects(const D3DXVECTOR2 &pos, float radius, float oscale,
     ++maxy1;
 
     ++m_IntersectFlagFindObjects;
+    
+    const CPoint groupSizes = GetVisibleCalculator()->GetGroupSize();
 
     if (minx1 < 0) {
         minx1 = 0;
         if (0 > maxx1)
             goto skip;
     }
-    if (maxx1 >= m_GroupSize.x) {
-        maxx1 = m_GroupSize.x - 1;
+
+    if (maxx1 >= groupSizes.x) {
+        maxx1 = groupSizes.x - 1;
         if (maxx1 < minx1)
             goto skip;
     }
@@ -2436,15 +2334,15 @@ bool CMatrixMap::FindObjects(const D3DXVECTOR2 &pos, float radius, float oscale,
         if (0 > maxy1)
             goto skip;
     }
-    if (maxy1 >= m_GroupSize.y) {
-        maxy1 = m_GroupSize.y - 1;
+    if (maxy1 >= groupSizes.y) {
+        maxy1 = groupSizes.y - 1;
         if (maxy1 < miny1)
             goto skip;
     }
 
     for (int x = minx1; x <= maxx1; ++x) {
         for (int y = miny1; y <= maxy1; ++y) {
-            PCMatrixMapGroup g = GetGroupByIndex(x, y);
+            PCMatrixMapGroup g = GetVisibleCalculator()->GetGroupByIndex(x, y);
             if (g == NULL)
                 continue;
             int i = 0;
@@ -2614,13 +2512,15 @@ bool CMatrixMap::FindObjects(const D3DXVECTOR3 &pos, float radius, float oscale,
 
     ++m_IntersectFlagFindObjects;
 
+    const CPoint groupSizes = GetVisibleCalculator()->GetGroupSize();
+
     if (minx1 < 0) {
         minx1 = 0;
         if (0 > maxx1)
             goto skip;
     }
-    if (maxx1 >= m_GroupSize.x) {
-        maxx1 = m_GroupSize.x - 1;
+    if (maxx1 >= groupSizes.x) {
+        maxx1 = groupSizes.x - 1;
         if (maxx1 < minx1)
             goto skip;
     }
@@ -2629,15 +2529,15 @@ bool CMatrixMap::FindObjects(const D3DXVECTOR3 &pos, float radius, float oscale,
         if (0 > maxy1)
             goto skip;
     }
-    if (maxy1 >= m_GroupSize.y) {
-        maxy1 = m_GroupSize.y - 1;
+    if (maxy1 >= groupSizes.y) {
+        maxy1 = groupSizes.y - 1;
         if (maxy1 < miny1)
             goto skip;
     }
 
     for (int x = minx1; x <= maxx1; ++x) {
         for (int y = miny1; y <= maxy1; ++y) {
-            PCMatrixMapGroup g = GetGroupByIndex(x, y);
+            PCMatrixMapGroup g = GetVisibleCalculator()->GetGroupByIndex(x, y);
             if (g == NULL)
                 continue;
             int i = 0;

@@ -104,7 +104,7 @@ static void hMusic(const std::wstring& cmd, const std::wstring& params) {
 }
 
 static void hCalcVis(const std::wstring& cmd, const std::wstring& params) {
-    g_MatrixMap->CalcVis();
+    //g_MatrixMap->CalcVis();
 }
 
 static void hCompress(const std::wstring& cmd, const std::wstring& params) {

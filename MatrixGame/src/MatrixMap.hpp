@@ -3,8 +3,7 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#ifndef MATRIX_MAP_HPP
-#define MATRIX_MAP_HPP
+#pragma once
 
 #include "Common.hpp"
 #include "MatrixConfig.hpp"
@@ -74,6 +73,7 @@
 #include "MatrixTransition.hpp"
 #include "Visuall/CMacroTexture.h"
 #include "Visuall/CAlwaysDrawStorage.h"
+#include "Visuall/CMatrixVisiCalc.h"
 
 inline bool CMatrixMapStatic::FitToMask(DWORD mask) {
     if (IsLiveRobot())
@@ -199,16 +199,6 @@ struct SDifficulty {
     float k_friendly_fire;
 };
 
-struct SGroupVisibility {
-    PCMatrixMapGroup *vis;
-    int vis_cnt;
-    float z_from;
-    int *levels;
-    int levels_cnt;
-
-    void Release(void);
-};
-
 #define MMFLAG_OBJECTS_DRAWN SETBIT(0)
 #define MMFLAG_FOG_ON        SETBIT(1)
 #define MMFLAG_SKY_ON        SETBIT(2)
@@ -304,10 +294,6 @@ public:
     SMatrixMapMove *m_Move;
 
     CMatrixRoadNetwork m_RN;
-
-    CPoint m_GroupSize;
-    CMatrixMapGroup **m_Group;
-    SGroupVisibility *m_GroupVis;
 
     CDevConsole m_Console;
     CMatrixDebugInfo m_DI;
@@ -410,15 +396,9 @@ protected:
 
     D3DXMATRIX m_Identity;
 
-    float m_minz;
-    float m_maxz;
-
-    std::vector<D3DXVECTOR2> m_VisWater;
-
-    CMatrixMapGroup **m_VisibleGroups;
-    int m_VisibleGroupsCount;
-
     DWORD m_CurFrame;
+
+    CMatrixVisiCalc *m_VisibleCalculator;
 
     int m_Time;
     int m_PrevTimeCheckStatus;
@@ -450,14 +430,12 @@ public:
 
     CMacroTexture &GetMacroTexture() { return m_macroTexture; };
     CAlwaysDrawStorage &GetAlwaysDrawStorage() { return m_AlwaysDrawStorage; };
+    CMatrixVisiCalc *GetVisibleCalculator() { return m_VisibleCalculator; };
 
     void UnitClear(void);
 
     void UnitInit(int sx, int sy);
     void PointCalcNormals(int x, int y);
-
-    void CalcVis(void);  // non realtime function! its updates map data
-    // void CalcVisTemp(int from, int to, const D3DXVECTOR3 &ptfrom); // non realtime function! its updates map data
 
     inline SMatrixMapUnit *UnitGet(int x, int y) { return m_Unit + y * m_Size.x + x; }
     inline SMatrixMapUnit *UnitGetTest(int x, int y) {
@@ -498,10 +476,6 @@ public:
     void GetNormal(D3DXVECTOR3 *out, float wx, float wy, bool check_water = false);
     DWORD GetColor(float wx, float wy);
 
-    void CalcMoveSpherePlace(void);
-
-    void ClearGroupVis(void);
-    void GroupClear(void);
     void GroupBuild(CStorage &stor);
 
     void RobotPreload(void);
@@ -616,21 +590,6 @@ public:
 
     // CMatrixMapGroup * GetGroupByCell(int x, int y) { return m_Group[(x/MATRIX_MAP_GROUP_SIZE) +
     // (y/MATRIX_MAP_GROUP_SIZE) * m_GroupSize.x ];  }
-    inline CMatrixMapGroup *GetGroupByIndex(int x, int y) { return m_Group[x + y * m_GroupSize.x]; }
-    inline CMatrixMapGroup *GetGroupByIndex(int i) { return m_Group[i]; }
-    inline CMatrixMapGroup *GetGroupByIndexTest(int x, int y) {
-        return (x < 0 || y < 0 || x >= m_GroupSize.x || y >= m_GroupSize.x) ? NULL : m_Group[x + y * m_GroupSize.x];
-    }
-
-    float GetGroupMaxZLand(int x, int y);
-    float GetGroupMaxZObj(int x, int y);
-    float GetGroupMaxZObjRobots(int x, int y);
-
-    void CalcMapGroupVisibility(void);
-
-    struct SCalcVisRuntime;
-
-    void CheckCandidate(SCalcVisRuntime &cvr, CMatrixMapGroup *g);
 
     DWORD GetCurrentFrame(void) { return m_CurFrame; }
 
@@ -752,38 +711,3 @@ inline CTexture *CMatrixMap::GetSideColorTexture(int id) {
     return GetSideById(id)->m_ColorTexture;
 }
 
-inline float CMatrixMap::GetGroupMaxZLand(int x, int y) {
-    if (x < 0 || x >= m_GroupSize.x || y < 0 || y >= m_GroupSize.y)
-        return 0;
-    CMatrixMapGroup *g = GetGroupByIndex(x, y);
-    if (g == NULL)
-        return 0;
-    float z = GetGroupByIndex(x, y)->GetMaxZLand();
-    if (z < 0)
-        return 0;
-    return z;
-}
-inline float CMatrixMap::GetGroupMaxZObj(int x, int y) {
-    if (x < 0 || x >= m_GroupSize.x || y < 0 || y >= m_GroupSize.y)
-        return 0;
-    CMatrixMapGroup *g = GetGroupByIndex(x, y);
-    if (g == NULL)
-        return 0;
-    float z = GetGroupByIndex(x, y)->GetMaxZObj();
-    if (z < 0)
-        return 0;
-    return z;
-}
-inline float CMatrixMap::GetGroupMaxZObjRobots(int x, int y) {
-    if (x < 0 || x >= m_GroupSize.x || y < 0 || y >= m_GroupSize.y)
-        return 0;
-    CMatrixMapGroup *g = GetGroupByIndex(x, y);
-    if (g == NULL)
-        return 0;
-    float z = GetGroupByIndex(x, y)->GetMaxZObjRobots();
-    if (z < 0)
-        return 0;
-    return z;
-}
-
-#endif

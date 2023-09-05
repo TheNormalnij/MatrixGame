@@ -177,7 +177,7 @@ void CTerSurface::Load(BYTE *raw) {
     for (DWORD i = 0; i < grpsc; ++i) {
         DWORD idx = *(DWORD *)raw;
         raw += sizeof(DWORD);
-        CMatrixMapGroup *g = g_MatrixMap->GetGroupByIndex(idx);
+        CMatrixMapGroup *g = g_MatrixMap->GetVisibleCalculator()->GetGroupByIndex(idx);
         ASSERT(g != NULL);
         g->AddSurface(this);
     }
@@ -273,7 +273,7 @@ void CTerSurface::LoadM(BYTE *raw) {
     for (DWORD i = 0; i < grpsc; ++i) {
         DWORD idx = *(DWORD *)raw;
         raw += sizeof(DWORD);
-        CMatrixMapGroup *g = g_MatrixMap->GetGroupByIndex(idx);
+        CMatrixMapGroup *g = g_MatrixMap->GetVisibleCalculator()->GetGroupByIndex(idx);
         ASSERT(g != NULL);
         g->AddSurface(this);
     }

@@ -31,13 +31,15 @@ CMatrixMap::EScanResult CMatrixMap::ScanLandscapeGroup(void *d, int gx, int gy, 
     DTRACE();
     internal_trace_data *data = (internal_trace_data *)d;
 
-    if (gx < 0 || gx >= m_GroupSize.x || gy < 0 || gy >= m_GroupSize.y) {
+    const CPoint groupSize = GetVisibleCalculator()->GetGroupSize();
+
+    if (gx < 0 || gx >= groupSize.x || gy < 0 || gy >= groupSize.y) {
         return SR_NONE;
     }
 
     bool object_hit = data->obj != NULL;
 
-    CMatrixMapGroup *mg = m_Group[gx + gy * m_GroupSize.x];
+    CMatrixMapGroup *mg = GetVisibleCalculator()->GetGroupByIndex(gx, gy);
     if (mg == NULL)
         return SR_NONE;
 
@@ -466,8 +468,10 @@ CMatrixMapStatic *CMatrixMap::Trace(D3DXVECTOR3 *result, const D3DXVECTOR3 &star
             int gx = TruncDouble(start.x * (1.0 / (GLOBAL_SCALE * MAP_GROUP_SIZE)));
             int gy = TruncDouble(start.y * (1.0 / (GLOBAL_SCALE * MAP_GROUP_SIZE)));
 
-            if ((gx >= 0) && (gx < m_GroupSize.x) && (gy >= 0) && (gy < m_GroupSize.y)) {
-                CMatrixMapGroup *mg = m_Group[gx + gy * m_GroupSize.x];
+            const CPoint groupSize = GetVisibleCalculator()->GetGroupSize();
+
+            if ((gx >= 0) && (gx < groupSize.x) && (gy >= 0) && (gy < groupSize.y)) {
+                CMatrixMapGroup *mg = GetVisibleCalculator()->GetGroupByIndex(gx, gy);
                 if (mg != NULL)
                     if (land || ((data.minz < mg->GetMaxZObjRobots()) && (data.maxz > mg->GetMinZ()))) {
                         CMatrixMapStatic *o2 = NULL;
@@ -577,6 +581,8 @@ CMatrixMapStatic *CMatrixMap::Trace(D3DXVECTOR3 *result, const D3DXVECTOR3 &star
             gyc = gy0 - gy1;
         }
 
+        const CPoint groupSize = GetVisibleCalculator()->GetGroupSize();
+
         CMatrixMap::EScanResult scanhit = SR_NONE;
 
         if (data.usex) {
@@ -628,7 +634,7 @@ CMatrixMapStatic *CMatrixMap::Trace(D3DXVECTOR3 *result, const D3DXVECTOR3 &star
                         }
                     }
                     else {
-                        if (gx0 < (m_GroupSize.x - 1))
+                        if (gx0 < (groupSize.x - 1))
                             ++gx0;
                         else {
                             scanhit = SR_BREAK;
@@ -690,7 +696,7 @@ CMatrixMapStatic *CMatrixMap::Trace(D3DXVECTOR3 *result, const D3DXVECTOR3 &star
                         }
                     }
                     else {
-                        if (gy0 < (m_GroupSize.y - 1))
+                        if (gy0 < (groupSize.y - 1))
                             ++gy0;
                         else {
                             scanhit = SR_BREAK;
@@ -751,11 +757,13 @@ CMatrixMap::EScanResult CMatrixMap::ScanLandscapeGroupForLand(void *d, int gx, i
     DTRACE();
     internal_trace_data *data = (internal_trace_data *)d;
 
-    if (gx < 0 || gx >= m_GroupSize.x || gy < 0 || gy >= m_GroupSize.y) {
+    const CPoint groupSize = GetVisibleCalculator()->GetGroupSize();
+
+    if (gx < 0 || gx >= groupSize.x || gy < 0 || gy >= groupSize.y) {
         return SR_NONE;
     }
 
-    CMatrixMapGroup *mg = m_Group[gx + gy * m_GroupSize.x];
+    CMatrixMapGroup *mg = GetVisibleCalculator()->GetGroupByIndex(gx, gy);
     if (mg == NULL)
         return SR_NONE;
 
@@ -1101,6 +1109,8 @@ bool CMatrixMap::TraceLand(D3DXVECTOR3 *out, const D3DXVECTOR3 &start, const D3D
 
         EScanResult scanhit = SR_NONE;
 
+        const CPoint groupSize = GetVisibleCalculator()->GetGroupSize();
+
         if (data.usex) {
             // scan x
             data.k = data.dy / data.dx;
@@ -1150,7 +1160,7 @@ bool CMatrixMap::TraceLand(D3DXVECTOR3 *out, const D3DXVECTOR3 &start, const D3D
                         }
                     }
                     else {
-                        if (gx0 < (m_GroupSize.x - 1))
+                        if (gx0 < (groupSize.x - 1))
                             ++gx0;
                         else {
                             scanhit = SR_BREAK;
@@ -1212,7 +1222,7 @@ bool CMatrixMap::TraceLand(D3DXVECTOR3 *out, const D3DXVECTOR3 &start, const D3D
                         }
                     }
                     else {
-                        if (gy0 < (m_GroupSize.y - 1))
+                        if (gy0 < (groupSize.y - 1))
                             ++gy0;
                         else {
                             scanhit = SR_BREAK;
@@ -1306,6 +1316,8 @@ bool CMatrixMap::CatchPoint(const D3DXVECTOR3 &from, const D3DXVECTOR3 &to) {
             gyc = gy0 - gy1;
         }
 
+        const CPoint groupSize = GetVisibleCalculator()->GetGroupSize();
+
         if (data.usex) {
             // scan x
             data.k = data.dy / data.dx;
@@ -1354,7 +1366,7 @@ bool CMatrixMap::CatchPoint(const D3DXVECTOR3 &from, const D3DXVECTOR3 &to) {
                         }
                     }
                     else {
-                        if (gx0 < (m_GroupSize.x - 1))
+                        if (gx0 < (groupSize.x - 1))
                             ++gx0;
                         else {
                             scanhit = SR_BREAK;
@@ -1415,7 +1427,7 @@ bool CMatrixMap::CatchPoint(const D3DXVECTOR3 &from, const D3DXVECTOR3 &to) {
                         }
                     }
                     else {
-                        if (gy0 < (m_GroupSize.y - 1))
+                        if (gy0 < (groupSize.y - 1))
                             ++gy0;
                         else {
                             scanhit = SR_BREAK;

@@ -303,61 +303,10 @@ void SGroupVisibility::Release(void) {
     }
 }
 
-void CMatrixMap::ClearGroupVis(void) {
-    if (m_GroupVis != NULL) {
-        int cnt = m_GroupSize.x * m_GroupSize.y;
-        SGroupVisibility *md = m_GroupVis;
-        while (cnt > 0) {
-            md->Release();
-            md++;
-            cnt--;
-        }
-        HFree(m_GroupVis, g_MatrixHeap);
-        m_GroupVis = NULL;
-    }
-}
-
-void CMatrixMap::GroupClear(void) {
-    DTRACE();
-
-    ClearGroupVis();
-
-    if (m_Group != NULL) {
-        int cnt = m_GroupSize.x * m_GroupSize.y;
-        CMatrixMapGroup **md = m_Group;
-        while (cnt > 0) {
-            if (*md) {
-                HDelete(CMatrixMapGroup, *md, g_MatrixHeap);
-            }
-            md++;
-            cnt--;
-        }
-        HFree(m_Group, g_MatrixHeap);
-        HFree(m_VisibleGroups, g_MatrixHeap);
-
-        m_Group = NULL;
-    }
-    m_GroupSize.x = 0;
-    m_GroupSize.y = 0;
-}
-
 void CMatrixMap::GroupBuild(CStorage &stor) {
     DTRACE();
-    GroupClear();
-
-    m_GroupSize.x = TruncFloat((m_Size.x + MAP_GROUP_SIZE - 1) * INVERT(MAP_GROUP_SIZE));
-    m_GroupSize.y = TruncFloat((m_Size.y + MAP_GROUP_SIZE - 1) * INVERT(MAP_GROUP_SIZE));
-
-    int cnt = m_GroupSize.x * m_GroupSize.y;
-
-    m_Group = (CMatrixMapGroup **)HAllocClear(cnt * sizeof(CMatrixMapGroup **), g_MatrixHeap);
-    m_VisibleGroups = (CMatrixMapGroup **)HAlloc(cnt * sizeof(CMatrixMapGroup **), g_MatrixHeap);
-    CMatrixMapGroup **md = m_Group;
-
-    //  for (int i=0; i<cnt; ++i)
-    //  {
-    //*md = HNew(g_MatrixHeap) CMatrixMapGroup();
-    //  }
+    
+    GetVisibleCalculator()->Init(m_Size.x, m_Size.y);
 
     CDataBuf *grpc = stor.GetBuf(DATA_GROUPS, DATA_GROUPS_DATA, ST_BYTE);
     for (DWORD i = 0; i < grpc->GetArraysCount(); ++i) {
@@ -367,9 +316,7 @@ void CMatrixMap::GroupBuild(CStorage &stor) {
         int y = *((WORD *)g);
         g += 2;
 
-        int disp = (x / MAP_GROUP_SIZE) + (y / MAP_GROUP_SIZE) * m_GroupSize.x;
-        md[disp] = HNew(g_MatrixHeap) CMatrixMapGroup();
-        md[disp]->BuildBottom(x, y, g);
+        GetVisibleCalculator()->Build(x, y, g);
     }
 }
 
@@ -575,7 +522,7 @@ int CMatrixMap::ReloadDynamics(CStorage &stor, CMatrixMap::EReloadStep step, voi
 
                     for (int g = 0; g < sz; ++g) {
                         int idx = GINT();
-                        CMatrixMapGroup *gg = g_MatrixMap->GetGroupByIndex(idx);
+                        CMatrixMapGroup *gg = GetVisibleCalculator()->GetGroupByIndex(idx);
                         ASSERT(gg != NULL);
                         gg->AddShadow(s);
                     }
@@ -1198,10 +1145,7 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
             mp->z = cp->z;
             mp->z_land = std::max(0.0f, cp->z);
 
-            if (mp->z < m_minz)
-                m_minz = mp->z;
-            if (mp->z > m_maxz)
-                m_maxz = mp->z;
+            GetVisibleCalculator()->ExpandZ(mp->z);
 
             mp->lum_r = 0;
             mp->lum_g = 0;
@@ -1331,21 +1275,19 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
 
         int index = 0;
 
-        for (int j = 0; j < m_GroupSize.y; ++j) {
-            for (int i = 0; i < m_GroupSize.x; ++i, ++index) {
-                int n = inshore_x->GetArrayLength(index);
-                if (n == 0)
-                    continue;
+        for (CMatrixMapGroup *g : GetVisibleCalculator()->GetGroupsIterator()) {
+            int n = inshore_x->GetArrayLength(index);
+            if (n == 0)
+                continue;
 
-                float *xx = inshore_x->GetFirst<float>(index);
-                float *yy = inshore_y->GetFirst<float>(index);
-                float *nxx = inshore_nx->GetFirst<float>(index);
-                float *nyy = inshore_ny->GetFirst<float>(index);
+            float *xx = inshore_x->GetFirst<float>(index);
+            float *yy = inshore_y->GetFirst<float>(index);
+            float *nxx = inshore_nx->GetFirst<float>(index);
+            float *nyy = inshore_ny->GetFirst<float>(index);
 
-                PCMatrixMapGroup g = GetGroupByIndex(i, j);
-                if (g)
-                    g->InitInshoreWaves(n, xx, yy, nxx, nyy);
-            }
+            g->InitInshoreWaves(n, xx, yy, nxx, nyy);
+
+            index++;
         }
 
         SETFLAG(m_Flags, MMFLAG_DISABLEINSHORE_BUILD);
@@ -1354,21 +1296,25 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
     {
         int x = 0;
         int y = 0;
-        int cntg = m_GroupSize.x * m_GroupSize.y;
+        int cntg = GetVisibleCalculator()->GetGroupCount();
+        const int maxX = GetVisibleCalculator()->GetGroupSize().x;
 
         float deltalp = 30000.0f / float(cntg);
         float clp = 52100.0f;
 
-        for (int i = 0; i < cntg; ++i, ++x) {
+        for (CMatrixMapGroup* group : GetVisibleCalculator()->GetGroupsIterator()) {
             g_LoadProgress->SetCurLPPos(Float2Int(clp));
             clp += deltalp;
 
-            if (x >= m_GroupSize.x) {
+            if (x >= maxX) {
                 x = 0;
                 ++y;
             }
-            if (m_Group[i])
-                m_Group[i]->BuildWater(x, y);
+            
+            if (group)
+                group->BuildWater(x, y);
+
+            x++;
         }
     }
 
@@ -1529,13 +1475,14 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
 
         float *z = dbz->GetFirst<float>(0);
 
-        int gcnt = m_GroupSize.x * m_GroupSize.y;
-
-        m_GroupVis = (SGroupVisibility *)HAllocClear(sizeof(SGroupVisibility) * gcnt, g_MatrixHeap);
+        int gcnt = GetVisibleCalculator()->GetGroupCount();
         ASSERT(gcnt == dbl->GetArraysCount());
 
+        const auto visCalculator = GetVisibleCalculator();
+        visCalculator->InitVisibilytyGroups();
+
         for (int i = 0; i < gcnt; ++i) {
-            SGroupVisibility *gv = m_GroupVis + i;
+            SGroupVisibility *gv = visCalculator->GetGroupVisByIndex(i);
 
             gv->levels_cnt = dbl->GetArrayLength(i);
             gv->levels = (int *)HAlloc(gv->levels_cnt * sizeof(int), g_MatrixHeap);
@@ -1545,7 +1492,7 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
             gv->vis = (PCMatrixMapGroup *)HAlloc(gv->vis_cnt * sizeof(PCMatrixMapGroup), g_MatrixHeap);
             int *f = dbg->GetFirst<int>(i);
             for (int t = 0; t < gv->vis_cnt; ++t) {
-                gv->vis[t] = g_MatrixMap->m_Group[f[t]];
+                gv->vis[t] = visCalculator->GetGroupByIndex(f[t]);
             }
             gv->z_from = z[i];
         }

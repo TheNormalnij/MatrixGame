@@ -480,7 +480,7 @@ void CMatrixEffect::CreateExplosion(const D3DXVECTOR3 &pos, const SExplosionProp
     if (props.voronka != SPOT_TYPES_CNT) {
         int x = TruncFloat(pos.x * INVERT(GLOBAL_SCALE * MAP_GROUP_SIZE));
         int y = TruncFloat(pos.y * INVERT(GLOBAL_SCALE * MAP_GROUP_SIZE));
-        CMatrixMapGroup *g = g_MatrixMap->GetGroupByIndexTest(x, y);
+        CMatrixMapGroup *g = g_MatrixMap->GetVisibleCalculator()->GetGroupByIndexTest(x, y);
         if (g && !g->IsBaseOn()) {
             CMatrixEffect::CreateLandscapeSpot(NULL, D3DXVECTOR2(pos.x, pos.y), FSRND(M_PI), props.voronka_scale,
                                                props.voronka);

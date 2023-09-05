@@ -1793,7 +1793,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             if (scan == KEY_F7) {
                 // ptfrom = g_MatrixMap->m_Camera.GetFrustumCenter();
                 // g_MatrixMap->CalcVisTemp(from, to, ptfrom);
-                g_MatrixMap->CalcVis();
+                //g_MatrixMap->CalcVis();
             }
             // if (scan == KEY_F8)
             //{
@@ -1828,8 +1828,10 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             int gx = TruncFloat(cam.x / (GLOBAL_SCALE * MAP_GROUP_SIZE));
             int gy = TruncFloat(cam.y / (GLOBAL_SCALE * MAP_GROUP_SIZE));
 
-            if (gx >= 0 && gx < g_MatrixMap->m_GroupSize.x && gy >= 0 && gy < g_MatrixMap->m_GroupSize.y) {
-                SGroupVisibility *gv = g_MatrixMap->m_GroupVis + gx + gy * g_MatrixMap->m_GroupSize.x;
+            const CPoint groupSize = g_MatrixMap->GetVisibleCalculator()->GetGroupSize();
+
+            if (gx >= 0 && gx < groupSize.x && gy >= 0 && gy < groupSize.y) {
+                SGroupVisibility *gv = g_MatrixMap->GetVisibleCalculator()->GetGroupVisByIndex(gx, gy);
 
                 int level = TruncFloat((cam.z - gv->z_from) / GLOBAL_SCALE);
 

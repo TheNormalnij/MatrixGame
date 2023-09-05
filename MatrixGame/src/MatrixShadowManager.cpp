@@ -10,13 +10,10 @@
 #include "MatrixObject.hpp"
 
 CMatrixShadowProj::~CMatrixShadowProj() {
-    int cnt = g_MatrixMap->m_GroupSize.x * g_MatrixMap->m_GroupSize.y;
-    CMatrixMapGroup **mg = g_MatrixMap->m_Group;
-    for (; cnt > 0; --cnt) {
-        if (*mg) {
-            (*mg)->RemoveShadow(this);
+    for (CMatrixMapGroup* group : g_MatrixMap->GetVisibleCalculator()->GetGroupsIterator()) {
+        if (group) {
+            group->RemoveShadow(this);
         }
-        ++mg;
     }
 }
 
@@ -193,7 +190,7 @@ static void ShadowProjBuildGeomInt(CVOShadowProj &sp, const SProjData &pd, const
             if (join_to_group) {
                 int gx = (x + msx) / MAP_GROUP_SIZE;
                 int gy = (y + msy) / MAP_GROUP_SIZE;
-                CMatrixMapGroup *g = g_MatrixMap->GetGroupByIndexTest(gx, gy);
+                CMatrixMapGroup *g = g_MatrixMap->GetVisibleCalculator()->GetGroupByIndexTest(gx, gy);
                 if (g != pg) {
                     pg = g;
                     if (g) {

@@ -215,6 +215,8 @@ void CMatrixMapStatic::JoinToGroup(void) {
         maxy1 ^= miny1;
     }
 
+    const CPoint groupSize = g_MatrixMap->GetVisibleCalculator()->GetGroupSize();
+
     PCMatrixMapGroup InGroups[MAX_GROUPS_PER_OBJECT];
     int newig = 0;
 
@@ -223,8 +225,9 @@ void CMatrixMapStatic::JoinToGroup(void) {
         if (0 >= maxx1)
             goto skip;
     }
-    if (maxx1 >= g_MatrixMap->m_GroupSize.x) {
-        maxx1 = g_MatrixMap->m_GroupSize.x - 1;
+
+    if (maxx1 >= groupSize.x) {
+        maxx1 = groupSize.x - 1;
         if (maxx1 <= minx1)
             goto skip;
     }
@@ -233,15 +236,15 @@ void CMatrixMapStatic::JoinToGroup(void) {
         if (0 >= maxy1)
             goto skip;
     }
-    if (maxy1 >= g_MatrixMap->m_GroupSize.y) {
-        maxy1 = g_MatrixMap->m_GroupSize.y - 1;
+    if (maxy1 >= groupSize.y) {
+        maxy1 = groupSize.y - 1;
         if (maxy1 <= miny1)
             goto skip;
     }
 
     for (int x = minx1; x <= maxx1; ++x) {
         for (int y = miny1; y <= maxy1; ++y) {
-            PCMatrixMapGroup g = g_MatrixMap->GetGroupByIndex(x, y);
+            PCMatrixMapGroup g = g_MatrixMap->GetVisibleCalculator()->GetGroupByIndex(x, y);
             if (g == NULL)
                 continue;
 

@@ -1087,36 +1087,27 @@ render:
     for (curpass = 0; curpass < g_Render->m_WaterPassAlpha; ++curpass) {
         g_Render->m_WaterAlpha(g_MatrixMap->m_Water->m_WaterTex1, g_MatrixMap->m_Water->m_WaterTex2, curpass);
 
-        int cnt = g_MatrixMap->m_GroupSize.x * g_MatrixMap->m_GroupSize.y;
-        CMatrixMapGroup **md = g_MatrixMap->m_Group;
-
-        while ((cnt--) > 0) {
-            if (((*md) == NULL) || !(*(md))->HasWater()) {
-                ++md;
+        for (auto group : g_MatrixMap->GetVisibleCalculator()->GetGroupsIterator()) {
+            if (group == nullptr || !group->HasWater()) {
                 continue;
             }
 
             if (curpass == 0)
-                ASSERT_DX(g_D3DD->SetTexture(0, (*md)->GetWaterAlpha()->Tex()));
+                ASSERT_DX(g_D3DD->SetTexture(0, group->GetWaterAlpha()->Tex()));
 
-            const D3DXVECTOR2 &p = (*(md))->GetPos0();
+            const D3DXVECTOR2 &p = group->GetPos0();
             m._41 = p.x;
             m._42 = p.y;
             g_MatrixMap->m_Water->Draw(m);
-            ++md;
         }
     }
 
     g_Render->m_WaterClearAlpha();
 
     // unload resources
-    {
-        int cnt = g_MatrixMap->m_GroupSize.x * g_MatrixMap->m_GroupSize.y;
-        CMatrixMapGroup **md = g_MatrixMap->m_Group;
-        while ((cnt--) > 0) {
-            if ((*md) != NULL) {
-                (*md)->DX_Free();
-            }
+    for (auto group : g_MatrixMap->GetVisibleCalculator()->GetGroupsIterator()) {
+        if (group) {
+            group->DX_Free();
         }
     }
 
