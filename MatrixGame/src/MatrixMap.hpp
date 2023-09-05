@@ -71,9 +71,9 @@
 #include "MatrixObjectRobot.hpp"
 #include "MatrixFlyer.hpp"
 #include "MatrixTransition.hpp"
-#include "Visuall/CMacroTexture.h"
-#include "Visuall/CAlwaysDrawStorage.h"
-#include "Visuall/CMatrixVisiCalc.h"
+#include "Visual/CMacroTexture.h"
+#include "Visual/CAlwaysDrawStorage.h"
+#include "Visual/CMatrixVisiCalc.h"
 
 inline bool CMatrixMapStatic::FitToMask(DWORD mask) {
     if (IsLiveRobot())
