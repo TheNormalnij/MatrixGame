@@ -13,6 +13,7 @@
 CMatrixVisiCalc::CMatrixVisiCalc(CMatrixCamera *pCamera) {
     m_minz = 10000.0;
     m_maxz = -10000.0;
+    m_SkyHeight = -100;
     m_Camera = pCamera;
 
     m_GroupSize.x = 0;
@@ -158,7 +159,7 @@ void CMatrixVisiCalc::CalcMapGroupVisibility(void) {
             projection.z = 0;
             float len = D3DXVec3Length(&projection);
             if (len < 0.0001) {
-                g_MatrixMap->m_SkyHeight = -100;
+                m_SkyHeight = -100;
             }
             else {
                 projection *= (1.0f / len);
@@ -166,7 +167,7 @@ void CMatrixVisiCalc::CalcMapGroupVisibility(void) {
                 projection.z -= m_Camera->GetFrustumCenter().z * 1.5f;
 
                 D3DXVECTOR2 ptr = m_Camera->Project(projection, g_MatrixMap->GetIdentityMatrix());
-                g_MatrixMap->m_SkyHeight = ptr.y;
+                m_SkyHeight = ptr.y;
             }
         }
     }

@@ -96,7 +96,7 @@ void CMatrixEffectMovingObject::Draw(void) {
 
     CVectorObject::DrawBegin();
     g_D3DD->SetRenderState(D3DRS_TEXTUREFACTOR, 0xFFFFFFFF);
-    ASSERT_DX(g_D3DD->SetRenderState(D3DRS_AMBIENT, g_MatrixMap->m_AmbientColorObj));
+    ASSERT_DX(g_D3DD->SetRenderState(D3DRS_AMBIENT, g_MatrixMap->GetVisual()->GetAmbientColorObj()));
 
     ASSERT_DX(g_D3DD->SetRenderState(D3DRS_LIGHTING, TRUE));
 

@@ -19,6 +19,7 @@ class CIFaceList;
 class CRenderPipeline;
 class CLoadProgress;
 class CHistory;
+class CMatrixMapVisual;
 struct SMenuItemText;
 
 extern Base::CHeap *g_MatrixHeap;
@@ -50,4 +51,7 @@ private:
     void ApplyVideoParams(SMatrixSettings *settings, bool autodetectFullscreen);
     void ApplyTextsReplaces(SMatrixTextParams *textParams);
     void ApplySceneColors();
+
+private:
+    CMatrixMapVisual *m_Visual;
 };

@@ -1007,9 +1007,11 @@ render:
     ASSERT_DX(g_D3DD->SetTransform(D3DTS_PROJECTION, &mProj));
     // ASSERT_DX(g_D3DD->SetTransform( D3DTS_VIEW, &m_MatView));
 
-    g_MatrixMap->BeforeDrawLandscape(true);
+    IMatrixMapVisual *visual = g_MatrixMap->GetVisual();
+
+    visual->BeforeDrawAllLandscape();
     if (CTerSurface::IsSurfacesPresent())
-        g_MatrixMap->BeforeDrawLandscapeSurfaces(true);
+        visual->BeforeDrawAllLandscapeSurfaces();
     g_MatrixMap->m_Water->BeforeDraw();
 
     S3D_Default();
@@ -1073,9 +1075,9 @@ render:
 
     g_Render->m_WaterClearSolid();
 
-    g_MatrixMap->DrawLandscape(true);
+    visual->DrawAllLandscape();
     if (CTerSurface::IsSurfacesPresent())
-        g_MatrixMap->DrawLandscapeSurfaces(true);
+        visual->DrawAllLandscapeSurfaces();
     //    CMatrixMapTextureFinal::UnloadAll();
 
     //	int cnt = m_GroupSize.x*m_GroupSize.y;
@@ -1134,7 +1136,7 @@ render:
     ASSERT_DX(g_D3DD->SetViewport(&oldViewport));
 
     ASSERT_DX(g_D3DD->SetRenderState(D3DRS_LIGHTING, FALSE));
-    ASSERT_DX(g_D3DD->SetRenderState(D3DRS_AMBIENT, g_MatrixMap->m_AmbientColorObj));
+    ASSERT_DX(g_D3DD->SetRenderState(D3DRS_AMBIENT, g_MatrixMap->GetVisual()->GetAmbientColorObj()));
 
     CMatrixMapStatic *ms = CMatrixMapStatic::GetFirstLogic();
     while (ms != NULL) {
@@ -1295,7 +1297,7 @@ void CMinimap::RenderObjectToBackground(CMatrixMapStatic *s) {
     ASSERT_DX(g_D3DD->SetRenderState(D3DRS_ZENABLE, D3DZB_TRUE));
     ASSERT_DX(g_D3DD->SetRenderState(D3DRS_ZWRITEENABLE, TRUE));
     ASSERT_DX(g_D3DD->SetRenderState(D3DRS_LIGHTING, FALSE));
-    ASSERT_DX(g_D3DD->SetRenderState(D3DRS_AMBIENT, g_MatrixMap->m_AmbientColorObj));
+    ASSERT_DX(g_D3DD->SetRenderState(D3DRS_AMBIENT, g_MatrixMap->GetVisual()->GetAmbientColorObj()));
 
     CVectorObject::DrawBegin();
     s->Draw();

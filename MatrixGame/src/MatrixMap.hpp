@@ -74,6 +74,7 @@
 #include "Visual/CMacroTexture.h"
 #include "Visual/CAlwaysDrawStorage.h"
 #include "Visual/CMatrixVisiCalc.h"
+#include "Visual/IMatrixMapVisual.h"
 
 inline bool CMatrixMapStatic::FitToMask(DWORD mask) {
     if (IsLiveRobot())
@@ -236,19 +237,12 @@ struct SDifficulty {
 
 #define MMFLAG_LOGIC_DISABLED SETBIT(29)
 
-struct SSkyTex {
-    CTextureManaged *tex;
-    float u0, v0, u1, v1;
-};
-
-enum {
-    SKY_FORE,
-    SKY_BACK,
-    SKY_LEFT,
-    SKY_RITE,
-};
-
 class CMatrixHint;
+
+struct SShadowRectVertex {
+    D3DXVECTOR4 p;
+    DWORD color;
+};
 
 class CMatrixMap : public CMain {
     std::vector<CMatrixMapStatic*> m_AllObjects;
@@ -257,10 +251,6 @@ protected:
     ~CMatrixMap();
 
 private:
-    struct SShadowRectVertex {
-        D3DXVECTOR4 p;
-        DWORD color;
-    };
 
     enum EReloadStep {
         RS_SIDEAI,
@@ -284,8 +274,6 @@ public:
 
     int m_TexUnionDim;
     int m_TexUnionSize;
-
-    float m_SkyHeight;
 
     CPoint m_Size;
     CPoint m_SizeMove;
@@ -333,10 +321,7 @@ public:
     std::wstring m_WaterName;
 
     float m_BiasCannons;
-    float m_BiasRobots;
     float m_BiasBuildings;
-    float m_BiasTer;
-    float m_BiasWater;
 
     float m_CameraAngle;
     float m_WaterNormalLen;
@@ -344,20 +329,16 @@ public:
     float m_Terrain2ObjectInfluence;
     DWORD m_Terrain2ObjectTargetColor;
     DWORD m_WaterColor;
-    DWORD m_SkyColor;
     DWORD m_InshorewaveColor;
     DWORD m_AmbientColor;
-    DWORD m_AmbientColorObj;
     DWORD m_LightMainColor;
     DWORD m_LightMainColorObj;
-    DWORD m_ShadowColor;
     float m_LightMainAngleZ, m_LightMainAngleX;
 
     CMacroTexture m_macroTexture;
 
     CTextureManaged *m_Reflection;
 
-    SSkyTex m_SkyTex[4];
     float m_SkyAngle;
     float m_SkyDeltaAngle;
 
@@ -387,16 +368,14 @@ public:
 
     SDifficulty m_Difficulty;
 
-protected:
-    D3D_VB m_ShadowVB;
+    IMatrixMapVisual *m_Visual;
 
+protected:
     DWORD m_NeutralSideColor;
     DWORD m_NeutralSideColorMM;
     CTexture *m_NeutralSideColorTexture;
 
     D3DXMATRIX m_Identity;
-
-    DWORD m_CurFrame;
 
     CMatrixVisiCalc *m_VisibleCalculator;
 
@@ -431,6 +410,11 @@ public:
     CMacroTexture &GetMacroTexture() { return m_macroTexture; };
     CAlwaysDrawStorage &GetAlwaysDrawStorage() { return m_AlwaysDrawStorage; };
     CMatrixVisiCalc *GetVisibleCalculator() { return m_VisibleCalculator; };
+
+    void SetVisual(IMatrixMapVisual *visi) { m_Visual = visi; };
+    IMatrixMapVisual *GetVisual() const noexcept { return m_Visual; };
+
+    unsigned long GetCurrentFrame() const noexcept { return m_Visual->GetCurrentFrame(); };
 
     void UnitClear(void);
 
@@ -536,9 +520,6 @@ public:
     void WaterClear(void);
     void WaterInit(void);
 
-    void BeforeDraw(void);
-    void Draw(void);
-
     void MarkNeedRecalcTerainColor(void) { SETFLAG(m_Flags, MMFLAG_NEEDRECALCTER); }
 
     bool AddEffect(CMatrixEffect *ef);
@@ -591,8 +572,6 @@ public:
     // CMatrixMapGroup * GetGroupByCell(int x, int y) { return m_Group[(x/MATRIX_MAP_GROUP_SIZE) +
     // (y/MATRIX_MAP_GROUP_SIZE) * m_GroupSize.x ];  }
 
-    DWORD GetCurrentFrame(void) { return m_CurFrame; }
-
     inline void Pause(bool p) {
         if (FLAG(m_Flags, MMFLAG_DIALOG_MODE))
             return;  // disable pasue/unpause in dialog mode
@@ -607,19 +586,6 @@ public:
 
     void SetLogicEnabed(bool state){INITFLAG(m_Flags, MMFLAG_LOGIC_DISABLED, !state)};
     bool IsLogicEnabled() const { return !FLAG(m_Flags, MMFLAG_LOGIC_DISABLED); }
-
-    // draw functions
-
-    void BeforeDrawLandscape(bool all = false);
-    void BeforeDrawLandscapeSurfaces(bool all = false);
-    void DrawLandscape(bool all = false);
-    void DrawLandscapeSurfaces(bool all = false);
-    void DrawObjects(void);
-    void DrawWater(void);
-    void DrawShadowsProjFast(void);
-    void DrawShadows(void);
-    void DrawEffects(void);
-    void DrawSky(void);
 
 private:
     void InitDificulty();

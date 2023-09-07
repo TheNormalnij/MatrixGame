@@ -996,8 +996,9 @@ void CMatrixRobot::Draw(void) {
     DWORD coltex = (DWORD)g_MatrixMap->GetSideColorTexture(m_Side)->Tex();
     // g_D3DD->SetRenderState( D3DRS_NORMALIZENORMALS,  TRUE );
 
+    const float bias = g_MatrixMap->GetVisual()->GetRobotBias();
     for (int i = 0; i < 4; i++) {
-        ASSERT_DX(g_D3DD->SetSamplerState(i, D3DSAMP_MIPMAPLODBIAS, *((LPDWORD)(&g_MatrixMap->m_BiasRobots))));
+        ASSERT_DX(g_D3DD->SetSamplerState(i, D3DSAMP_MIPMAPLODBIAS, *((LPDWORD)(&bias))));
     }
 
     if (m_CurrState == ROBOT_DIP) {

@@ -23,6 +23,7 @@
 #include "Interface/CHistory.h"
 #include "MatrixSampleStateManager.hpp"
 #include "MatrixMultiSelection.hpp"
+#include "Visual/CMatrixMapVisual.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -152,6 +153,10 @@ void CGame::Init(HINSTANCE inst, HWND wnd, wchar *map, uint32_t seed, SMatrixSet
     DCP();
 
     g_MatrixMap = HNew(g_MatrixHeap) CMatrixMapLogic;
+
+    m_Visual = new CMatrixMapVisual(g_MatrixMap);
+
+    g_MatrixMap->SetVisual(m_Visual);
 
     g_MatrixMap->LoadSide(*g_MatrixData->BlockGet(L"Side"));
     // g_MatrixMap->LoadTactics(*g_MatrixData->BlockGet(L"Tactics"));
@@ -582,6 +587,11 @@ void CGame::Deinit(void) {
 
         HDelete(CMatrixMapLogic, g_MatrixMap, g_MatrixHeap);
         g_MatrixMap = NULL;
+    }
+
+    if (m_Visual) {
+        delete m_Visual;
+        m_Visual = nullptr;
     }
 
     if (g_MatrixData) {

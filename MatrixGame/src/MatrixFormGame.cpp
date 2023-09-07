@@ -106,7 +106,8 @@ void CFormMatrixGame::Draw(void) {
         // g_MatrixMap->m_DI.T(L"Z rel",std::wstring(g_MatrixMap->m_Camera.GetZRel()));
     }
 
-    g_MatrixMap->BeforeDraw();
+    IMatrixMapVisual *visual = g_MatrixMap->GetVisual();
+    visual->BeforeDraw();
 
     // ASSERT_DX(g_D3DD->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
     // D3DCOLOR_XRGB(255,0,0), 1.0f, 0 ));
@@ -138,7 +139,7 @@ void CFormMatrixGame::Draw(void) {
     }
 #endif
 
-    g_MatrixMap->Draw();
+    visual->Draw();
 
     ASSERT_DX(g_D3DD->EndScene());
 

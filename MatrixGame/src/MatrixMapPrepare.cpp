@@ -15,6 +15,7 @@
 #include "MatrixShadowManager.hpp"
 #include "ShadowStencil.hpp"
 #include "Interface/CConstructor.h"
+#include "Visual/CMatrixVisualLoader.h"
 
 #include <new>
 #include <algorithm>
@@ -947,10 +948,7 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
     g_LoadProgress->SetCurLPPos(100);
 
     m_BiasCannons = -1.0f;
-    m_BiasRobots = -1.0f;
     m_BiasBuildings = -1.0f;
-    m_BiasTer = -1.0f;
-    m_BiasWater = -1.0f;
 
     uniq = 0;
     ic = propkey->FindAsWStr(DATA_UNIQID);
@@ -959,6 +957,10 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
 
     m_TexUnionDim = 16;
     m_TexUnionSize = m_TexUnionDim * m_TexUnionDim;
+
+    CMatrixVisuaLoader visLoader = CMatrixVisuaLoader((CMatrixMapVisual *)GetVisual());
+
+    visLoader.Load(propkey, propval);
 
     ic = propkey->FindAsWStr(std::wstring(DATA_TEXUNIONDIM));
     if (ic >= 0) {
@@ -971,21 +973,9 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
     if (ic >= 0)
         m_WaterNormalLen = (float)propval->GetAsParamParser(ic).GetDouble();
 
-    ic = propkey->FindAsWStr(DATA_BIASTER);
-    if (ic >= 0)
-        m_BiasTer = (float)propval->GetAsParamParser(ic).GetDouble();
-
-    ic = propkey->FindAsWStr(DATA_BIASWATER);
-    if (ic >= 0)
-        m_BiasWater = (float)propval->GetAsParamParser(ic).GetDouble();
-
     ic = propkey->FindAsWStr(DATA_BIASCANNONS);
     if (ic >= 0)
         m_BiasCannons = (float)propval->GetAsParamParser(ic).GetDouble();
-
-    ic = propkey->FindAsWStr(DATA_BIASROBOTS);
-    if (ic >= 0)
-        m_BiasRobots = (float)propval->GetAsParamParser(ic).GetDouble();
 
     ic = propkey->FindAsWStr(DATA_BIASBUILDINGS);
     if (ic >= 0)
@@ -1011,11 +1001,6 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
     ic = propkey->FindAsWStr(DATA_WATERCOLOR);
     if (ic >= 0)
         m_WaterColor = propval->GetAsParamParser(ic).GetDword();
-
-    m_SkyColor = DEF_SKY_COLOR | 0xFF000000;
-    ic = propkey->FindAsWStr(DATA_SKYCOLOR);
-    if (ic >= 0)
-        m_SkyColor = propval->GetAsParamParser(ic).GetDword() | 0xFF000000;
 
     ic = propkey->FindAsWStr(DATA_SKYNAME);
     if (ic >= 0) {
@@ -1046,15 +1031,17 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
                 if (g_Config.m_SkyBox == 2)
                     texname += L"_high";
 
-                m_SkyTex[idx].tex = (CTextureManaged *)g_Cache->Get(cc_TextureManaged, texname.c_str());
-                CTextureManaged *tex = m_SkyTex[idx].tex;
+                CTextureManaged *tex = (CTextureManaged *)g_Cache->Get(cc_TextureManaged, texname.c_str());
                 tex->MipmapOff();
                 tex->Prepare();
 
-                m_SkyTex[idx].u0 = float(skbp->ParGet(skyname).GetStrPar(1, L",").GetInt()) / float(tex->GetSizeX());
-                m_SkyTex[idx].v0 = float(skbp->ParGet(skyname).GetStrPar(2, L",").GetInt()) / float(tex->GetSizeY());
-                m_SkyTex[idx].u1 = float(skbp->ParGet(skyname).GetStrPar(3, L",").GetInt()) / float(tex->GetSizeX());
-                m_SkyTex[idx].v1 = float(skbp->ParGet(skyname).GetStrPar(4, L",").GetInt()) / float(tex->GetSizeY());
+                auto skyTex = GetVisual()->GetSkyTex(idx);
+                skyTex->tex = tex;
+
+                skyTex->u0 = float(skbp->ParGet(skyname).GetStrPar(1, L",").GetInt()) / float(tex->GetSizeX());
+                skyTex->v0 = float(skbp->ParGet(skyname).GetStrPar(2, L",").GetInt()) / float(tex->GetSizeY());
+                skyTex->u1 = float(skbp->ParGet(skyname).GetStrPar(3, L",").GetInt()) / float(tex->GetSizeX());
+                skyTex->v1 = float(skbp->ParGet(skyname).GetStrPar(4, L",").GetInt()) / float(tex->GetSizeY());
             }
         }
     }
@@ -1072,10 +1059,6 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
     ic = propkey->FindAsWStr(DATA_INSHOREWAVECOLOR);
     if (ic >= 0)
         m_InshorewaveColor = propval->GetAsParamParser(ic).GetDword();
-
-    ic = propkey->FindAsWStr(DATA_AMBIENTCOLOROBJ);
-    if (ic >= 0)
-        m_AmbientColorObj = propval->GetAsParamParser(ic).GetDword();
 
     ic = propkey->FindAsWStr(DATA_AMBIENTCOLOR);
     if (ic >= 0)
@@ -1096,10 +1079,6 @@ int CMatrixMap::PrepareMap(CStorage &stor, const std::wstring &mapname) {
     ic = propkey->FindAsWStr(DATA_LIGHTMAINANGLEZ);
     if (ic >= 0)
         m_LightMainAngleZ = (float)propval->GetAsParamParser(ic).GetDouble();
-
-    ic = propkey->FindAsWStr(DATA_SHADOWCOLOR);
-    if (ic >= 0)
-        m_ShadowColor = propval->GetAsParamParser(ic).GetDword();
 
     m_WaterName = L"water_blue";
     ic = propkey->FindAsWStr(DATA_WATERNAME);
@@ -1802,22 +1781,7 @@ void CMatrixMap::CreatePoolDefaultResources(bool loading) {
 
     WaterInit();  // water
 
-    SShadowRectVertex *v;
-    if (IS_VB(m_ShadowVB))
-        DESTROY_VB(m_ShadowVB);
-    CREATE_VB(sizeof(SShadowRectVertex) * 4, D3DFVF_XYZRHW | D3DFVF_DIFFUSE, m_ShadowVB);
-    LOCK_VB(m_ShadowVB, &v);
-
-    v[0].p = D3DXVECTOR4(0, float(g_ScreenY), 0.0f, 1.0f);
-    v[0].color = m_ShadowColor;
-    v[1].p = D3DXVECTOR4(0, 0, 0.0f, 1.0f);
-    v[1].color = m_ShadowColor;
-    v[2].p = D3DXVECTOR4(float(g_ScreenX), float(g_ScreenY), 0.0f, 1.0f);
-    v[2].color = m_ShadowColor;
-    v[3].p = D3DXVECTOR4(float(g_ScreenX), 0, 0.0f, 1.0f);
-    v[3].color = m_ShadowColor;
-
-    UNLOCK_VB(m_ShadowVB);
+    GetVisual()->CreatePoolDefaultResources();
 
     if (loading) {
         StaticPrepare2(&robots_buf);
@@ -1915,8 +1879,8 @@ void CMatrixMap::ReleasePoolDefaultResources(void) {
     CMatrixEffect::ReleasePoolDefaultResources();
 
     WaterClear();
-    if (IS_VB(m_ShadowVB))
-        DESTROY_VB(m_ShadowVB);
+
+    GetVisual()->ClearResources();
 
     m_Minimap.StoreTexture();
 

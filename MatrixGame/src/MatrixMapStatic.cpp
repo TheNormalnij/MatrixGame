@@ -616,7 +616,7 @@ end:;
     light.Specular.b = GetColorB(g_MatrixMap->m_LightMainColorObj);
     light.Direction = g_MatrixMap->m_LightMain;
     ASSERT_DX(g_D3DD->SetLight(0, &light));
-    ASSERT_DX(g_D3DD->SetRenderState(D3DRS_AMBIENT, g_MatrixMap->m_AmbientColorObj));
+    ASSERT_DX(g_D3DD->SetRenderState(D3DRS_AMBIENT, g_MatrixMap->GetVisual()->GetAmbientColorObj()));
 
     g_D3DD->SetRenderState(D3DRS_NORMALIZENORMALS, FALSE);
     ASSERT_DX(g_D3DD->SetRenderState(D3DRS_LIGHTING, FALSE));

@@ -3,7 +3,12 @@
 // Licensed under GPLv2 or any later version
 // Refer to the LICENSE file included
 
-#include "MatrixMap.hpp"
+#pragma once
+
+#include "BaseDef.hpp"
+#include <windows.h>
+#include "Texture.hpp"
+#include <string>
 
 #define CURSOR_VISIBLE     1
 #define CURSOR_REVERSEANIM 2

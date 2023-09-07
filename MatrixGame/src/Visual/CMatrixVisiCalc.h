@@ -56,9 +56,10 @@ public:
             m_minz = z;
         if (z > m_maxz)
             m_maxz = z;
-     };
+    };
 
     int GetGroupCount() const noexcept { return m_GroupSize.y * m_GroupSize.x; };
+    float GetSkyHeight() const noexcept { return m_SkyHeight; };
 
     void Init(int x, int y);
     void InitVisibilytyGroups();
@@ -74,6 +75,7 @@ public:
 private:
     float m_minz;
     float m_maxz;
+    float m_SkyHeight;
 
     CMatrixCamera *m_Camera;
 
