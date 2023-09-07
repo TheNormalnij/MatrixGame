@@ -147,7 +147,9 @@ void CMatrixMapVisual::Draw() {
     ASSERT_DX(g_D3DD->SetSamplerState(0, D3DSAMP_ADDRESSU, D3DTADDRESS_WRAP));
     ASSERT_DX(g_D3DD->SetSamplerState(0, D3DSAMP_ADDRESSV, D3DTADDRESS_WRAP));
 
-        // one per frame
+    DrawFog();
+
+    // one per frame
     ASSERT_DX(g_D3DD->SetTransform(D3DTS_VIEW, &m_Camera->GetViewMatrix()));
     ASSERT_DX(g_D3DD->SetTransform(D3DTS_PROJECTION, &m_Camera->GetProjMatrix()));
 
