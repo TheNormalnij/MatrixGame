@@ -137,6 +137,11 @@ void L3GInitAsEXE(HINSTANCE hinst, CBlockPar& bpcfg, const wchar* sysname, const
     g_Wnd = NULL;
     g_WndExtern = false;
 
+#ifdef _DEBUG
+    SETFLAG(g_Flags, GFLAG_KEEPALIVE);
+#endif  // DEBUG
+
+
     int cntpar = bpcfg.ParGet(L"FullScreen").GetCountPar(L",");
 
     ParamParser str(bpcfg.ParGet(L"Resolution"));
