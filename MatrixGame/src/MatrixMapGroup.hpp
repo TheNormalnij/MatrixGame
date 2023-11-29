@@ -139,8 +139,8 @@ public:
     CMatrixMapGroup();
     ~CMatrixMapGroup();
 
-    CMatrixMapStatic *GetObject(int i) const;
-    int ObjectsCnt(void) const;
+    CMatrixMapStatic *GetObject(int i) const noexcept { return m_Objects[i]; };
+    int ObjectsCnt(void) const noexcept { return m_ObjectsContained; };
 
     // bool IsVisible(void) const {return FLAG(m_Flags, GRPFLAG_VISIBLE);}
     // void SetVisible(bool vis) {INITFLAG(m_Flags, GRPFLAG_VISIBLE, vis);}

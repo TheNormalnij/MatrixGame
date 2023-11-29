@@ -561,7 +561,6 @@ public:
     DWORD GetStartTime(void) const { return m_StartTime; }
 
     bool CatchPoint(const D3DXVECTOR3 &from, const D3DXVECTOR3 &to);
-    bool TraceLand(D3DXVECTOR3 *out, const D3DXVECTOR3 &start, const D3DXVECTOR3 &dir);
     CMatrixMapStatic *Trace(D3DXVECTOR3 *out, const D3DXVECTOR3 &start, const D3DXVECTOR3 &end, DWORD mask,
                             CMatrixMapStatic *skip = NULL);
     bool FindObjects(const D3DXVECTOR3 &pos, float radius, float oscale, DWORD mask, CMatrixMapStatic *skip,

@@ -184,13 +184,6 @@ public:
     CRandom &GetRandom() noexcept { return m_Random; };
 };
 
-inline int CMatrixMapGroup::ObjectsCnt(void) const {
-    return m_ObjectsContained;
-}
-inline CMatrixMapStatic *CMatrixMapGroup::GetObject(int i) const {
-    return m_Objects[i];
-}
-
 inline int CMatrixMapLogic::GetRegion(const CPoint &tp) {
     while (true) {
         SMatrixMapMove *mm = g_MatrixMap->MoveGetTest(tp.x, tp.y);

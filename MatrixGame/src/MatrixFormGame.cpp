@@ -1818,12 +1818,7 @@ void CFormMatrixGame::Keyboard(bool down, int scan) {
             //    g_MatrixMap->CalcVisTemp(from, to, ptfrom);
             //}
         }
-        // if (scan == KEY_F8)
-        //{
-        //    D3DXVECTOR3 p;
-        //    g_MatrixMap->TraceLand(&p, g_MatrixMap->m_Camera.GetFrustumCenter(), g_MatrixMap->m_MouseDir);
-        //    CHelper::Create(10000,888)->Line(g_MatrixMap->m_Camera.GetFrustumCenter(), p);
-        //}
+
         if (scan == KEY_F6) {
             const D3DXVECTOR3 &cam = g_MatrixMap->m_Camera.GetFrustumCenter();
             int gx = TruncFloat(cam.x / (GLOBAL_SCALE * MAP_GROUP_SIZE));
